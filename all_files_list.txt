@@ -1,0 +1,193 @@
+﻿C:\Users\maree\Desktop\enzo-main\.gitignore
+C:\Users\maree\Desktop\enzo-main\all_files.txt
+C:\Users\maree\Desktop\enzo-main\all_files_list.txt
+C:\Users\maree\Desktop\enzo-main\all_videos.txt
+C:\Users\maree\Desktop\enzo-main\blog_content.txt
+C:\Users\maree\Desktop\enzo-main\blog_content_utf8.txt
+C:\Users\maree\Desktop\enzo-main\index.html
+C:\Users\maree\Desktop\enzo-main\logo.png
+C:\Users\maree\Desktop\enzo-main\logo.svg
+C:\Users\maree\Desktop\enzo-main\logo.svg.png
+C:\Users\maree\Desktop\enzo-main\logo1.png
+C:\Users\maree\Desktop\enzo-main\main-v2.js
+C:\Users\maree\Desktop\enzo-main\mp4_list.txt
+C:\Users\maree\Desktop\enzo-main\pdf_text.txt
+C:\Users\maree\Desktop\enzo-main\Portfolio Content.pdf
+C:\Users\maree\Desktop\enzo-main\README.md
+C:\Users\maree\Desktop\enzo-main\SEO Optimised Blog_ AI on Video Advertising_ What It Can Do, and What It Still Can’t (2).pdf
+C:\Users\maree\Desktop\enzo-main\style-v2.css
+C:\Users\maree\Desktop\enzo-main\Team Profile_ Enso 8-FINAL (1).pdf
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Adith C Satheesh\adhi.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Adith C Satheesh\Gemini_Generated_Image_gxfxqqgxfxqqgxfx.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Akshay K P\Akshay K P.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Akshay K P\Gemini_Generated_Image_9c98tk9c98tk9c98.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Amal Krishna\amal krishna.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Amal Krishna\Gemini_Generated_Image_wu5wn0wu5wn0wu5w.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Athul Prakash\athul.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Athul Prakash\Gemini_Generated_Image_w12r0nw12r0nw12r.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Athul Sudakaran\Athul Sudakaran.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Athul Sudakaran\Gemini_Generated_Image_mjla60mjla60mjla.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Bharath R\Gemini_Generated_Image_bwkakfbwkakfbwka.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Bharath R\Gemini_Generated_Image_lbpsfblbpsfblbps.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Gokul R Nadh\Gemini_Generated_Image_hjlnqwhjlnqwhjln.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Gokul R Nadh\gokul r nadh.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\K O Akhil\Gemini_Generated_Image_ffjyxoffjyxoffjy.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\K O Akhil\Gemini_Generated_Image_munclfmunclfmunc.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\M R Vishnuprasad\.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\M R Vishnuprasad\Gemini_Generated_Image_j9dp2sj9dp2sj9dp.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Muhammed Thaha Jasmine\Muhammed final image.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Nandagopan P\.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Nandagopan P\Gemini_Generated_Image_brt9elbrt9elbrt9.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Nibu Samuel\Gemini_Generated_Image_ffbo0iffbo0iffbo.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Nibu Samuel\Gemini_Generated_Image_rxgv0irxgv0irxgv.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Prince Dirron\Gemini_Generated_Image_78qgoa78qgoa78qg.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Prince Dirron\prince.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Sanjay. S\Gemini_Generated_Image_z6robnz6robnz6ro.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics\ENSO8 Team profile pics\Sanjay. S\sanjay.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Adith C Satheesh\adhi.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Adith C Satheesh\Gemini_Generated_Image_gxfxqqgxfxqqgxfx.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Akshay K P\Akshay K P.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Akshay K P\Gemini_Generated_Image_9c98tk9c98tk9c98.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Amal Krishna\amal krishna.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Amal Krishna\Gemini_Generated_Image_wu5wn0wu5wn0wu5w.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Athul Prakash\athul.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Athul Prakash\Gemini_Generated_Image_w12r0nw12r0nw12r.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Athul Sudakaran\Athul Sudakaran.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Athul Sudakaran\Gemini_Generated_Image_mjla60mjla60mjla.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Bharath R\Gemini_Generated_Image_bwkakfbwkakfbwka.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Bharath R\Gemini_Generated_Image_lbpsfblbpsfblbps.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Gokul R Nadh\Gemini_Generated_Image_hjlnqwhjlnqwhjln.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Gokul R Nadh\gokul r nadh.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\K O Akhil\Gemini_Generated_Image_ffjyxoffjyxoffjy.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\K O Akhil\Gemini_Generated_Image_munclfmunclfmunc.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\M R Vishnuprasad\.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\M R Vishnuprasad\Gemini_Generated_Image_j9dp2sj9dp2sj9dp.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Muhammed Thaha Jasmine\Muhammed final image.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Nandagopan P\.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Nandagopan P\Gemini_Generated_Image_brt9elbrt9elbrt9.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Nibu Samuel\Gemini_Generated_Image_ffbo0iffbo0iffbo.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Nibu Samuel\Gemini_Generated_Image_rxgv0irxgv0irxgv.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Prince Dirron\Gemini_Generated_Image_78qgoa78qgoa78qg.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Prince Dirron\prince.png
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Sanjay. S\Gemini_Generated_Image_z6robnz6robnz6ro.jpg
+C:\Users\maree\Desktop\enzo-main\ENSO8 Team profile pics - Copy\ENSO8 Team profile pics\Sanjay. S\sanjay.png
+C:\Users\maree\Desktop\enzo-main\enzo-main\index.html
+C:\Users\maree\Desktop\enzo-main\images\adhi.png
+C:\Users\maree\Desktop\enzo-main\images\Adith_C_Satheesh.png
+C:\Users\maree\Desktop\enzo-main\images\Akshay_K_P.png
+C:\Users\maree\Desktop\enzo-main\images\Amal_Krishna.png
+C:\Users\maree\Desktop\enzo-main\images\athul.png
+C:\Users\maree\Desktop\enzo-main\images\Athul_Prakash.png
+C:\Users\maree\Desktop\enzo-main\images\Athul_Sudakaran.png
+C:\Users\maree\Desktop\enzo-main\images\Bharath_R.jpg
+C:\Users\maree\Desktop\enzo-main\images\Bharath_R_gemini.jpg
+C:\Users\maree\Desktop\enzo-main\images\Bharath_R_gemini_bwkakfbwkakfbwka.jpg
+C:\Users\maree\Desktop\enzo-main\images\Gokul_R_Nadh.png
+C:\Users\maree\Desktop\enzo-main\images\K_O_Akhil.png
+C:\Users\maree\Desktop\enzo-main\images\k_o_akhil_gemini.png
+C:\Users\maree\Desktop\enzo-main\images\mr_vishnuprasad_gemini.jpg
+C:\Users\maree\Desktop\enzo-main\images\Muhammed_Thaha_Jasmine.jpg
+C:\Users\maree\Desktop\enzo-main\images\M_R_New.png
+C:\Users\maree\Desktop\enzo-main\images\M_R_Vishnuprasad.png
+C:\Users\maree\Desktop\enzo-main\images\M_R_Vishnuprasad_Generated.jpg
+C:\Users\maree\Desktop\enzo-main\images\Nandagopan_P.png
+C:\Users\maree\Desktop\enzo-main\images\Nibu_Samuel.jpg
+C:\Users\maree\Desktop\enzo-main\images\Prince_Dirron.png
+C:\Users\maree\Desktop\enzo-main\images\Prince_Dirron_Gemini.jpg
+C:\Users\maree\Desktop\enzo-main\images\Sanjay._S.png
+C:\Users\maree\Desktop\enzo-main\images\blog\1.jpg
+C:\Users\maree\Desktop\enzo-main\images\blog\2.png
+C:\Users\maree\Desktop\enzo-main\images\blog\3.jpg
+C:\Users\maree\Desktop\enzo-main\images\blog\4.jpg
+C:\Users\maree\Desktop\enzo-main\imgaes for blog page\imgaes for blog page\1.jpg
+C:\Users\maree\Desktop\enzo-main\imgaes for blog page\imgaes for blog page\2.png
+C:\Users\maree\Desktop\enzo-main\imgaes for blog page\imgaes for blog page\3.jpg
+C:\Users\maree\Desktop\enzo-main\imgaes for blog page\imgaes for blog page\4.jpg
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\All-New Nissan X-Trail - 2023 - Nissan Middle East (1080p, h264).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\damac_island___state_of_mind_v1 (1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\Rolex presents_ Hannah Mills – Making Waves.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\x2mate.com-Mission_ Reliably Punctual_ Etihad Airways Campaign-(1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\x2mate.com-_Mission_ Flawless Welcome_ Etihad Airways Campaign ft. Diane-(1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\DIT\الشبكة اللّي تفهمك - The network that gets you - The du Channel.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\EDIT\.DS_Store
+C:\Users\maree\Desktop\enzo-main\muhammed port\EDIT\COMMERCIAL\infinix_note_40 (1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\EDIT\COMMERCIAL\infinix_note_40_v1 (1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\LIVE STREAMING\.DS_Store
+C:\Users\maree\Desktop\enzo-main\muhammed port\LIVE STREAMING\Embrace a new chapter  Audi Q8 Sportback e-tron - Audi Malaysia (1080p, h264).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\LIVE STREAMING\Embrace a new chapter  Audi Q8 Sportback e-tron - Audi Malaysia 9X16.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONLINE EDIT\.DS_Store
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONLINE EDIT\damac_noisy_neighbour_v1 (1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONLINE EDIT\damac_support_group (1080p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONLINE EDIT\det_japan_v1 (2160p).mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONSET EDIT\Central Park at City Walk _ Urban Energy Meets Exclusive Luxury _ Apartments in Dubai _ Meraas.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONSET EDIT\DCT_Global_60s_16x9_ENG_230923_1.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONSET EDIT\DCT_WINTER_CAMPAIGN_2023_63s_ENG_Denis_230925_V10.7.1.mp4
+C:\Users\maree\Desktop\enzo-main\muhammed port\ONSET EDIT\الكل جاهز للشتاء - Visit Abu Dhabi (1080p, h264).mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\.DS_Store
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\CULT FIT MASSAGE GUN 2.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\French avenue (Safari Breeze) perfume.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\JBL M3 HEADPHONES.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\Kaappa culture festival ad.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\Prestige kitchenware.mov
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\french avenue Jasmere\FJ_Teaser.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\french avenue Jasmere\FJ_Teaser_Vertical.mp4
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\french avenue Jasmere\Jasmere_Final_SocialMedia_v01_4K.mov
+C:\Users\maree\Desktop\enzo-main\PORTFOLIO FOR WEBSITE\french avenue Jasmere\Jasmere_Final_VerticalSocialMedia_v1_4K.mov
+C:\Users\maree\Desktop\enzo-main\videos\about horizontal reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\about horizontal reversee.mov
+C:\Users\maree\Desktop\enzo-main\videos\about horizontal.mov
+C:\Users\maree\Desktop\enzo-main\videos\about horizontal.mp4
+C:\Users\maree\Desktop\enzo-main\videos\about horizontal.webm
+C:\Users\maree\Desktop\enzo-main\videos\ABOUT US ANIMATION 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\about vertical reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\about vertical reverse.webm
+C:\Users\maree\Desktop\enzo-main\videos\about vertical reversee.mov
+C:\Users\maree\Desktop\enzo-main\videos\about vertical.mov
+C:\Users\maree\Desktop\enzo-main\videos\about vertical.mp4
+C:\Users\maree\Desktop\enzo-main\videos\about vertical.webm
+C:\Users\maree\Desktop\enzo-main\videos\BLOG  ANIMATION 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal reverse.webm
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal reversee.mov
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal.mov
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact horizontal.webm
+C:\Users\maree\Desktop\enzo-main\videos\CONTACT US EXIT ANIMATION 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact vertical reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact vertical reverse.webm
+C:\Users\maree\Desktop\enzo-main\videos\contact vertical.mov
+C:\Users\maree\Desktop\enzo-main\videos\contact vertical.mp4
+C:\Users\maree\Desktop\enzo-main\videos\contact vertical.webm
+C:\Users\maree\Desktop\enzo-main\videos\contct vertical reversee.mov
+C:\Users\maree\Desktop\enzo-main\videos\french_avenue.mp4
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility loop.mov
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility loop.mp4
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility loop.webm
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility reverse.mov
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility reverse.webm
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility.mov
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility.mp4
+C:\Users\maree\Desktop\enzo-main\videos\horizontal utility.webm
+C:\Users\maree\Desktop\enzo-main\videos\intro.mov
+C:\Users\maree\Desktop\enzo-main\videos\intro.mp4
+C:\Users\maree\Desktop\enzo-main\videos\intro.webm
+C:\Users\maree\Desktop\enzo-main\videos\INTRO_01.mp4
+C:\Users\maree\Desktop\enzo-main\videos\jbl_headphones.mp4
+C:\Users\maree\Desktop\enzo-main\videos\kaappa.mp4
+C:\Users\maree\Desktop\enzo-main\videos\massage_gun.mp4
+C:\Users\maree\Desktop\enzo-main\videos\PORTFOLIO ANIMATION 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\REVERSE ANIMATION (2) 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\REVERSE ANIMATION (3) 1.5X.mp4
+C:\Users\maree\Desktop\enzo-main\videos\SERVICES (1).mp4
+C:\Users\maree\Desktop\enzo-main\videos\SERVICES (2).mp4
+C:\Users\maree\Desktop\enzo-main\videos\SERVICES.mp4
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility loop.mov
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility loop.mp4
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility loop.webm
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility reverse.mov
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility reverse.mp4
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility reverse.webm
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility.mov
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility.mp4
+C:\Users\maree\Desktop\enzo-main\videos\vertical utility.webm

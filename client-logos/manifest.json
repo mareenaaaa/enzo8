@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Mubadala",
+    "slug": "mubadala",
+    "color": "client-logos/mubadala.png",
+    "light": "client-logos-light/mubadala.png"
+  },
+  {
+    "name": "AD Ports Group",
+    "slug": "ad-ports-group",
+    "color": "client-logos/ad-ports-group.png",
+    "light": "client-logos-light/ad-ports-group.png"
+  },
+  {
+    "name": "Environment Agency Abu Dhabi",
+    "slug": "environment-agency-abu-dhabi",
+    "color": "client-logos/environment-agency-abu-dhabi.png",
+    "light": "client-logos-light/environment-agency-abu-dhabi.png"
+  },
+  {
+    "name": "International Fund for Houbara Conservation",
+    "slug": "international-fund-for-houbara-conservation",
+    "color": "client-logos/international-fund-for-houbara-conservation.png",
+    "light": "client-logos-light/international-fund-for-houbara-conservation.png"
+  },
+  {
+    "name": "PwC",
+    "slug": "pwc",
+    "color": "client-logos/pwc.png",
+    "light": "client-logos-light/pwc.png"
+  },
+  {
+    "name": "M42",
+    "slug": "m42",
+    "color": "client-logos/m42.png",
+    "light": "client-logos-light/m42.png"
+  },
+  {
+    "name": "Abu Dhabi Tourism & Culture",
+    "slug": "abu-dhabi-tourism-culture",
+    "color": "client-logos/abu-dhabi-tourism-culture.png",
+    "light": "client-logos-light/abu-dhabi-tourism-culture.png"
+  },
+  {
+    "name": "Dubai Municipality",
+    "slug": "dubai-municipality",
+    "color": "client-logos/dubai-municipality.png",
+    "light": "client-logos-light/dubai-municipality.png"
+  },
+  {
+    "name": "Danat Al Emarat Hospital",
+    "slug": "danat-al-emarat-hospital",
+    "color": "client-logos/danat-al-emarat-hospital.png",
+    "light": "client-logos-light/danat-al-emarat-hospital.png"
+  },
+  {
+    "name": "strategy&",
+    "slug": "strategyand",
+    "color": "client-logos/strategyand.png",
+    "light": "client-logos-light/strategyand.png"
+  },
+  {
+    "name": "Total",
+    "slug": "total",
+    "color": "client-logos/total.png",
+    "light": "client-logos-light/total.png"
+  },
+  {
+    "name": "Image Nation Abu Dhabi",
+    "slug": "image-nation-abu-dhabi",
+    "color": "client-logos/image-nation-abu-dhabi.png",
+    "light": "client-logos-light/image-nation-abu-dhabi.png"
+  },
+  {
+    "name": "Dubai",
+    "slug": "dubai",
+    "color": "client-logos/dubai.png",
+    "light": "client-logos-light/dubai.png"
+  },
+  {
+    "name": "ADNOC",
+    "slug": "adnoc",
+    "color": "client-logos/adnoc.png",
+    "light": "client-logos-light/adnoc.png"
+  },
+  {
+    "name": "Abu Dhabi Coop",
+    "slug": "abu-dhabi-coop",
+    "color": "client-logos/abu-dhabi-coop.png",
+    "light": "client-logos-light/abu-dhabi-coop.png"
+  },
+  {
+    "name": "DXB",
+    "slug": "dxb",
+    "color": "client-logos/dxb.png",
+    "light": "client-logos-light/dxb.png"
+  },
+  {
+    "name": "TAQA",
+    "slug": "taqa",
+    "color": "client-logos/taqa.png",
+    "light": "client-logos-light/taqa.png"
+  },
+  {
+    "name": "DAMAC",
+    "slug": "damac",
+    "color": "client-logos/damac.png",
+    "light": "client-logos-light/damac.png"
+  }
+]

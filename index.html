@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Enso 8 | Minimal Experience</title>
+    <meta name="description"
+        content="A dark, premium, minimal landing page with a cinematic and interactive experience.">
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+    </style>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://stream.mux.com" crossorigin>
+    <link rel="preconnect" href="https://image.mux.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
+
+    <link rel="preload" as="video" href="./videos/vertical utility services continuous mobile.mp4" type="video/mp4" media="(max-width: 768px)">
+    <link rel="preload" as="video" href="./videos/vertical utility home reverse mobile.mp4" type="video/mp4" media="(max-width: 768px)">
+    <link rel="stylesheet" href="./style-v2.css?v=40">
+
+    <style>
+        @media (min-width: 769px) {
+            #bg-video {
+                opacity: 0;
+                transform: scale(0.58);
+                transform-origin: 50% 50%;
+            }
+        }
+
+        .portfolio-video,
+        mux-player.portfolio-video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            --controls: none;
+            --media-object-fit: cover;
+            --media-object-position: center;
+        }
+
+        mux-player.bg-fill {
+            width: 100%;
+            height: 100%;
+            display: block;
+            --controls: none;
+            --media-object-fit: cover;
+            --media-object-position: center;
+        }
+
+        /* ─── MOBILE VERTICAL VIDEO SYSTEM ──────────────────────────── */
+
+        /* Hidden on desktop by default */
+        .mob-bg-vid {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            mix-blend-mode: screen;
+            background-color: transparent;
+        }
+
+        .mob-bg-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+
+            /* Global bg-video / desktop section videos own mobile motion too. */
+            .mob-bg-vid,
+            .mob-bg-overlay {
+                display: none !important;
+            }
+
+            /* About – ensure relative positioning for absolute children */
+            #about-section {
+                background: transparent !important;
+            }
+
+            /* Services – hide the desktop horizontal videos */
+            #services-bg-video,
+            #services-loop-video {
+                display: block !important;
+                object-fit: contain !important;
+                object-position: center center !important;
+            }
+
+            #services-section {
+                background: #000 !important;
+                overflow: hidden !important;
+            }
+
+            /* Services text overlay content sits above the video */
+            .services-text-overlay {
+                z-index: 10 !important;
+            }
+
+            /* The two services mobile videos share the same slot */
+            #srv-mob-intro,
+            #srv-mob-loop,
+            #srv-mob-reverse {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                object-position: center center;
+                z-index: 0;
+            }
+
+            /* Contact – hide gradient stack, show video instead */
+            #contact-section {
+                background: transparent !important;
+                overflow: hidden !important;
+            }
+
+            .contact-background-stack {
+                opacity: 0 !important;
+            }
+
+            /* All section content stays above the mobile video */
+            #about-section   > *:not(.mob-bg-vid):not(.mob-bg-overlay) { position: relative; z-index: 2; }
+            #services-section .services-text-overlay { pointer-events: auto; }
+            #contact-section  > *:not(.mob-bg-vid):not(.mob-bg-overlay):not(.contact-background-stack) { position: relative; z-index: 2; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="video-container"
+        style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;">
+        <video id="bg-video" playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+    </div>
+
+    <!-- Mobile intro video -->
+    <div id="mobile-intro-container">
+        <video id="mobile-intro-video" playsinline muted preload="none">
+            <source src="./videos/intro.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Mobile hamburger button -->
+    <button id="mobile-hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+    </button>
+
+    <a href="#" id="mobile-brand-home" class="brand-home-trigger" aria-label="Go to home">enso8</a>
+
+    <!-- Mobile full-screen nav overlay -->
+    <div id="mobile-nav-overlay" aria-hidden="true">
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&#x2715; &nbsp;Close</button>
+        <nav class="mobile-nav-links">
+            <a href="#" class="mobile-nav-item brand-home-trigger">Home</a>
+            <a href="#" class="mobile-nav-item nav-link" data-target="services-section">Services</a>
+            <a href="#" class="mobile-nav-item nav-link" data-target="portfolios-section">Portfolios</a>
+            <a href="#" class="mobile-nav-item nav-link" data-target="blogs-section">Blogs</a>
+            <a href="#" class="mobile-nav-item nav-link" data-target="about-section">About Us</a>
+            <a href="#" class="mobile-nav-item nav-link" data-target="contact-section">Contact</a>
+        </nav>
+    </div>
+
+    <div id="center-glow"></div>
+    <div id="mouse-glow"></div>
+
+    <div id="experience-trigger" style="cursor:default;">
+        <div id="hero-ui" class="hero-center"></div>
+    </div>
+
+    <!-- Central Navigation -->
+    <nav id="center-nav" class="central-navigation">
+        <a href="#" class="nav-item hover-target" data-target="about-section">About Us</a>
+        <a href="#" class="nav-item hover-target" data-target="services-section">Services</a>
+        <a href="#" class="nav-item hover-target" data-target="portfolios-section">Portfolio</a>
+        <a href="#" class="nav-item hover-target" data-target="blogs-section">Blog</a>
+        <a href="#" class="nav-item hover-target" data-target="contact-section">Contact</a>
+    </nav>
+    <a href="#" id="home-wordmark" class="brand-home-trigger hover-target" aria-label="Home">enso<span class="home-wordmark-number">8</span></a>
+
+    <div id="status-label"
+        style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:0.3em;opacity:0;color:rgba(255,255,255,0.2);transition:opacity 1s;">
+        ENSO SERIES 8 SYSTEM 1.0.4
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         ABOUT SECTION
+    ───────────────────────────────────────────────────────── -->
+    <div id="about-section" class="scroll-section"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background:transparent;overflow-y:auto;overflow-x:hidden;">
+
+        <!-- MOBILE: aboutvertical.mp4 – ping-pong (forward → reverse → forward …) -->
+        <video id="about-mob-vid" class="mob-bg-vid" playsinline muted preload="none">
+            <source src="./videos/about vertical.mp4" type="video/mp4">
+        </video>
+        <div class="mob-bg-overlay"></div>
+
+        <header
+            style="position:absolute;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;font-family:'Montserrat',sans-serif;">
+            <div class="header-left">
+                <a href="#" class="brand-home-trigger hover-target"
+                    style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+            </div>
+            <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                    <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                    <a href="#" class="nav-link hover-target" data-target="about-section"
+                        style="text-decoration:none;color:inherit;border-bottom:1px solid var(--neon-blue);">About Us</a>
+                    <a href="#" class="nav-link hover-target" data-target="services-section"
+                        style="text-decoration:none;color:inherit;">Services</a>
+                    <a href="#" class="nav-link hover-target" data-target="portfolios-section"
+                        style="text-decoration:none;color:inherit;">Portfolio</a>
+                    <a href="#" class="nav-link hover-target" data-target="blogs-section"
+                        style="text-decoration:none;color:inherit;">Blogs</a>
+                    <a href="#" class="nav-link hover-target" data-target="contact-section"
+                        style="text-decoration:none;color:inherit;">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="about-content"
+            style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:0 24px;margin-top:42vh;padding-bottom:25vh;z-index:10;box-sizing:border-box;">
+            <div class="manifesto-container"
+                style="width:100%;max-width:720px;margin-left:auto;margin-right:auto;text-align:center;font-family:'Montserrat',sans-serif;">
+                <p class="reveal-text"
+                    style="font-size:1.05rem;font-weight:300;line-height:1.7;color:rgba(255,255,255,0.6);letter-spacing:0.3px;margin-bottom:22px;">
+                    People don't buy advertising. They buy the feeling when a story becomes theirs. 
+                    <br>At Enso 8, we use
+                    technology for what it's good at and keep humans where they matter most. AI handles the speed, the
+                    testing, the optimisation. We turn data into direction, and direction into a story. We know when a
+                    clever line becomes a truthful one. When a message stops selling and starts belonging to your
+                    audience. That's the partnership.
+                </p>
+                <p class="reveal-text"
+                    style="font-size:1.05rem;font-weight:300;line-height:1.7;color:rgba(255,255,255,0.6);letter-spacing:0.3px;margin-bottom:40px;">
+                    We are storytellers first. Technologists second. We don't automate emotion. We sharpen it. The
+                    result is work that doesn't shout for attention. It earns it. Great
+                    advertising doesn't announce itself. It simply works.
+                </p>
+                <div class="reveal-text" style="display:flex;justify-content:center;width:100%;">
+                    <a href="#about-team-inline" id="meet-team-btn" class="hover-target" aria-controls="about-team-inline"
+                        style="font-size:0.75rem;letter-spacing:0.3em;color:rgba(255,255,255,0.65);text-decoration:none;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.15);padding-bottom:6px;">MEET
+                        THE TEAM <span style="margin-left:5px;">&darr;</span></a>
+                </div>
+                <a href="#about-team-inline" class="about-scroll-cue hover-target" aria-label="Continue to team">
+                    <span></span>
+                </a>
+            </div>
+        </div>
+
+        <section id="about-team-inline" class="about-team-inline reveal-text" aria-label="Meet the team">
+            <div class="team-shell">
+                <div class="team-composition">
+                    <div class="team-composition-row team-composition-row-meet">
+                        <div class="team-word team-word-meet">Meet</div>
+                        <div class="member hover-target" data-member="thaha">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Muhammed_Thaha_Jasmine.webp"></div>
+                            <div class="info"><div class="name-text">Muhammed Thaha</div><span>Chief Executive Officer</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="bharath">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Bharath_R.webp"></div>
+                            <div class="info"><div class="name-text">Bharath R</div><span>Managing Director</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="prince">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Prince_Dirron_Gemini.webp"></div>
+                            <div class="info"><div class="name-text">Prince Dirron</div><span>Chief Operations Officer</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="mr">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/M_R_Vishnuprasad_Generated.webp"></div>
+                            <div class="info"><div class="name-text">M R Vishnuprasad</div><span>Creative Director</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="amal">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Amal_Krishna.webp"></div>
+                            <div class="info"><div class="name-text">Amal Krishna</div><span>Head of 3D Department</span></div>
+                        </div>
+                    </div>
+
+                    <div class="team-composition-row team-composition-row-the">
+                        <div class="member hover-target" data-member="adith">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Adith_C_Satheesh.webp"></div>
+                            <div class="info"><div class="name-text">Adith C Satheesh</div><span>3D Generalist</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="akhil">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/K_O_Akhil.webp"></div>
+                            <div class="info"><div class="name-text">K O Akhil</div><span>Senior Cinematographer</span></div>
+                        </div>
+                        <div class="team-word team-word-the">The</div>
+                        <div class="member hover-target" data-member="sanjay">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Sanjay._S.webp"></div>
+                            <div class="info"><div class="name-text">Sanjay S</div><span>3D Generalist | Lighting/FX</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="nibu">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Nibu_Samuel.webp"></div>
+                            <div class="info"><div class="name-text">Nibu Samuel</div><span>2D Animator | Motion Graphics</span></div>
+                        </div>
+                    </div>
+
+                    <div class="team-composition-row team-composition-row-team">
+                        <div class="team-word team-word-team">Team</div>
+                        <div class="member hover-target" data-member="akshay">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Akshay_K_P.webp"></div>
+                            <div class="info"><div class="name-text">Akshay K P</div><span>Cinematographer</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="athul_s">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Athul_Sudakaran.webp"></div>
+                            <div class="info"><div class="name-text">Athul Sudhakaran</div><span>Editor</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="gokul">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Gokul_R_Nadh.webp"></div>
+                            <div class="info"><div class="name-text">Gokul R Nadh</div><span>Sound Designer</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="nandagopan">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Nandagopan_P.webp"></div>
+                            <div class="info"><div class="name-text">Nandagopan P</div><span>Sound Mixing Engineer</span></div>
+                        </div>
+                        <div class="member hover-target" data-member="athul_p">
+                            <div class="circle avatar" data-bg-lazy="./images/team-optimized/Athul_Prakash.webp"></div>
+                            <div class="info"><div class="name-text">Athul Prakash</div><span>Colourist</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         SERVICES SECTION
+    ───────────────────────────────────────────────────────── -->
+    <div id="services-section" class="scroll-section"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10%;font-family:'Montserrat',sans-serif;color:white;text-align:center;">
+
+        <!-- MOBILE: continuous intro + repeated loop video to avoid mobile handoff stalls -->
+        <video id="srv-mob-intro" class="mob-bg-vid" playsinline muted preload="none">
+            <source src="./videos/vertical utility services continuous mobile.mp4" type="video/mp4">
+        </video>
+        <video id="srv-mob-loop" class="mob-bg-vid" playsinline muted loop preload="none" style="display:none;opacity:0;">
+            <source src="./videos/vertical utility loop.mp4" type="video/mp4">
+        </video>
+        <video id="srv-mob-reverse" class="mob-bg-vid" playsinline muted preload="none" style="display:none;opacity:0;">
+            <source src="./videos/vertical utility home reverse mobile.mp4" type="video/mp4">
+        </video>
+        <div class="mob-bg-overlay"></div>
+
+        <!-- DESKTOP: horizontal videos (unchanged) -->
+        <video id="services-loop-video" preload="none" playsinline muted
+            style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;mix-blend-mode:screen;background-color:transparent;">
+            <source src="./videos/horizontal utility loop.mp4" type="video/mp4">
+        </video>
+        <video id="services-bg-video" preload="none" playsinline muted
+            style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;mix-blend-mode:screen;background-color:transparent;">
+            <source src="./videos/horizontal utility.mp4" type="video/mp4">
+        </video>
+        <div class="services-gradient-overlay"></div>
+
+        <style>
+            .services-gradient-overlay {
+                position: absolute;
+                inset: 0;
+                z-index: -3;
+                pointer-events: none;
+                background:
+                    radial-gradient(ellipse at 16% 78%, rgba(132, 18, 178, 0.48) 0%, rgba(70, 18, 122, 0.24) 28%, transparent 58%),
+                    radial-gradient(ellipse at 72% 34%, rgba(30, 96, 190, 0.26) 0%, rgba(26, 18, 96, 0.15) 34%, transparent 62%),
+                    linear-gradient(90deg, transparent 0%, rgba(126, 28, 174, 0.18) 36%, transparent 52%, rgba(42, 126, 188, 0.12) 68%, transparent 84%);
+                background-size: 140% 140%, 130% 130%, 190% 100%;
+                background-repeat: no-repeat;
+                filter: blur(130px);
+                transform: scale(1.14);
+                opacity: 0;
+            }
+            .services-text-overlay {
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                z-index: 10;
+                pointer-events: none;
+                font-family: 'Montserrat', sans-serif;
+                opacity: 0;
+            }
+            .services-tagline {
+                position: absolute;
+                top: 14%;
+                width: 100%;
+                text-align: center;
+                font-size: 1.6rem;
+                letter-spacing: 0.2em;
+                color: rgba(255,255,255,0.7);
+                font-weight: 300;
+            }
+            .service-item {
+                position: absolute;
+                font-size: 1.05rem;
+                letter-spacing: 0.12em;
+                color: rgba(255,255,255,0.88);
+                font-weight: 400;
+                transform: translateY(-50%);
+                white-space: nowrap;
+            }
+            .service-item .line {
+                height: 1px;
+                background: rgba(255,255,255,0.35);
+                margin-top: 7px;
+                width: 32px;
+            }
+            .service-item.left-col  { left: 26%; text-align: left; }
+            .service-item.right-col { right: 26%; text-align: right; }
+            .service-item.right-col .line { margin-left: auto; }
+            .item-concept { top: 26%; }
+            .item-editing { top: 41%; }
+            .item-vfx     { top: 58%; }
+            .item-colour  { top: 73%; }
+            .item-cinema  { top: 34%; }
+            .item-sound   { top: 50%; }
+            .item-3d      { top: 66%; }
+        </style>
+
+        <div class="services-text-overlay">
+            <header
+                style="position:absolute;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;font-family:'Montserrat',sans-serif;pointer-events:auto;">
+                <div class="header-left">
+                    <a href="#" class="brand-home-trigger hover-target"
+                        style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+                </div>
+                <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                    <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                        <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                        <a href="#" class="nav-link hover-target" data-target="about-section" style="text-decoration:none;color:inherit;">About Us</a>
+                        <a href="#" class="nav-link hover-target" data-target="services-section"
+                            style="text-decoration:none;color:inherit;border-bottom:1px solid var(--neon-blue);">Services</a>
+                        <a href="#" class="nav-link hover-target" data-target="portfolios-section" style="text-decoration:none;color:inherit;">Portfolio</a>
+                        <a href="#" class="nav-link hover-target" data-target="blogs-section" style="text-decoration:none;color:inherit;">Blogs</a>
+                        <a href="#" class="nav-link hover-target" data-target="contact-section" style="text-decoration:none;color:inherit;">Contact</a>
+                    </nav>
+                </div>
+            </header>
+
+            <div class="services-tagline">From concept to final frame - everything your campaign needs</div>
+
+            <div class="service-item nav-link hover-target left-col item-concept" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about Concept, Screenplay and Direction"><div>Concept, Screenplay &amp; Direction</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target left-col item-editing" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about Editing"><div>Editing</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target left-col item-vfx" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about VFX"><div>VFX</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target left-col item-colour" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about Colour Grading and DIT"><div>Colour Grading and DIT</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target right-col item-cinema" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about Cinematography"><div>Cinematography</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target right-col item-sound" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about Sound Design and Mixing"><div>Sound Design &amp; Mixing</div><div class="line"></div></div>
+            <div class="service-item nav-link hover-target right-col item-3d" data-target="contact-section" role="button" tabindex="0" aria-label="Contact Enso8 about 3D, 2D Animation and Motion Graphics"><div>3D, 2D Animation &amp; Motion Graphics</div><div class="line"></div></div>
+        </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         PORTFOLIO SECTION
+         Hero: Show Reel 2025
+         Grid items ordered per portfolio_order.pdf
+    ───────────────────────────────────────────────────────── -->
+    <div id="portfolios-section" class="scroll-section"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background:#000;overflow-y:auto;overflow-x:hidden;padding:0;">
+        <header
+            style="position:absolute;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;font-family:'Montserrat',sans-serif;">
+            <div class="header-left">
+                <a href="#" class="brand-home-trigger hover-target"
+                    style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+            </div>
+            <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                    <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                    <a href="#" class="nav-link hover-target" data-target="about-section" style="text-decoration:none;color:inherit;">About Us</a>
+                    <a href="#" class="nav-link hover-target" data-target="services-section" style="text-decoration:none;color:inherit;">Services</a>
+                    <a href="#" class="nav-link hover-target" data-target="portfolios-section"
+                        style="text-decoration:none;color:inherit;border-bottom:1px solid var(--neon-blue);">Portfolio</a>
+                    <a href="#" class="nav-link hover-target" data-target="blogs-section" style="text-decoration:none;color:inherit;">Blogs</a>
+                    <a href="#" class="nav-link hover-target" data-target="contact-section" style="text-decoration:none;color:inherit;">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- ═══════════════════════════════════════════════════════
+             HERO: SHOW REEL 2025  (first item, full-bleed)
+            playback-id: fv5VeTbnGcWZvlatGu8kU6UBik5xIJuHf8AOIZ5YVi8
+        ═══════════════════════════════════════════════════════ -->
+        <div class="portfolio-hero-full"
+            style="width:100%;height:100vh;position:relative;overflow:hidden;margin-bottom:0;">
+            <mux-player class="bg-fill" playback-id="fv5VeTbnGcWZvlatGu8kU6UBik5xIJuHf8AOIZ5YVi8"
+                stream-type="on-demand" loop muted playsinline nohotkeys preload="metadata" style="--controls:none;">
+            </mux-player>
+            <div class="portfolio-hero-caption"
+                style="position:absolute;bottom:100px;left:60px;color:white;z-index:10;">
+                <p style="font-size:0.7rem;letter-spacing:0.3em;opacity:0.6;margin-bottom:10px;text-transform:uppercase;">Showreel 2025</p>
+                <h2 class="portfolio-hero-title"
+                    style="font-size:3.5rem;font-weight:700;letter-spacing:-0.02em;text-transform:lowercase;font-family:'Montserrat',sans-serif;">
+                    enso 8</h2>
+            </div>
+            <div style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:white;opacity:0.5;">
+                <div style="font-size:0.6rem;letter-spacing:0.4em;text-transform:uppercase;margin-bottom:10px;">Scroll</div>
+                <i class="fas fa-chevron-down" style="display:block;text-align:center;"></i>
+            </div>
+            <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(0,0,0,0.4) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.8) 100%);pointer-events:none;"></div>
+        </div>
+
+        <section class="client-marquee-section" aria-label="Selected clients">
+            <div class="client-marquee">
+                <div class="client-marquee-track">
+                    <div class="client-marquee-group">
+                        <img class="client-marquee-logo" src="./client-logos-light/mubadala.png" alt="Mubadala" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/ad-ports-group.png" alt="AD Ports Group" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/environment-agency-abu-dhabi.png" alt="Environment Agency Abu Dhabi" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/international-fund-for-houbara-conservation.png" alt="International Fund for Houbara Conservation" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/pwc.png" alt="PwC" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/m42.png" alt="M42" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/abu-dhabi-tourism-culture.png" alt="Abu Dhabi Tourism &amp; Culture" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dubai-municipality.png" alt="Dubai Municipality" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/danat-al-emarat-hospital.png" alt="Danat Al Emarat Hospital" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/strategyand.png" alt="Strategy&" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/total.png" alt="Total" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/image-nation-abu-dhabi.png" alt="Image Nation Abu Dhabi" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dubai.png" alt="Dubai" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/adnoc.png" alt="ADNOC" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/abu-dhabi-coop.png" alt="Abu Dhabi Coop" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dxb.png" alt="DXB" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/taqa.png" alt="TAQA" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/damac.png" alt="DAMAC" loading="lazy" decoding="async">
+                    </div>
+                    <div class="client-marquee-group" aria-hidden="true">
+                        <img class="client-marquee-logo" src="./client-logos-light/mubadala.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/ad-ports-group.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/environment-agency-abu-dhabi.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/international-fund-for-houbara-conservation.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/pwc.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/m42.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/abu-dhabi-tourism-culture.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dubai-municipality.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/danat-al-emarat-hospital.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/strategyand.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/total.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/image-nation-abu-dhabi.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dubai.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/adnoc.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/abu-dhabi-coop.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/dxb.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/taqa.png" alt="" loading="lazy" decoding="async">
+                        <img class="client-marquee-logo" src="./client-logos-light/damac.png" alt="" loading="lazy" decoding="async">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SELECTED WORK GRID  (PDF portfolio order)
+              1. Audi Q8                          (#1 in PDF)
+              2. Etihad – Mission Impossible (1)  (#2a in PDF)
+              3. Etihad – Mission Impossible (2)  (#2b in PDF)
+              4. Rolex – Hannah Mills             (#3 in PDF)
+              5. Visit Abu Dhabi (Winter)         (#4 in PDF)
+              6. French Avenue – Jasmere          (#5 in PDF)
+              7. Nissan X-Trail                   (#6 in PDF)
+              8. Dubai Tourism – DET Japan        (#7 in PDF)
+              9. DAMAC – Island State of Mind     (#8 in PDF)
+             10. French Avenue – Safari Breeze    (#9 in PDF)
+             11. JBL – Tour One M3                (#11 in PDF)
+             12. Adidas x Cultfit                 (#12 in PDF)
+             13. Cultfit Massager 01              (#13a in PDF)
+             14. Cultfit Massager 02              (#13b in PDF)
+             15. Infinix Note 40                  (#14 in PDF)
+             16. Meraas – Central Park, City Walk (#15 in PDF)
+             17. DAMAC – Riverside (Support Grp.) (#16 in PDF)
+             18. du Channel – Network That Gets U (#18 in PDF)
+             19. Clikon Washing Machine           (#19a in PDF)
+             20. Clikon Ironbox                   (#19b in PDF)
+             21. Prestige Cookware                (#20 in PDF)
+             22. Kappa Culture                    (#21 in PDF)
+             23. Fleuriche – French Avenue 4K     (extra)
+             24. TATA Soulful                     (extra)
+
+             Missing playback IDs (not in this build):
+             • #10 Nissan (2nd)
+             • #17 DCT Winter & Global
+             • #22 Protein Chef
+        ═══════════════════════════════════════════════════════ -->
+        <div class="portfolio-container" style="max-width:1600px;margin:0 auto;padding:0 60px;">
+            <div class="portfolio-grid">
+                <!-- 1. Audi Q8 -->
+                <div class="portfolio-item hover-target tall" data-parallax="0.07">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="g6P01VdaTkcOZJhbF3Iv2koPVzY01BSHMhpHXlNiWt4I00" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 2. Etihad – Mission Impossible (clip 1) -->
+                <div class="portfolio-item hover-target span-2" data-parallax="0.1">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="6cvlXluK9VlB01VpceRWlSh02p6zFbv5e02Oh601eDtAOZQ" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 3. Etihad – Mission Impossible (clip 2) -->
+                <div class="portfolio-item hover-target" data-parallax="0.05">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="BaiiHkBQnStsEZPMb26d84pob4xjjn96uRmKosB7A7k" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 4. Rolex – Hannah Mills -->
+                <div class="portfolio-item hover-target" data-parallax="0.04">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="GM4yEWjAGvSw7M00KB8bp72BYa00V00z6LqbRF00VlnSw3g" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 5. Visit Abu Dhabi – Already for Winter -->
+                <div class="portfolio-item hover-target large" data-parallax="0.09">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="sWkXTTzACbqJGbf8gLCgJvy3IguQjVk8005S93VbrHjs" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 6. French Avenue – Jasmere -->
+                <div class="portfolio-item hover-target" data-parallax="0.06">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="uzod9YHOKyQbzRWZWefNHrTa00NV2uzTGNarg01DYrKGs" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 7. Nissan X-Trail -->
+                <div class="portfolio-item hover-target span-2" data-parallax="0.1">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="7KVic025k5UW01gnLOC7l3IB00B3aTl6GrdWHiNQxfS17Y" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 8. Dubai Tourism – DET Japan -->
+                <div class="portfolio-item hover-target" data-parallax="0.05">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="9HmR5oMRVYGJUkZo9xawwsm00SR5gtwgwG8C2TxaiLuM" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 9. DAMAC – Island State of Mind -->
+                <div class="portfolio-item hover-target" data-parallax="0.07">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="QiVovdcT9g4oBXBqmErNiCTUunPkxBtZFEnBUH7ldqI" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 10. French Avenue – Safari Breeze -->
+                <div class="portfolio-item hover-target tall" data-parallax="0.08">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="aloHuyLxi4Bk006701ROBs25WW23dJ3jMwg8qalYZva00o" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 11. JBL – Tour One M3 -->
+                <div class="portfolio-item hover-target span-2" data-parallax="0.1">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="b4w3W5TlnCG8n402OLepC02SFPHyNFIQUuDhtJmeAOmGA" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 12. Adidas x Cultfit -->
+                <div class="portfolio-item hover-target" data-parallax="0.04">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="7Mz6efU4Ca602pdubniKzWS02KEz8J25zGdajYRKrD013s" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 13. Cultfit Massager 01 -->
+                <div class="portfolio-item hover-target" data-parallax="0.06">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="lNnPRDdFWO2Wm3yN701RKLeVbaHI2bHZpUxl00MaXQn2s" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 14. Cultfit Massager 02 -->
+                <div class="portfolio-item hover-target large" data-parallax="0.09">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="7dzfqINB0202r9aeNvlGwLiu3gWQj371swA02VxDV4HFuE" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 15. Infinix Note 40 – Quick charge, Quicker success -->
+                <div class="portfolio-item hover-target" data-parallax="0.05">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="9hXX1HLL01ofOYvkNDlBFNK2W4jeQSimg6ZA81rZtptM" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 16. Meraas – Central Park at City Walk -->
+                <div class="portfolio-item hover-target span-2" data-parallax="0.1">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="kQ2M1Q4MvQ51uSpmM5kEWsI5eTI02BWpa9dvvFQthPNI" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 17. DAMAC – Riverside Views / Non-DAMAC Anonymous -->
+                <div class="portfolio-item hover-target" data-parallax="0.06">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="slwfL6eYS3Y00b4kA3VcXgxbuo9xfatltZy54vOYli3I" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 18. du Channel – The Network That Gets You -->
+                <div class="portfolio-item hover-target" data-parallax="0.07">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="yHUWokQrPUcCg1mlWE4BxqOtbLDMn2bwSB01WvqM84pw" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 19. Clikon Washing Machine -->
+                <div class="portfolio-item hover-target tall" data-parallax="0.08">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="1vpy00wdl7pn6oGkk7sUNV701UXP00Ec1EkQBeKnJRX6YE" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 20. Clikon Ironbox -->
+                <div class="portfolio-item hover-target span-2" data-parallax="0.1">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="5cr7796zurHfnH1NbVTcoCvSvS4kTXyTAnFhViFxw9M" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 21. Prestige Cookware – Triply HexaMagic -->
+                <div class="portfolio-item hover-target" data-parallax="0.05">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="rqZXaTFjvrSci15rFT9tMEj6b1UN8JGTcbodApDtmQI" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 22. Kappa Culture -->
+                <div class="portfolio-item hover-target" data-parallax="0.06">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="4NqAICsjy29qL2RbIFtps6JEGzqj01L4beVUkozplyDM" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 23. Fleuriche – French Avenue 4K (extra) -->
+                <div class="portfolio-item hover-target large" data-parallax="0.09">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="hiGXTAxYJQOvMrmn544o3AnhYzNvGw3Qbi1tCtxSrfw" aria-hidden="true"></div>
+                    </div>
+                </div>
+                <!-- 24. TATA Soulful (extra) -->
+                <div class="portfolio-item hover-target" data-parallax="0.07">
+                    <div class="portfolio-media">
+                        <div class="portfolio-video-shell" data-playback-id="vQtMkRcBwYKwfTrLKQQHPzFvWo02Dz4lWpxxMmK0017Cg" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             FOOTER FEATURE: Show Reel 2025 (closing reel)
+        ═══════════════════════════════════════════════════════ -->
+        <div class="portfolio-footer-full"
+            style="width:100%;height:100vh;position:relative;margin-top:100px;overflow:hidden;background:#000;">
+            <mux-player class="bg-fill" playback-id="fv5VeTbnGcWZvlatGu8kU6UBik5xIJuHf8AOIZ5YVi8"
+                stream-type="on-demand" loop muted playsinline nohotkeys preload="metadata"
+                style="opacity:0.8;--controls:none;"></mux-player>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:white;z-index:10;">
+                <h2 style="font-size:3.5rem;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-family:'Montserrat',sans-serif;">Enso 8</h2>
+                <div style="width:50px;height:2px;background:var(--neon-blue);margin:20px auto;"></div>
+                <p style="font-size:0.8rem;letter-spacing:0.6em;opacity:0.7;text-transform:uppercase;">Show Reel 2025</p>
+            </div>
+            <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center,transparent 0%,rgba(0,0,0,0.6) 100%);pointer-events:none;"></div>
+        </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         TEAM SECTION (unchanged)
+    ───────────────────────────────────────────────────────── -->
+    <div id="team-section" class="scroll-section"
+        style="opacity:0;visibility:hidden;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:60;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font-family:'Montserrat',sans-serif;">
+        <header class="team-section-header"
+            style="position:absolute;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;">
+            <div class="header-left">
+                <a href="#" class="brand-home-trigger hover-target"
+                    style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+            </div>
+            <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                    <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                    <a href="#" class="nav-link hover-target" data-target="about-section" style="text-decoration:none;color:inherit;">About Us</a>
+                    <a href="#" class="nav-link hover-target" data-target="services-section" style="text-decoration:none;color:inherit;">Services</a>
+                    <a href="#" class="nav-link hover-target" data-target="portfolios-section" style="text-decoration:none;color:inherit;">Portfolio</a>
+                    <a href="#" class="nav-link hover-target" data-target="blogs-section" style="text-decoration:none;color:inherit;">Blogs</a>
+                    <a href="#" class="nav-link hover-target" data-target="contact-section" style="text-decoration:none;color:inherit;">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="team-atmosphere"></div>
+
+        <div class="team-shell">
+            <div class="team-composition">
+                <div class="team-composition-row team-composition-row-meet">
+                    <div class="team-word team-word-meet">Meet</div>
+                    <div class="member hover-target" data-member="thaha">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Muhammed_Thaha_Jasmine.webp"></div>
+                        <div class="info"><div class="name-text">Muhammed Thaha</div><span>Chief Executive Officer</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="bharath">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Bharath_R.webp"></div>
+                        <div class="info"><div class="name-text">Bharath R</div><span>Managing Director</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="prince">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Prince_Dirron_Gemini.webp"></div>
+                        <div class="info"><div class="name-text">Prince Dirron</div><span>Chief Operations Officer</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="mr">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/M_R_Vishnuprasad_Generated.webp"></div>
+                        <div class="info"><div class="name-text">M R Vishnuprasad</div><span>Creative Director</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="amal">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Amal_Krishna.webp"></div>
+                        <div class="info"><div class="name-text">Amal Krishna</div><span>Head of 3D Department</span></div>
+                    </div>
+                </div>
+
+                <div class="team-composition-row team-composition-row-the">
+                    <div class="member hover-target" data-member="adith">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Adith_C_Satheesh.webp"></div>
+                        <div class="info"><div class="name-text">Adith C Satheesh</div><span>3D Generalist</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="akhil">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/K_O_Akhil.webp"></div>
+                        <div class="info"><div class="name-text">K O Akhil</div><span>Senior Cinematographer</span></div>
+                    </div>
+                    <div class="team-word team-word-the">The</div>
+                    <div class="member hover-target" data-member="sanjay">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Sanjay._S.webp"></div>
+                        <div class="info"><div class="name-text">Sanjay S</div><span>3D Generalist | Lighting/FX</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="nibu">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Nibu_Samuel.webp"></div>
+                        <div class="info"><div class="name-text">Nibu Samuel</div><span>2D Animator | Motion Graphics</span></div>
+                    </div>
+                </div>
+
+                <div class="team-composition-row team-composition-row-team">
+                    <div class="team-word team-word-team">Team</div>
+                    <div class="member hover-target" data-member="akshay">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Akshay_K_P.webp"></div>
+                        <div class="info"><div class="name-text">Akshay K P</div><span>Cinematographer</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="athul_s">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Athul_Sudakaran.webp"></div>
+                        <div class="info"><div class="name-text">Athul Sudhakaran</div><span>Editor</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="gokul">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Gokul_R_Nadh.webp"></div>
+                        <div class="info"><div class="name-text">Gokul R Nadh</div><span>Sound Designer</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="nandagopan">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Nandagopan_P.webp"></div>
+                        <div class="info"><div class="name-text">Nandagopan P</div><span>Sound Mixing Engineer</span></div>
+                    </div>
+                    <div class="member hover-target" data-member="athul_p">
+                        <div class="circle avatar" data-bg-lazy="./images/team-optimized/Athul_Prakash.webp"></div>
+                        <div class="info"><div class="name-text">Athul Prakash</div><span>Colourist</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="team-detail-overlay">
+        <div class="detail-close-btn">&larr; BACK TO TEAM</div>
+        <div class="detail-content">
+            <div class="detail-visual">
+                <div class="detail-avatar-circle"><img id="detail-img" src="" alt=""></div>
+            </div>
+            <div class="detail-info">
+                <h2 id="detail-name"></h2>
+                <h3 id="detail-role"></h3>
+                <p id="detail-bio"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         BLOGS SECTION
+    ───────────────────────────────────────────────────────── -->
+    <div id="blogs-section" class="scroll-section"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background:#000;overflow-y:auto;overflow-x:hidden;padding-bottom:100px;">
+        <header
+            style="position:absolute;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;font-family:'Montserrat',sans-serif;">
+            <div class="header-left">
+                <a href="#" class="brand-home-trigger hover-target"
+                    style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+            </div>
+            <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                    <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                    <a href="#" class="nav-link hover-target" data-target="about-section" style="text-decoration:none;color:inherit;">About Us</a>
+                    <a href="#" class="nav-link hover-target" data-target="services-section" style="text-decoration:none;color:inherit;">Services</a>
+                    <a href="#" class="nav-link hover-target" data-target="portfolios-section" style="text-decoration:none;color:inherit;">Portfolio</a>
+                    <a href="#" class="nav-link hover-target" data-target="blogs-section"
+                        style="text-decoration:none;color:inherit;border-bottom:1px solid var(--neon-blue);">Blogs</a>
+                    <a href="#" class="nav-link hover-target" data-target="contact-section" style="text-decoration:none;color:inherit;">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <div class="blogs-container">
+            <h1>Blogs</h1>
+            <div class="blog-grid">
+                <div class="blog-card blog-card--compact hover-target" onclick="openBlogArticle()">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-1.jpg" class="blog-image" alt="AI video advertising blog cover" loading="lazy" decoding="async" fetchpriority="low" width="1200" height="900">
+                    <div class="blog-content">
+                        <div class="blog-avatar"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-1.jpg" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;"></div>
+                        <h2 class="blog-title">What AI Does Well in Video Advertising and Creative Production</h2>
+                        <div class="blog-footer">
+                            <span><i class="fas fa-heart"></i> 57</span>
+                            <span><i class="fas fa-comment"></i> 6</span>
+                            <span><i class="fas fa-eye"></i> 138</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="blog-card blog-card--compact hover-target" onclick="openBlogArticle()">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-2.png" class="blog-image" alt="Automated production workflows blog cover" loading="lazy" decoding="async" fetchpriority="low" width="1200" height="675">
+                    <div class="blog-content">
+                        <div class="blog-avatar"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-2.png" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;"></div>
+                        <h2 class="blog-title">Automated Workflows for Faster Video Advertising Teams</h2>
+                        <div class="blog-footer">
+                            <span><i class="fas fa-heart"></i> 57</span>
+                            <span><i class="fas fa-comment"></i> 6</span>
+                            <span><i class="fas fa-eye"></i> 138</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="blog-card blog-card--feature hover-target" onclick="openBlogArticle()">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-3.jpg" class="blog-image blog-feature-image" alt="Creative optimisation and performance testing blog cover" loading="lazy" decoding="async" fetchpriority="low" width="1200" height="800">
+                    <div class="blog-content">
+                        <span class="blog-tag">ARTIFICIAL INTELLIGENCE</span>
+                        <h2 class="blog-title">AI on Video Advertising: What It Can Do, and What It Still Can't</h2>
+                        <p class="blog-desc">How speed, scale, and automation are changing campaign production while human judgement still carries the story.</p>
+                        <div class="blog-author-row">
+                            <div class="blog-avatar blog-author-avatar"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="./images/blog/card-1.jpg" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;"></div>
+                            <div class="blog-author-info">
+                                <span class="blog-author-name">Enso 8 Insights</span>
+                                <span class="blog-author-date">on May 12, 2025 at 10:30am</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="blog-social-icons">
+            <a href="#" class="hover-target"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="hover-target"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="hover-target"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="hover-target"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+
+    <!-- Blog Article Overlay -->
+    <div id="blog-article-overlay"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;background:#000;overflow-y:auto;overflow-x:hidden;color:white;">
+        <div class="detail-close-btn" onclick="closeBlogArticle()">&larr; BACK TO BLOGS</div>
+        <div class="blog-article-content"
+            style="max-width:800px;margin:100px auto 100px auto;padding:0 40px;font-family:'Montserrat',sans-serif;">
+            <span style="display:block;font-size:0.8rem;letter-spacing:2px;color:var(--neon-blue);margin-bottom:20px;text-transform:uppercase;">Artificial Intelligence</span>
+            <h1 style="font-size:3rem;font-weight:300;line-height:1.2;margin-bottom:40px;">AI on Video Advertising:<br>What It Can Do, and What It Still Can't</h1>
+            <p style="font-size:1.2rem;font-style:italic;color:rgba(255,255,255,0.7);margin-bottom:40px;border-left:3px solid var(--neon-blue);padding-left:20px;">
+                "The future of AI is not about replacing humans, it's about augmenting human capabilities" &mdash; Sunder Pichai, CEO of Google
+            </p>
+            <div style="font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,0.85);font-weight:300;">
+                <p style="margin-bottom:25px;">In video advertising, decisions are often made quickly and forgotten just as fast. Elements in ads&mdash;be it a colour choice, a headline tweak, length of a shot, or the pacing of an edit&mdash;are constantly tested, revised and replaced.</p>
+                <p style="margin-bottom:25px;">It is within this fast-paced advertising ecosystem that we must situate Artificial Intelligence, one of the most powerful and disruptive entrants the industry has encountered so far.</p>
+                <h3 style="font-size:1.5rem;font-weight:400;margin:40px 0 20px 0;color:white;">What AI Does Well in Video Advertising</h3>
+                <p style="margin-bottom:25px;">Without a doubt, AI has improved advertisement and marketing industries in terms of speed, scale, and efficiency. One of the most visible contributions of AI in video advertising lies in automated production workflows.</p>
+                <p style="margin-bottom:25px;">Another area where AI adds tangible value is rapid content generation for low-stakes or functional video formats. Explainer videos, product demos, onboarding content, and internal communications are increasingly produced using AI-driven platforms.</p>
+                <h3 style="font-size:1.5rem;font-weight:400;margin:40px 0 20px 0;color:white;">Where AI Falls Short</h3>
+                <p style="margin-bottom:25px;">While AI has proven effective in accelerating production and optimisation, its limitations become most visible when video advertising demands emotional coherence, cultural sensitivity, and narrative intent.</p>
+                <p style="margin-bottom:25px;">Video ads often rely on emotional cues: warmth, nostalgia, humour, tension, to create memorability and brand affinity. AI systems can replicate elements of human emotion, but they cannot natively understand why a joke hits right or why a specific image evokes nostalgia.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────
+         CONTACT SECTION
+    ───────────────────────────────────────────────────────── -->
+    <div id="contact-section" class="scroll-section contact-scene"
+        style="opacity:0;pointer-events:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:60;background:transparent;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;font-family:'Montserrat',sans-serif;">
+
+        <!-- MOBILE: contactvertical.mp4 – simple loop -->
+        <video id="contact-mob-vid" class="mob-bg-vid" playsinline muted loop preload="none">
+            <source src="./videos/contact vertical.mp4" type="video/mp4">
+        </video>
+        <div class="mob-bg-overlay"></div>
+
+        <div class="contact-background-stack" aria-hidden="true">
+            <div class="contact-base-wash"></div>
+            <div class="contact-plum-glow"></div>
+            <div class="contact-deep-fade"></div>
+        </div>
+
+        <header
+            style="position:sticky;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 45px;z-index:100;font-family:'Montserrat',sans-serif;">
+            <div class="header-left">
+                <a href="#" class="brand-home-trigger hover-target"
+                    style="font-family:'Montserrat',sans-serif;font-size:1.2rem;letter-spacing:0.18em;color:white;text-transform:lowercase;font-weight:200;text-decoration:none;">enso8</a>
+            </div>
+            <div class="header-right" style="display:flex;align-items:center;gap:25px;">
+                <nav style="display:flex;gap:28px;font-size:0.85rem;letter-spacing:0.18em;color:white;text-transform:uppercase;font-weight:500;">
+                    <a href="#" class="brand-home-trigger hover-target" style="text-decoration:none;color:inherit;">Home</a>
+                    <a href="#" class="nav-link hover-target" data-target="about-section" style="text-decoration:none;color:inherit;">About Us</a>
+                    <a href="#" class="nav-link hover-target" data-target="services-section" style="text-decoration:none;color:inherit;">Services</a>
+                    <a href="#" class="nav-link hover-target" data-target="portfolios-section" style="text-decoration:none;color:inherit;">Portfolio</a>
+                    <a href="#" class="nav-link hover-target" data-target="blogs-section" style="text-decoration:none;color:inherit;">Blogs</a>
+                    <a href="#" class="nav-link hover-target" data-target="contact-section"
+                        style="text-decoration:none;color:inherit;border-bottom:1px solid var(--neon-blue);">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="contact-main">
+            <div class="contact-content-left">
+                <div class="contact-text-block">
+                    <p class="contact-reveal contact-lead">
+                        Let's build something that breaks through. Something that makes your audience stop, feel, and
+                        act. Something that doesn't just fill space in their feed, but fills a need in their lives.
+                    </p>
+                    <p class="contact-reveal contact-question">Ready to tell a story that sells?</p>
+                    <p class="contact-reveal contact-cta hover-target">Let's talk over a cup of coffee.</p>
+                </div>
+
+                <div class="contact-form-block">
+                    <p class="contact-form-label contact-reveal">Tell Us Your Story</p>
+                    <form class="contact-form contact-reveal" id="contactForm">
+                        <div class="contact-form-row">
+                            <input type="text"  name="name"    id="cf-name"    class="contact-input" placeholder="Your Name"  required>
+                            <input type="email" name="email"   id="cf-email"   class="contact-input" placeholder="Your Email" required>
+                        </div>
+                        <div class="contact-form-row">
+                            <input type="tel"   name="phone"   id="cf-phone"   class="contact-input" placeholder="Your Phone">
+                            <input type="text"  name="subject" id="cf-subject" class="contact-input" placeholder="Subject"    required>
+                        </div>
+                        <textarea name="message" id="cf-message" class="contact-input contact-textarea" placeholder="How can we help you?" required></textarea>
+                        <div style="display:flex;justify-content:flex-end;margin-top:5px;gap:16px;align-items:center;">
+                            <span id="cf-status" style="font-size:0.75rem;letter-spacing:0.1em;color:var(--neon-blue);display:none;"></span>
+                            <button type="submit" class="contact-send-btn hover-target">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="contact-info-grid contact-reveal">
+                <div class="contact-info-block">
+                    <p class="contact-info-label">Head Office</p>
+                    <p class="contact-info-text">Lorem ipsum dolor sit amet consectetur.</p>
+                </div>
+                <div class="contact-info-block">
+                    <p class="contact-info-label">Email</p>
+                    <p class="contact-info-text">hello@enso8.com</p>
+                </div>
+            </div>
+        </main>
+
+        <div class="contact-social-row">
+            <a href="#" class="contact-social-link hover-target" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="contact-social-link hover-target" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="contact-social-link hover-target" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="contact-social-link hover-target" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+
+
+    <!-- ─── SCRIPTS ──────────────────────────────────────────────────── -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+    <script src="./main-v2.js?v=71"></script>
+
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+        const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+        const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+        emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn    = this.querySelector('.contact-send-btn');
+            const status = document.getElementById('cf-status');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+            status.style.display = 'none';
+            const params = {
+                from_name:  document.getElementById('cf-name').value.trim(),
+                from_email: document.getElementById('cf-email').value.trim(),
+                phone:      document.getElementById('cf-phone').value.trim(),
+                subject:    document.getElementById('cf-subject').value.trim(),
+                message:    document.getElementById('cf-message').value.trim(),
+            };
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+                .then(() => {
+                    status.textContent = "Message sent! We'll be in touch soon.";
+                    status.style.color = 'var(--neon-blue)';
+                    status.style.display = 'inline';
+                    btn.textContent = 'Send Message';
+                    btn.disabled = false;
+                    document.getElementById('contactForm').reset();
+                })
+                .catch(() => {
+                    status.textContent = 'Failed to send. Please email hello@enso8.com directly.';
+                    status.style.color = '#ff6b6b';
+                    status.style.display = 'inline';
+                    btn.textContent = 'Send Message';
+                    btn.disabled = false;
+                });
+        });
+    </script>
+
+    <!-- Mobile video playback is owned by main-v2.js via the shared cinematic engine. -->
+
+
+</body>
+</html>

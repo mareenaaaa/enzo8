@@ -1,0 +1,27 @@
+﻿<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#060606"/>
+      <stop offset="0.55" stop-color="#3b2416"/>
+      <stop offset="1" stop-color="#090909"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1220 180) rotate(132) scale(520 360)">
+      <stop stop-color="#d2b07a" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#d2b07a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line" x1="280" y1="680" x2="1280" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="white" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1210" cy="190" r="320" fill="url(#orb)"/>
+  <circle cx="290" cy="760" r="210" fill="#d2b07a" fill-opacity="0.08"/>
+  <path d="M0 690C187 630 299 612 467 624C719 643 815 776 1049 783C1267 790 1407 704 1600 624V900H0V690Z" fill="white" fill-opacity="0.03"/>
+  <path d="M0 736C198 665 347 664 529 682C776 706 886 821 1116 824C1302 826 1451 767 1600 704" stroke="url(#line)" stroke-width="2"/>
+  <text x="120" y="160" fill="white" fill-opacity="0.56" font-family="Montserrat, Arial, sans-serif" font-size="30" letter-spacing="8">ENSO 8 PORTFOLIO</text>
+  <text x="120" y="600" fill="white" font-family="Montserrat, Arial, sans-serif" font-size="122" font-weight="700">Etihad Airways</text>
+  <text x="126" y="666" fill="#d2b07a" font-family="Montserrat, Arial, sans-serif" font-size="34" font-weight="500" letter-spacing="5">AVIATION</text>
+  <text x="1215" y="770" text-anchor="end" fill="white" fill-opacity="0.22" font-family="Montserrat, Arial, sans-serif" font-size="28" letter-spacing="7">MOTION / BRAND / FILM</text>
+</svg>

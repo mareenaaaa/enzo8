@@ -1,0 +1,26 @@
+node_modules
+dist
+.env
+
+# Ignore oversized master files (>100MB) not used in web
+**/Jasmere_Final_*.mov
+**/*Safari Breeze*.mp4
+**/*Kaappa*.mp4
+**/*Adidas*.MP4
+**/DCT_*.mp4
+# Generated outputs
+output/
+
+# Unwanted generated video folders
+videos-contact-debug/
+videos-contact-debug-fixed/
+videos-frame-*/
+videos-glitch-fix/
+videos-mobile-*/
+videos-routing/
+videos-services/
+videos2/
+
+# Logs
+*.log
+debug.log
