@@ -1999,6 +1999,26 @@ body.cursor-hover #custom-cursor-dot {
     will-change: opacity, transform;
 }
 
+#blog-article-overlay .detail-close-btn {
+    position: fixed !important;
+    top: 74px !important;
+    left: 56px !important;
+    z-index: 1110 !important;
+}
+
+#blog-article-overlay .blog-article-content {
+    padding-top: 34px !important;
+}
+
+@media (max-width: 768px) {
+    #blog-article-overlay .detail-close-btn {
+        top: calc(74px + env(safe-area-inset-top)) !important;
+        left: 24px !important;
+        font-size: 0.62rem !important;
+        letter-spacing: 0.18em !important;
+    }
+}
+
 .blog-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -2906,6 +2926,7 @@ body.cursor-hover #custom-cursor-dot {
 /* --- CONTACT SECTION --- */
 #contact-section.contact-scene {
     isolation: isolate;
+    overflow: hidden !important;
 }
 
 .contact-background-stack {
@@ -3040,15 +3061,19 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     z-index: 20;
     width: 100%;
     height: 100vh;
+    max-height: 100vh;
     display: flex;
     align-items: flex-start;
     padding: 104px 48px 52px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .contact-content-left {
     flex: 0 0 30%;
     max-width: 400px;
     height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3156,7 +3181,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 44px;
+    margin-bottom: 0;
 }
 
 .contact-form-row {
