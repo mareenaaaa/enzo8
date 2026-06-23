@@ -15,13 +15,13 @@ const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
 const INTRO_PLAYBACK_RATE = 2.5;
 const REVERSE_PLAYBACK_RATE = 1.16;
-const HOME_LOGO_DISPLAY_SCALE = 0.7;
-const HOME_DIRECT_HANDOFF_SCALE = 0.61;
+const HOME_LOGO_DISPLAY_SCALE = 1.18;
+const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
-const HOME_EQUILIBRIUM_SCALE = 0.56;
+const HOME_EQUILIBRIUM_SCALE = 0.64;
 const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
-const INTRO_ZOOM_START_SCALE = 0.58;
+const INTRO_ZOOM_START_SCALE = 0.70;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
@@ -66,6 +66,7 @@ const DESKTOP_HOME_DIRECT_INTRO_DURATIONS = {
 const HOME_EQUILIBRIUM_STATES = new Set(['scatter', 'intro', 'stabilize', 'mobile-landing', 'mobile-nav']);
 const CINEMATIC_SECTION_STATES = new Set(['about', 'services', 'portfolios', 'blogs', 'contact']);
 const USE_DESKTOP_CINEMATIC_ON_MOBILE = true;
+const MOBILE_SERVICES_LABEL_REVEAL_DELAY = 2.2;
 const HOME_VIDEO_POINTER_PARALLAX_ENABLED = false;
 const PORTFOLIO_CURSOR_PARALLAX_ENABLED = false;
 let videoTransitionToken = 0;
@@ -91,7 +92,7 @@ function getRevealHomeVideoScale(reverseSrc = '') {
 }
 
 function getVisibleHomeSourceScale() {
-    if (isMobile) return SECTION_CHAIN_HOME_SCALE;
+    if (isMobile) return getHomeLogoDisplayScale();
     return getPrimaryVideoScale(HOME_EQUILIBRIUM_SCALE);
 }
 
@@ -460,6 +461,9 @@ function animateBlogSectionIn() {
     if (!section) return;
 
     hydrateLazyImages(section);
+    section.scrollTop = 0;
+    const blogShell = locomotiveRegistry['blogs-section']?.shell;
+    if (blogShell) blogShell.scrollTop = 0;
     gsap.killTweensOf(section);
     gsap.killTweensOf(targets);
     gsap.set(targets, { opacity: 0, y: 32 });
@@ -576,6 +580,26 @@ function hideSection(section, { duration = 0.3, immediate = false } = {}) {
         ease: "power2.in",
         onComplete: () => gsap.set(section, { visibility: 'hidden' })
     });
+}
+
+function settleSectionsForHome() {
+    document.querySelectorAll('.scroll-section').forEach((section) => {
+        if (section.id === 'team-section') return;
+        hideSection(section, { immediate: true });
+    });
+
+    const aboutContent = document.querySelector('.about-content');
+    if (aboutContent) {
+        setElementInteractivity(aboutContent, false);
+        gsap.killTweensOf(aboutContent);
+        gsap.set(aboutContent, { opacity: 0, scale: 1, pointerEvents: 'none' });
+    }
+
+    hideTeamDetailOverlay();
+    hideTeamSection({ reset: true });
+    document.body.classList.remove('about-team-focus');
+    gsap.set(['#services-loop-video', '#services-bg-video'], { opacity: 0, visibility: 'hidden' });
+    gsap.set(['.services-text-overlay', '.services-gradient-overlay'], { opacity: 0 });
 }
 
 function showSection(section, { duration = 0.67 } = {}) {
@@ -800,6 +824,10 @@ const MOBILE_WARM_SPACING = 360;
 const DESKTOP_WARM_SPACING = 140;
 
 function getServicesCinematicSource(kind = 'intro') {
+    if (isMobile && kind === 'intro') {
+        return './videos/vertical utility services continuous mobile.mp4';
+    }
+
     const orientation = isMobile ? 'vertical' : (window.innerWidth > window.innerHeight ? 'horizontal' : 'vertical');
     const suffix = kind === 'loop' ? ' loop' : '';
     return `./videos/${orientation} utility${suffix}.mp4`;
@@ -1333,6 +1361,9 @@ function getVideoSrc(pageId, isReverse = false) {
 
     if (pageId === 'services') {
         if (isReverse) {
+            if (isMobile) {
+                return './videos/vertical utility home reverse mobile.mp4';
+            }
             return `./videos/${orientation} utility home reverse.mp4`;
         }
         return ''; // Services uses its own dedicated video element for forward
@@ -2104,9 +2135,9 @@ function fadeMobileNavIn({ home = false, delay = 0 } = {}) {
     requestAnimationFrame(() => {
         if (!document.body.classList.contains('show-mobile-nav')) return;
 
-        const overlayDuration = home ? 1.25 : 0.72;
-        const itemDuration = home ? 0.95 : 0.52;
-        const targetGradientOpacity = home ? 0.56 : 0.92;
+        const overlayDuration = home ? 1.38 : 0.72;
+        const itemDuration = home ? 0.98 : 0.52;
+        const targetGradientOpacity = home ? 0.92 : 0.92;
         const timeline = gsap.timeline({
             delay,
             defaults: { overwrite: true }
@@ -2216,15 +2247,29 @@ function enterMobileHomeState(options = {}) {
     if (USE_DESKTOP_CINEMATIC_ON_MOBILE) {
         lockMobileComposition();
         const { showNavigation = true } = options;
-        state = 'stabilize';
+        state = showNavigation ? 'mobile-nav' : 'stabilize';
         setHeroNavReady(showNavigation);
-        document.body.classList.remove('intro-active', 'mobile-home-nav', 'show-mobile-nav');
-        if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', 'true');
+        prepareMobileNavFade({ home: true });
+        document.body.classList.remove('intro-active');
+        document.body.classList.add('mobile-home-nav');
+        document.body.classList.toggle('show-mobile-nav', showNavigation);
+        if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', showNavigation ? 'false' : 'true');
+        gsap.set(videoEl, {
+            opacity: 1,
+            visibility: 'visible',
+            scale: getHomeLogoDisplayScale(),
+            x: 0,
+            y: '0vh',
+            objectPosition: 'center center',
+            filter: 'brightness(0.78) contrast(1.08) saturate(1.02)'
+        });
         if (showNavigation) {
-            showMobileHamburger();
-        } else {
             hideMobileHamburger();
+            fadeMobileNavIn({ home: true, delay: 0.08 });
+        } else {
+            showMobileHamburger();
         }
+        gsap.to(document.getElementById('status-label'), { opacity: 0, duration: 0.25 });
         scheduleBackgroundWarmup();
         return;
     }
@@ -2364,7 +2409,7 @@ function playIntro() {
             scheduleBackgroundWarmup();
             primeDesktopHomeDirectContactHandoff();
             if (isMobile) {
-                showMobileHamburger();
+                enterMobileHomeState({ showNavigation: true });
             }
 
             isAnimating = false;
@@ -2391,7 +2436,14 @@ if (trigger) {
 // Start sequence when browser is ready
 window.addEventListener('load', () => {
     // Slight delay to ensure CDN scripts (GSAP) and layout are fully parsed
-    setTimeout(playIntro, 0);
+    setTimeout(() => {
+        if (isMobile) {
+            startMobileIntro();
+            return;
+        }
+
+        playIntro();
+    }, 0);
 });
 
 function initNavSystems() {
@@ -2510,7 +2562,7 @@ function startVideoTransition(pageId) {
         ? getVisibleHomeSourceScale()
         : introEquilibriumScale;
     const homeSectionIntroStartScale = (shouldScaleIntroFromVisibleHome || shouldScaleServicesFromVisibleHome)
-        ? DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE
+        ? (isMobile ? getHomeLogoDisplayScale() : DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE)
         : introEquilibriumScale;
     const shouldScaleServicesIntroFromEquilibrium = !isMobile && pageId === 'services' && isEquilibriumIntroHandoff;
     const shouldSettleVisibleHomeBeforeIntro = false;
@@ -2743,14 +2795,25 @@ function startVideoTransition(pageId) {
                             gsap.to(servicesVideo, {
                                 scale: 1,
                                 duration: shouldScaleServicesFromVisibleHome
-                                    ? getDesktopHomeDirectIntroDuration('services')
+                                    ? 1.45
                                     : DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION,
+                                delay: shouldScaleServicesFromVisibleHome ? 0.36 : 0,
                                 ease: "sine.inOut",
                                 overwrite: 'auto'
                             });
                         }
                     }
                     gsap.set(videoEl, { opacity: 0, clearProps: 'filter' });
+                    if (isMobile) {
+                        gsap.to('.services-text-overlay', {
+                            opacity: 1,
+                            duration: 0.72,
+                            delay: MOBILE_SERVICES_LABEL_REVEAL_DELAY,
+                            ease: "sine.out",
+                            overwrite: true
+                        });
+                        gsap.delayedCall(0.25, () => finishForwardSectionTransition(transitionOwnerToken));
+                    }
                     setTimeout(() => {
                         if (transitionOwnerToken === videoTransitionToken) {
                             videoEl.pause();
@@ -3377,6 +3440,10 @@ function executeFinalReverse(options = {}) {
     playVideo(reverseSrc, () => {
         const finishHomeSettle = () => {
             state = 'stabilize';
+            if (revealHomeUi && isMobile) {
+                settleSectionsForHome();
+                enterMobileHomeState({ showNavigation: true });
+            }
             if (!revealHomeUi) {
                 setHeroNavReady(false);
                 gsap.set('#center-nav', { opacity: 0, pointerEvents: 'none' });
@@ -3452,6 +3519,7 @@ function executeFinalReverse(options = {}) {
                 delay: 0.22,
                 ease: "sine.out",
                 onComplete: () => {
+                    if (isMobile) settleSectionsForHome();
                     gsap.set('#center-nav', { pointerEvents: 'auto' });
                     setHeroNavReady(true);
                     if (isMobile) showMobileHamburger();
@@ -3493,8 +3561,8 @@ document.addEventListener('click', (e) => {
 
     hydrateLazyBackgrounds(inlineTeam);
     const maxScrollTop = Math.max(0, aboutSection.scrollHeight - aboutSection.clientHeight);
-    const teamBottomTarget = inlineTeam.offsetTop + inlineTeam.offsetHeight - aboutSection.clientHeight;
-    const targetTop = Math.min(maxScrollTop, Math.max(0, teamBottomTarget));
+    const mobileTopOffset = isMobile ? 132 : 96;
+    const targetTop = Math.min(maxScrollTop, Math.max(0, inlineTeam.offsetTop - mobileTopOffset));
     aboutSection.scrollTo({
         top: targetTop,
         behavior: prefersReducedMotionQuery.matches ? 'auto' : 'smooth'
@@ -4521,8 +4589,12 @@ startVideoTransition = function(pageId) {
     warmPageResources(pageId);
 
     if (isAnimating) {
-        if (!isMobile) {
-            queueSectionTransition(pageId);
+        queueSectionTransition(pageId);
+        if (isMobile) {
+            lockMobileComposition();
+            document.body.classList.remove('show-mobile-nav', 'mobile-home-nav');
+            if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', 'true');
+            hideMobileHamburger();
         }
         return;
     }

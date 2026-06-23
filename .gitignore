@@ -24,3 +24,5 @@ videos2/
 # Logs
 *.log
 debug.log
+*.mov
+*.mp4

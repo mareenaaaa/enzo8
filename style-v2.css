@@ -84,7 +84,208 @@ body.about-team-focus #bg-video {
 @media (min-width: 769px) {
     #bg-video {
         opacity: 0;
-        transform: scale(0.56);
+        transform: scale(0.64);
+    }
+}
+
+/* Team responsive split: desktop keeps portrait overlays, mobile separates labels from faces. */
+@media (min-width: 769px) {
+    .about-team-inline .member .info,
+    #team-section .member .info {
+        position: absolute !important;
+        left: 18px !important;
+        right: 18px !important;
+        bottom: 18px !important;
+        margin-top: 0 !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        --team-mobile-photo-size: clamp(104px, 34vw, 132px);
+        --team-mobile-label-height: 48px;
+        padding: 28px 18px 112px !important;
+        overflow-x: hidden !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        width: min(100%, 314px) !important;
+        max-width: 314px !important;
+        gap: 18px 12px !important;
+        margin: 0 auto !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        display: contents !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        display: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        width: 100% !important;
+        max-width: 138px !important;
+        height: calc(var(--team-mobile-photo-size) + var(--team-mobile-label-height)) !important;
+        min-height: calc(var(--team-mobile-photo-size) + var(--team-mobile-label-height)) !important;
+        flex: none !important;
+        justify-self: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member .avatar {
+        width: var(--team-mobile-photo-size) !important;
+        height: var(--team-mobile-photo-size) !important;
+        flex: 0 0 var(--team-mobile-photo-size) !important;
+        margin: 0 auto !important;
+        border-radius: 50% !important;
+        background-size: var(--team-avatar-size, cover) !important;
+        background-position: var(--team-avatar-x, center) var(--team-avatar-y, top) !important;
+    }
+
+    #about-section .about-team-inline .member .info {
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        z-index: auto !important;
+        width: 100% !important;
+        min-height: var(--team-mobile-label-height) !important;
+        margin: 8px 0 0 !important;
+        padding: 0 2px !important;
+        text-align: center !important;
+        text-shadow: none !important;
+    }
+
+    #about-section .about-team-inline .member .name-text {
+        font-size: clamp(0.68rem, 3.5vw, 0.82rem) !important;
+        line-height: 1.08 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.01em !important;
+        color: rgba(255, 255, 255, 0.92) !important;
+    }
+
+    #about-section .about-team-inline .member .info span {
+        display: block !important;
+        margin-top: 3px !important;
+        font-size: clamp(0.48rem, 2.45vw, 0.58rem) !important;
+        line-height: 1.15 !important;
+        letter-spacing: 0.03em !important;
+        color: rgba(230, 224, 246, 0.62) !important;
+    }
+}
+
+/* Final mobile team fit correction: overrides older member-level sizing. */
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        overflow: hidden !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        --team-gap: clamp(2px, 1vw, 4px) !important;
+        --team-word-width: calc(var(--team-bubble-size) * 1.55) !important;
+        --team-the-width: calc(var(--team-bubble-size) * 1.22) !important;
+        --team-word-size: clamp(1.38rem, 7vw, 1.95rem) !important;
+        --team-grid-width: calc(var(--team-word-width) + (var(--team-bubble-size) * 5) + (var(--team-gap) * 5)) !important;
+        width: min(calc(100vw - 24px), var(--team-grid-width)) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        width: 100% !important;
+        max-width: 100% !important;
+        justify-content: center !important;
+        gap: var(--team-gap) !important;
+        overflow: visible !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        flex: 0 0 var(--team-bubble-size) !important;
+        min-width: 0 !important;
+        max-width: var(--team-bubble-size) !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        flex: 0 0 var(--team-word-width) !important;
+        width: var(--team-word-width) !important;
+        min-width: 0 !important;
+        max-width: var(--team-word-width) !important;
+        font-size: var(--team-word-size) !important;
+        line-height: 0.82 !important;
+        overflow: visible !important;
+    }
+
+    #about-section .about-team-inline .team-word-the {
+        flex-basis: var(--team-the-width) !important;
+        width: var(--team-the-width) !important;
+        max-width: var(--team-the-width) !important;
+    }
+}
+
+/* Mobile team fit correction: keep the desktop-copy rows inside narrow screens. */
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        overflow: hidden !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        --team-gap: clamp(2px, 1vw, 4px) !important;
+        --team-word-width: calc(var(--team-bubble-size) * 1.55) !important;
+        --team-the-width: calc(var(--team-bubble-size) * 1.22) !important;
+        --team-word-size: clamp(1.38rem, 7vw, 1.95rem) !important;
+        --team-grid-width: calc(var(--team-word-width) + (var(--team-bubble-size) * 5) + (var(--team-gap) * 5)) !important;
+        width: min(calc(100vw - 24px), var(--team-grid-width)) !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        width: 100% !important;
+        max-width: 100% !important;
+        justify-content: center !important;
+        gap: var(--team-gap) !important;
+        overflow: visible !important;
+    }
+
+    #about-section .about-team-inline .member {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        flex: 0 0 var(--team-bubble-size) !important;
+        min-width: 0 !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        flex: 0 0 var(--team-word-width) !important;
+        width: var(--team-word-width) !important;
+        min-width: 0 !important;
+        font-size: var(--team-word-size) !important;
+        line-height: 0.82 !important;
+        overflow: visible !important;
+    }
+
+    #about-section .about-team-inline .team-word-the {
+        flex-basis: var(--team-the-width) !important;
+        width: var(--team-the-width) !important;
     }
 }
 
@@ -972,6 +1173,10 @@ body.hero-nav-ready #experience-trigger {
     box-shadow:
         0 0 28px rgba(255, 255, 255, 0.16),
         inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.mobile-section-title {
+    display: none;
 }
 
 @keyframes aboutScrollCue {
@@ -3908,10 +4113,6 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
    Motion ownership stays with the same global videos and route graph as desktop;
    this layer only reframes the shared system inside a vertical viewport. */
 @media (max-width: 768px) {
-    #mobile-intro-container,
-    #mobile-intro-video,
-    body.intro-active #mobile-intro-container,
-    body.mobile-home-nav #mobile-intro-container,
     .mob-bg-vid,
     .mob-bg-overlay,
     #srv-mob-intro,
@@ -3959,15 +4160,15 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         height: 100% !important;
         object-fit: contain !important;
         object-position: center center !important;
-        transform: none !important;
+        transform: scale(1.08) !important;
     }
 
     #services-bg-video {
-        z-index: -1 !important;
+        z-index: 1 !important;
     }
 
     #services-loop-video {
-        z-index: -2 !important;
+        z-index: 1 !important;
     }
 
     body:not(.show-mobile-nav) #mobile-hamburger.visible,
@@ -3977,6 +4178,1075 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     body:not(.show-mobile-nav) #mobile-brand-home.visible {
         display: block !important;
+    }
+}
+
+/* Mobile refactor: desktop cinematic system, mobile-only layout adaptation. */
+@media (max-width: 768px) {
+    body.hero-nav-ready .scroll-section:not(.active) {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    #mobile-intro-container,
+    #mobile-intro-video,
+    body.intro-active #mobile-intro-container,
+    body.mobile-home-nav #mobile-intro-container {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    body.mobile-home-nav #video-container {
+        z-index: 0 !important;
+    }
+
+    body.mobile-home-nav #bg-video {
+        opacity: 1 !important;
+        filter: brightness(0.76) contrast(1.08) saturate(1.02) !important;
+    }
+
+    body.mobile-home-nav #mobile-nav-overlay,
+    body.show-mobile-nav #mobile-nav-overlay {
+        background:
+            radial-gradient(circle at 50% 48%, rgba(5, 151, 172, 0.10), transparent 34%),
+            linear-gradient(180deg, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.42) 44%, rgba(0, 0, 0, 0.76)) !important;
+    }
+
+    body.mobile-home-nav #mobile-nav-overlay::before,
+    body.show-mobile-nav #mobile-nav-overlay::before {
+        background:
+            radial-gradient(ellipse at 50% 50%, rgba(12, 172, 196, 0.10), rgba(0, 0, 0, 0.34) 48%, rgba(0, 0, 0, 0.82) 100%),
+            linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(1, 0, 8, 0.52) 46%, rgba(0, 0, 0, 0.88)) !important;
+    }
+
+    body.mobile-home-nav .mobile-nav-close {
+        display: none !important;
+    }
+
+    .mobile-nav-close {
+        top: calc(30px + env(safe-area-inset-top)) !important;
+        right: 30px !important;
+        font-size: 0 !important;
+        width: 42px;
+        height: 42px;
+        color: rgba(255, 255, 255, 0.74) !important;
+    }
+
+    .mobile-nav-close::before {
+        content: "x";
+        font-size: 1.25rem;
+        font-weight: 300;
+        letter-spacing: 0;
+    }
+
+    body.mobile-home-nav .mobile-nav-links,
+    body.show-mobile-nav .mobile-nav-links {
+        transform: translateY(0) !important;
+        gap: clamp(16px, 3.1svh, 24px) !important;
+    }
+
+    body.mobile-home-nav .mobile-nav-item,
+    body.show-mobile-nav .mobile-nav-item {
+        min-width: 0;
+        text-align: center !important;
+        font-size: clamp(1.28rem, 6.2vw, 1.72rem) !important;
+        line-height: 1.05 !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.08em !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.82) !important;
+    }
+
+    body.mobile-home-nav.show-mobile-nav #mobile-hamburger.visible,
+    body.mobile-home-nav.show-mobile-nav #mobile-brand-home.visible {
+        display: none !important;
+    }
+
+    #mobile-brand-home {
+        top: calc(34px + env(safe-area-inset-top)) !important;
+        left: 32px !important;
+        font-size: 1.34rem !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.06em !important;
+    }
+
+    #mobile-hamburger {
+        top: calc(27px + env(safe-area-inset-top)) !important;
+        right: 28px !important;
+    }
+
+    #mobile-hamburger span {
+        width: 26px !important;
+        height: 2px !important;
+        background: rgba(255, 255, 255, 0.68) !important;
+    }
+
+    #services-section {
+        isolation: isolate;
+        background: #000 !important;
+        overflow: hidden !important;
+    }
+
+    #services-bg-video,
+    #services-loop-video {
+        z-index: 1 !important;
+        mix-blend-mode: screen !important;
+        filter: brightness(0.92) contrast(1.06) saturate(1.08) !important;
+    }
+
+    #services-section .services-text-overlay {
+        z-index: 4 !important;
+    }
+
+    #services-section .service-item,
+    #services-section .service-item.left-col,
+    #services-section .service-item.right-col {
+        left: 30vw !important;
+        right: auto !important;
+        width: 66vw !important;
+        max-width: 238px !important;
+        padding: 0 !important;
+        text-align: left !important;
+        font-size: clamp(0.62rem, 2.85vw, 0.78rem) !important;
+        line-height: 1.18 !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.02em !important;
+        color: rgba(244, 248, 255, 0.88) !important;
+        text-shadow: 0 0 16px rgba(18, 202, 224, 0.24), 0 1px 14px rgba(0, 0, 0, 0.78) !important;
+    }
+
+    #services-section .item-concept { top: 26.7% !important; }
+    #services-section .item-cinema  { top: 35.3% !important; }
+    #services-section .item-editing { top: 43.3% !important; }
+    #services-section .item-sound   { top: 52.5% !important; }
+    #services-section .item-vfx     { top: 60.9% !important; }
+    #services-section .item-3d      { top: 69% !important; }
+    #services-section .item-colour  { top: 78.8% !important; }
+
+    #portfolios-section {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        background:
+            radial-gradient(circle at 36% 92%, rgba(104, 0, 132, 0.28), transparent 42%),
+            linear-gradient(180deg, #00000b 0%, #030014 48%, #16001d 100%) !important;
+    }
+
+    #portfolios-section .portfolio-hero-full {
+        height: 36svh !important;
+        min-height: 250px !important;
+        margin-bottom: 0 !important;
+    }
+
+    #portfolios-section .portfolio-hero-caption {
+        left: 28px !important;
+        bottom: 34px !important;
+    }
+
+    #portfolios-section .portfolio-hero-title {
+        font-size: clamp(1.8rem, 9vw, 2.7rem) !important;
+        letter-spacing: 0 !important;
+    }
+
+    #portfolios-section .client-marquee-section {
+        padding: 28px 0 24px !important;
+    }
+
+    #portfolios-section .client-marquee-group {
+        gap: 30px !important;
+        padding-right: 30px !important;
+    }
+
+    #portfolios-section .client-marquee-logo {
+        width: 86px !important;
+        height: 36px !important;
+        opacity: 0.42 !important;
+    }
+
+    #portfolios-section .portfolio-container {
+        padding: 16px 18px 64px !important;
+        max-width: none !important;
+    }
+
+    #portfolios-section .portfolio-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #portfolios-section .portfolio-item,
+    #portfolios-section .portfolio-item.tall,
+    #portfolios-section .portfolio-item.large,
+    #portfolios-section .portfolio-item.span-2 {
+        grid-column: span 1 !important;
+        grid-row: span 1 !important;
+        aspect-ratio: 1 / 1.05 !important;
+        border-radius: 2px !important;
+    }
+
+    #portfolios-section .portfolio-media {
+        background: rgba(0, 0, 0, 0.72) !important;
+    }
+
+    #portfolios-section .portfolio-image {
+        z-index: 2 !important;
+        opacity: 1 !important;
+        filter: brightness(0.9) contrast(1.04) saturate(0.92) !important;
+        transform: scale(1.01) !important;
+    }
+
+    #portfolios-section .portfolio-video-shell {
+        z-index: 1 !important;
+        opacity: 0.46 !important;
+    }
+
+    #portfolios-section .portfolio-video-shell.is-mounted {
+        opacity: 0.52 !important;
+    }
+
+    #portfolios-section .portfolio-item.is-playing .portfolio-image,
+    #portfolios-section .portfolio-item.is-selected .portfolio-image {
+        opacity: 0.62 !important;
+    }
+
+    #portfolios-section .portfolio-footer-full {
+        height: 52svh !important;
+        margin-top: 36px !important;
+    }
+
+    #blogs-section {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        background:
+            radial-gradient(circle at 38% 88%, rgba(108, 0, 130, 0.28), transparent 42%),
+            linear-gradient(180deg, #00000b 0%, #030014 50%, #15001e 100%) !important;
+    }
+
+    #blogs-section .blogs-container {
+        min-height: auto !important;
+        padding: calc(106px + env(safe-area-inset-top)) 24px 96px !important;
+    }
+
+    #blogs-section .blogs-container h1 {
+        left: 0 !important;
+        margin: 0 0 28px !important;
+        font-size: clamp(2.5rem, 13vw, 3.25rem) !important;
+        line-height: 0.98 !important;
+        letter-spacing: 0.04em !important;
+        text-align: left !important;
+    }
+
+    #blogs-section .blog-grid {
+        width: 100% !important;
+        max-width: 360px !important;
+        left: 0 !important;
+        margin: 0 auto !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+    }
+
+    #blogs-section .blog-card,
+    #blogs-section .blog-card--compact,
+    #blogs-section .blog-card--feature {
+        min-height: 0 !important;
+        border-radius: 6px !important;
+    }
+
+    #blogs-section .blog-image,
+    #blogs-section .blog-card--compact .blog-image,
+    #blogs-section .blog-card--feature .blog-image {
+        height: 152px !important;
+        min-height: 0 !important;
+    }
+
+    #blogs-section .blog-content,
+    #blogs-section .blog-card--compact .blog-content,
+    #blogs-section .blog-card--feature .blog-content {
+        min-height: 0 !important;
+        padding: 32px 22px 18px !important;
+    }
+
+    #blogs-section .blog-title {
+        font-size: 0.86rem !important;
+        line-height: 1.38 !important;
+        margin-bottom: 14px !important;
+    }
+
+    #blogs-section .blog-desc {
+        display: block !important;
+        font-size: 0.76rem !important;
+        line-height: 1.55 !important;
+    }
+
+    #blogs-section .blog-tag,
+    #blogs-section .blog-footer,
+    #blogs-section .blog-author-name,
+    #blogs-section .blog-author-date {
+        font-size: 0.66rem !important;
+    }
+
+    #blogs-section .blog-social-icons {
+        display: none !important;
+    }
+
+    #about-section {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        background:
+            radial-gradient(circle at 50% 30%, rgba(12, 128, 150, 0.10), transparent 32%),
+            linear-gradient(180deg, #000 0%, #020006 100%) !important;
+    }
+
+    #about-section::after,
+    #about-section.active::after {
+        content: "" !important;
+        opacity: 0 !important;
+    }
+
+    #about-section .mobile-about-title {
+        display: block !important;
+        position: absolute;
+        z-index: 12;
+        top: calc(128px + env(safe-area-inset-top));
+        left: 30px;
+        font-size: 0.68rem;
+        line-height: 1;
+        font-weight: 600;
+        letter-spacing: 0.26em;
+        color: rgba(255, 255, 255, 0.74);
+        opacity: 1 !important;
+        pointer-events: none;
+    }
+
+    #about-section .about-content {
+        align-items: center !important;
+        justify-content: flex-start !important;
+        margin-top: calc(46svh + env(safe-area-inset-top)) !important;
+        padding: 0 28px 120px !important;
+    }
+
+    #about-section .manifesto-container {
+        max-width: 330px !important;
+        text-align: left !important;
+        margin: 0 auto !important;
+    }
+
+    #about-section .manifesto-container::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    #about-section .manifesto-container > p.reveal-text {
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 0 18px !important;
+        font-size: 0.92rem !important;
+        line-height: 1.72 !important;
+        letter-spacing: 0 !important;
+        text-align: left !important;
+        color: rgba(238, 242, 248, 0.72) !important;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+    }
+
+    #meet-team-btn {
+        display: inline-flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-top: 22px !important;
+        font-size: 0.68rem !important;
+        letter-spacing: 0.24em !important;
+    }
+
+    .about-scroll-cue {
+        width: 42px !important;
+        height: 56px !important;
+        margin: 24px auto 0 !important;
+        display: flex !important;
+    }
+
+    #about-section .about-team-inline {
+        padding: 52px 18px 110px !important;
+        min-height: auto !important;
+        align-items: flex-start !important;
+    }
+
+    #about-section .about-team-inline .team-shell {
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    #about-section .about-team-heading {
+        margin-bottom: 26px !important;
+        font-size: clamp(2.35rem, 14vw, 4.15rem) !important;
+        line-height: 0.92 !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        width: 100% !important;
+        max-width: 360px !important;
+        gap: 14px !important;
+        margin: 0 auto !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 14px !important;
+        min-height: 0 !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        display: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        --team-bubble-size: min(42vw, 142px);
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        justify-self: center !important;
+    }
+}
+
+/* Requested mobile polish: larger synced logo, desktop-inspired portfolio/team, stable about title, uniform contact type. */
+@media (max-width: 768px) {
+    body.mobile-home-nav #bg-video {
+        transform-origin: 50% 50% !important;
+    }
+
+    #services-bg-video,
+    #services-loop-video {
+        transform: scale(1.18) !important;
+        transform-origin: 50% 50% !important;
+    }
+
+    #about-section .mobile-about-title {
+        display: block !important;
+        position: sticky !important;
+        top: calc(116px + env(safe-area-inset-top)) !important;
+        left: auto !important;
+        width: max-content !important;
+        margin: calc(116px + env(safe-area-inset-top)) 0 0 30px !important;
+        z-index: 18 !important;
+        font-family: var(--font-main) !important;
+        font-size: 0.68rem !important;
+        line-height: 1 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.26em !important;
+        color: rgba(255, 255, 255, 0.76) !important;
+        opacity: 1 !important;
+        pointer-events: none !important;
+        isolation: isolate !important;
+    }
+
+    #about-section.active::before {
+        content: "" !important;
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: calc(176px + env(safe-area-inset-top)) !important;
+        margin-bottom: 0 !important;
+        z-index: 17 !important;
+        pointer-events: none !important;
+        background:
+            linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.98) 60%, rgba(0, 0, 0, 0) 100%) !important;
+    }
+
+    #about-section .mobile-about-title::before {
+        content: "" !important;
+        position: absolute !important;
+        z-index: -1 !important;
+        top: -24px !important;
+        left: -30px !important;
+        width: 100vw !important;
+        height: 72px !important;
+        background:
+            linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.88) 58%, rgba(0, 0, 0, 0) 100%) !important;
+    }
+
+    #about-section .about-content {
+        margin-top: calc(24svh + env(safe-area-inset-top)) !important;
+    }
+
+    #about-section .about-team-inline {
+        overflow-x: hidden !important;
+        min-height: calc(100svh - 132px) !important;
+        padding: 20px 0 76px !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+    }
+
+    #about-section .about-team-inline .team-shell {
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        --team-bubble-size: clamp(25px, 7.8vw, 34px);
+        --team-gap: clamp(2px, 0.8vw, 4px);
+        --team-word-width: calc(var(--team-bubble-size) * 2.9);
+        --team-the-width: calc(var(--team-bubble-size) * 1.9);
+        --team-word-size: clamp(1.55rem, 8.2vw, 2.15rem);
+        --team-grid-width: calc(var(--team-word-width) + (var(--team-bubble-size) * 5) + (var(--team-gap) * 5));
+        display: flex !important;
+        width: min(calc(100vw - 32px), var(--team-grid-width)) !important;
+        max-width: none !important;
+        min-height: auto !important;
+        gap: var(--team-gap) !important;
+        margin: 8px auto 0 !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        display: flex !important;
+        grid-template-columns: none !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: var(--team-gap) !important;
+        min-height: var(--team-bubble-size) !important;
+        width: 100% !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        display: block !important;
+        flex: 0 0 var(--team-word-width) !important;
+        font-size: var(--team-word-size) !important;
+        line-height: 0.78 !important;
+        font-weight: 250 !important;
+        letter-spacing: 0 !important;
+        color: rgba(236, 231, 255, 0.88) !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+    }
+
+    #about-section .about-team-inline .team-word-the {
+        flex-basis: var(--team-the-width) !important;
+        text-align: center !important;
+        order: 0 !important;
+        margin: 0 3px !important;
+    }
+
+    #about-section .about-team-inline .member {
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        flex: 0 0 var(--team-bubble-size) !important;
+        justify-self: auto !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member .info {
+        display: none !important;
+    }
+
+    #about-section .about-team-inline .member .name-text {
+        font-size: clamp(0.34rem, 1.75vw, 0.46rem) !important;
+        line-height: 1.05 !important;
+    }
+
+    #about-section .about-team-inline .member .info span {
+        margin-top: 1px !important;
+        font-size: clamp(0.25rem, 1.35vw, 0.34rem) !important;
+        line-height: 1.05 !important;
+        letter-spacing: 0.02em !important;
+    }
+
+    #team-detail-overlay {
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: calc(88px + env(safe-area-inset-top)) 22px 24px !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    #team-detail-overlay .detail-close-btn {
+        top: calc(27px + env(safe-area-inset-top)) !important;
+        left: 86px !important;
+        max-width: calc(100vw - 142px) !important;
+        font-size: 0.56rem !important;
+        line-height: 1 !important;
+        letter-spacing: 0.24em !important;
+        color: rgba(255, 255, 255, 0.66) !important;
+        white-space: nowrap !important;
+    }
+
+    #team-detail-overlay .detail-content {
+        width: min(100%, 304px) !important;
+        min-height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 18px !important;
+        transform: none !important;
+    }
+
+    #team-detail-overlay .detail-visual {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
+    }
+
+    #team-detail-overlay .detail-avatar-circle {
+        width: clamp(132px, 43vw, 176px) !important;
+        height: clamp(132px, 43vw, 176px) !important;
+        border-width: 2px !important;
+        box-shadow: 0 0 36px rgba(0, 240, 255, 0.12) !important;
+    }
+
+    #team-detail-overlay .detail-info {
+        width: 100% !important;
+        flex: 0 0 auto !important;
+        text-align: center !important;
+        font-family: var(--font-main) !important;
+    }
+
+    #team-detail-overlay #detail-name {
+        font-size: clamp(1.05rem, 6vw, 1.42rem) !important;
+        line-height: 1.08 !important;
+        margin: 0 0 8px !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    #team-detail-overlay #detail-role {
+        font-size: 0.58rem !important;
+        line-height: 1.25 !important;
+        letter-spacing: 0.22em !important;
+        margin: 0 0 16px !important;
+    }
+
+    #team-detail-overlay #detail-bio {
+        max-width: 100% !important;
+        font-size: 0.72rem !important;
+        line-height: 1.58 !important;
+        color: rgba(235, 239, 248, 0.68) !important;
+        margin: 0 !important;
+        text-align: left !important;
+    }
+
+    #blogs-section {
+        scroll-padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    #blogs-section .blogs-container {
+        min-height: auto !important;
+        padding: calc(94px + env(safe-area-inset-top)) 22px 44px !important;
+    }
+
+    #blogs-section .blogs-container h1 {
+        margin: 0 0 18px !important;
+        font-size: clamp(1.58rem, 8.5vw, 2.1rem) !important;
+        line-height: 1 !important;
+        letter-spacing: 0.12em !important;
+    }
+
+    #blogs-section .blog-grid {
+        width: 100% !important;
+        max-width: 306px !important;
+        gap: 10px !important;
+    }
+
+    #blogs-section .blog-image,
+    #blogs-section .blog-card--compact .blog-image,
+    #blogs-section .blog-card--feature .blog-image {
+        height: 86px !important;
+    }
+
+    #blogs-section .blog-content,
+    #blogs-section .blog-card--compact .blog-content,
+    #blogs-section .blog-card--feature .blog-content {
+        padding: 20px 16px 12px !important;
+    }
+
+    #blogs-section .blog-title {
+        font-size: 0.68rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 8px !important;
+    }
+
+    #blogs-section .blog-desc {
+        font-size: 0.62rem !important;
+        line-height: 1.38 !important;
+        margin-bottom: 10px !important;
+    }
+
+    #blogs-section .blog-footer,
+    #blogs-section .blog-tag,
+    #blogs-section .blog-author-name,
+    #blogs-section .blog-author-date {
+        font-size: 0.52rem !important;
+    }
+
+    #blogs-section .blog-avatar {
+        width: 28px !important;
+        height: 28px !important;
+        top: -14px !important;
+    }
+
+    #blogs-section .blog-author-row {
+        gap: 8px !important;
+    }
+
+    #portfolios-section .portfolio-hero-full,
+    #portfolios-section .client-marquee-section,
+    #portfolios-section .portfolio-footer-full {
+        display: none !important;
+    }
+
+    #portfolios-section .portfolio-container {
+        padding: calc(100px + env(safe-area-inset-top)) 18px 92px !important;
+        max-width: none !important;
+        margin: 0 !important;
+    }
+
+    #portfolios-section .portfolio-grid {
+        display: block !important;
+        width: 100% !important;
+        max-width: 360px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+    }
+
+    #portfolios-section .portfolio-item,
+    #portfolios-section .portfolio-item.tall,
+    #portfolios-section .portfolio-item.large,
+    #portfolios-section .portfolio-item.span-2 {
+        display: block !important;
+        width: 88% !important;
+        aspect-ratio: 16 / 9 !important;
+        margin: 0 0 18px 0 !important;
+        border-radius: 2px !important;
+        overflow: hidden !important;
+        background: #050509 !important;
+    }
+
+    #portfolios-section .portfolio-item:nth-child(3n + 1) {
+        width: 96% !important;
+        margin-left: 0 !important;
+    }
+
+    #portfolios-section .portfolio-item:nth-child(3n + 2) {
+        width: 78% !important;
+        margin-left: auto !important;
+    }
+
+    #portfolios-section .portfolio-item:nth-child(3n) {
+        width: 90% !important;
+        margin-left: 7% !important;
+    }
+
+    #portfolios-section .portfolio-video-shell,
+    #portfolios-section .portfolio-video-shell.is-mounted,
+    #portfolios-section .portfolio-video {
+        opacity: 1 !important;
+        z-index: 2 !important;
+        filter: brightness(0.96) contrast(1.04) saturate(1.02) !important;
+    }
+
+    #portfolios-section .portfolio-image {
+        opacity: 0.42 !important;
+        z-index: 3 !important;
+        filter: brightness(0.72) contrast(1.04) saturate(0.92) !important;
+    }
+
+    #portfolios-section .portfolio-item.is-playing .portfolio-image {
+        opacity: 0.22 !important;
+    }
+
+    #contact-section .contact-main {
+        padding: calc(118px + env(safe-area-inset-top)) 30px 0 !important;
+        z-index: 60 !important;
+    }
+
+    body.contact-video-foreground #video-container,
+    body:has(#contact-section.active) #video-container {
+        z-index: 18 !important;
+    }
+
+    body.contact-video-foreground #bg-video,
+    body:has(#contact-section.active) #bg-video {
+        transform: translateY(calc(var(--mobile-lock-vh, 1vh) * 10)) scale(0.88) !important;
+        transform-origin: 50% 50% !important;
+        object-position: center bottom !important;
+    }
+
+    #contact-section .contact-content-left,
+    #contact-section .contact-text-block {
+        max-width: 304px !important;
+    }
+
+    #contact-section .contact-text-block::before {
+        margin-bottom: 18px !important;
+        font-family: var(--font-main) !important;
+        font-size: 0.68rem !important;
+        line-height: 1 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.26em !important;
+        color: rgba(255, 255, 255, 0.76) !important;
+    }
+
+    #contact-section .contact-lead,
+    #contact-section .contact-question,
+    #contact-section .contact-cta {
+        font-family: var(--font-main) !important;
+        font-size: 0.92rem !important;
+        line-height: 1.62 !important;
+        font-weight: 300 !important;
+        letter-spacing: 0 !important;
+        color: rgba(238, 242, 248, 0.74) !important;
+    }
+
+    #contact-section .contact-lead {
+        max-width: 304px !important;
+        margin-bottom: 20px !important;
+    }
+
+    #contact-section .contact-question {
+        margin-bottom: 34px !important;
+    }
+
+    #contact-section .contact-cta {
+        font-style: normal !important;
+        font-weight: 400 !important;
+        color: rgba(255, 255, 255, 0.86) !important;
+    }
+}
+
+/* True final mobile team fit correction: keep all desktop-copy members inside 320px. */
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        overflow: hidden !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        --team-gap: clamp(2px, 1vw, 4px) !important;
+        --team-word-width: calc(var(--team-bubble-size) * 1.55) !important;
+        --team-the-width: calc(var(--team-bubble-size) * 1.22) !important;
+        --team-word-size: clamp(1.38rem, 7vw, 1.95rem) !important;
+        --team-grid-width: calc(var(--team-word-width) + (var(--team-bubble-size) * 5) + (var(--team-gap) * 5)) !important;
+        width: min(calc(100vw - 24px), var(--team-grid-width)) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        width: 100% !important;
+        max-width: 100% !important;
+        justify-content: center !important;
+        gap: var(--team-gap) !important;
+        overflow: visible !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        --team-bubble-size: clamp(34px, 10vw, 42px) !important;
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        flex: 0 0 var(--team-bubble-size) !important;
+        min-width: 0 !important;
+        max-width: var(--team-bubble-size) !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        flex: 0 0 var(--team-word-width) !important;
+        width: var(--team-word-width) !important;
+        min-width: 0 !important;
+        max-width: var(--team-word-width) !important;
+        font-size: var(--team-word-size) !important;
+        line-height: 0.82 !important;
+        overflow: visible !important;
+    }
+
+    #about-section .about-team-inline .team-word-the {
+        flex-basis: var(--team-the-width) !important;
+        width: var(--team-the-width) !important;
+        max-width: var(--team-the-width) !important;
+    }
+}
+
+/* Restore normal mobile team portraits: large centered circles, no compressed desktop rows. */
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        padding: 28px 18px 110px !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+    }
+
+    #about-section .about-team-inline .team-shell {
+        width: 100% !important;
+        padding: 0 !important;
+        align-items: center !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        width: min(100%, 320px) !important;
+        max-width: 320px !important;
+        gap: 14px !important;
+        margin: 0 auto !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        display: contents !important;
+        min-height: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        gap: 0 !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        display: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        --team-bubble-size: clamp(118px, 38vw, 142px) !important;
+        width: var(--team-bubble-size) !important;
+        height: var(--team-bubble-size) !important;
+        max-width: var(--team-bubble-size) !important;
+        flex: none !important;
+        justify-self: center !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member .avatar {
+        width: 100% !important;
+        height: 100% !important;
+        background-size: cover !important;
+    }
+
+    #about-section .about-team-inline .member .info {
+        display: block !important;
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 12px !important;
+    }
+
+    #about-section .about-team-inline .member .name-text {
+        font-size: clamp(0.72rem, 3.8vw, 0.9rem) !important;
+        line-height: 1.08 !important;
+    }
+
+    #about-section .about-team-inline .member .info span {
+        font-size: clamp(0.52rem, 2.6vw, 0.66rem) !important;
+        line-height: 1.18 !important;
+        letter-spacing: 0.05em !important;
+    }
+}
+
+/* Final team responsive split: desktop overlays, mobile labels below photos. */
+@media (min-width: 769px) {
+    .about-team-inline .member .info,
+    #team-section .member .info {
+        position: absolute !important;
+        left: 18px !important;
+        right: 18px !important;
+        bottom: 18px !important;
+        margin-top: 0 !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #about-section .about-team-inline {
+        --team-mobile-photo-size: clamp(104px, 34vw, 132px);
+        --team-mobile-label-height: 48px;
+        padding: 28px 18px 112px !important;
+        overflow-x: hidden !important;
+    }
+
+    #about-section .about-team-inline .team-composition {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        width: min(100%, 314px) !important;
+        max-width: 314px !important;
+        gap: 18px 12px !important;
+        margin: 0 auto !important;
+    }
+
+    #about-section .about-team-inline .team-composition-row {
+        display: contents !important;
+    }
+
+    #about-section .about-team-inline .team-word {
+        display: none !important;
+    }
+
+    #about-section .about-team-inline .member {
+        width: 100% !important;
+        max-width: 138px !important;
+        height: calc(var(--team-mobile-photo-size) + var(--team-mobile-label-height)) !important;
+        min-height: calc(var(--team-mobile-photo-size) + var(--team-mobile-label-height)) !important;
+        flex: none !important;
+        justify-self: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        transform: none !important;
+    }
+
+    #about-section .about-team-inline .member .avatar {
+        width: var(--team-mobile-photo-size) !important;
+        height: var(--team-mobile-photo-size) !important;
+        flex: 0 0 var(--team-mobile-photo-size) !important;
+        margin: 0 auto !important;
+        border-radius: 50% !important;
+        background-size: var(--team-avatar-size, cover) !important;
+        background-position: var(--team-avatar-x, center) var(--team-avatar-y, top) !important;
+    }
+
+    #about-section .about-team-inline .member .info {
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        z-index: auto !important;
+        width: 100% !important;
+        min-height: var(--team-mobile-label-height) !important;
+        margin: 8px 0 0 !important;
+        padding: 0 2px !important;
+        text-align: center !important;
+        text-shadow: none !important;
+    }
+
+    #about-section .about-team-inline .member .name-text {
+        font-size: clamp(0.68rem, 3.5vw, 0.82rem) !important;
+        line-height: 1.08 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.01em !important;
+        color: rgba(255, 255, 255, 0.92) !important;
+    }
+
+    #about-section .about-team-inline .member .info span {
+        display: block !important;
+        margin-top: 3px !important;
+        font-size: clamp(0.48rem, 2.45vw, 0.58rem) !important;
+        line-height: 1.15 !important;
+        letter-spacing: 0.03em !important;
+        color: rgba(230, 224, 246, 0.62) !important;
     }
 }
 
