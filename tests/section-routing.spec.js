@@ -139,16 +139,17 @@ async function captureState(page) {
   });
 }
 
-async function setupPage() {
+async function setupPage({ viewport = { width: 1440, height: 900 }, recordVideo = true } = {}) {
   const app = await startStaticServer(process.cwd());
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    recordVideo: {
+  const contextOptions = { viewport };
+  if (recordVideo) {
+    contextOptions.recordVideo = {
       dir: 'videos-routing/',
-      size: { width: 1440, height: 900 }
-    }
-  });
+      size: viewport
+    };
+  }
+  const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
   await installLocalRoutes(page);
 
@@ -330,4 +331,112 @@ test('section reverse transitions return to home logo state', async () => {
     expect(states.afterAboutReverse.activeSections).toEqual([]);
     expect(states.afterAboutReverse.staticLogoOverlayExists).toBe(false);
   });
+});
+
+function buildDirectedPairCircuit(nodes) {
+  const adjacency = new Map(nodes.map(node => [node, nodes.filter(target => target !== node)]));
+  const stack = [nodes[0]];
+  const circuit = [];
+
+  while (stack.length) {
+    const current = stack[stack.length - 1];
+    const next = adjacency.get(current).shift();
+    if (next) stack.push(next);
+    else circuit.push(stack.pop());
+  }
+
+  return circuit.reverse();
+}
+
+async function waitForStableSection(page, pageId, timeout = 18000) {
+  await page.waitForFunction(id => {
+    const section = document.getElementById(`${id}-section`);
+    const activeSections = [...document.querySelectorAll('.scroll-section.active')];
+    return section?.classList.contains('active')
+      && getComputedStyle(section).visibility !== 'hidden'
+      && activeSections.length === 1
+      && activeSections[0] === section
+      && !isAnimating;
+  }, pageId, { timeout });
+}
+
+async function runDirectedPairMatrix(viewport) {
+  const pageIds = ['about', 'services', 'portfolios', 'blogs', 'contact'];
+  const circuit = buildDirectedPairCircuit(pageIds);
+  const env = await setupPage({ viewport, recordVideo: false });
+  env.page._appUrl = env.app.url;
+  const transitionSamples = [];
+
+  try {
+    await bootHome(env.page);
+    await env.page.evaluate(firstPageId => {
+      document.querySelector(`.nav-item[data-target="${firstPageId}-section"]`)?.click();
+    }, circuit[0]);
+    await waitForStableSection(env.page, circuit[0]);
+
+    for (let index = 1; index < circuit.length; index += 1) {
+      const from = circuit[index - 1];
+      const to = circuit[index];
+      await env.page.evaluate(({ from, to }) => {
+        window.__pairTransformSamples = [];
+        window.__pairTransformTimer = setInterval(() => {
+          const video = document.getElementById('bg-video');
+          if (!video) return;
+          window.__pairTransformSamples.push({
+            src: decodeURIComponent(video.currentSrc || video.src || ''),
+            scale: Number(gsap.getProperty(video, 'scale')) || 0,
+            x: Number(gsap.getProperty(video, 'x')) || 0,
+            y: Number(gsap.getProperty(video, 'y')) || 0
+          });
+        }, 40);
+
+        const link = document.querySelector(`#${from}-section .nav-link[data-target="${to}-section"]`);
+        if (!link) throw new Error(`Missing navigation link for ${from} -> ${to}`);
+        link.click();
+      }, { from, to });
+
+      await waitForStableSection(env.page, to);
+      const samples = await env.page.evaluate(() => {
+        clearInterval(window.__pairTransformTimer);
+        return window.__pairTransformSamples || [];
+      });
+      transitionSamples.push({ from, to, samples });
+
+      const activeSections = await env.page.locator('.scroll-section.active').evaluateAll(elements => elements.map(el => el.id));
+      expect(activeSections).toEqual([`${to}-section`]);
+    }
+
+    const traversedPairs = transitionSamples.map(({ from, to }) => `${from}->${to}`);
+    expect(new Set(traversedPairs).size).toBe(pageIds.length * (pageIds.length - 1));
+
+    transitionSamples.filter(item => item.from === 'contact').forEach(({ to, samples }) => {
+      const reverseSamples = samples.filter(sample => sample.src.includes('contact') && sample.src.includes('reverse'));
+      expect(reverseSamples.length, `Contact reverse was not visible for contact -> ${to}`).toBeGreaterThan(2);
+      expect(reverseSamples.at(-1).scale, `Contact did not scale down for contact -> ${to}`)
+        .toBeLessThan(reverseSamples[0].scale - 0.08);
+    });
+
+    transitionSamples.filter(item => item.from === 'about').forEach(({ to, samples }) => {
+      const reverseSamples = samples.filter(sample => sample.src.includes('about') && sample.src.includes('reverse'));
+      expect(reverseSamples.length, `About reverse was not visible for about -> ${to}`).toBeGreaterThan(2);
+      const scales = reverseSamples.map(sample => sample.scale);
+      const xs = reverseSamples.map(sample => sample.x);
+      const ys = reverseSamples.map(sample => sample.y);
+      expect(Math.max(...scales) - Math.min(...scales), `About scale moved for about -> ${to}`).toBeLessThan(0.025);
+      expect(Math.max(...xs) - Math.min(...xs), `About x moved for about -> ${to}`).toBeLessThan(1);
+      expect(Math.max(...ys) - Math.min(...ys), `About y moved for about -> ${to}`).toBeLessThan(1);
+    });
+  } finally {
+    await closePage(env);
+  }
+}
+
+test('all directed section pairs preserve transition ownership on desktop', async () => {
+  test.setTimeout(240000);
+  await runDirectedPairMatrix({ width: 1440, height: 900 });
+});
+
+test('all directed section pairs preserve transition ownership on mobile', async () => {
+  test.setTimeout(240000);
+  await runDirectedPairMatrix({ width: 390, height: 844 });
 });

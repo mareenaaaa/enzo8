@@ -180,6 +180,65 @@ body.about-team-focus #bg-video {
         letter-spacing: 0.03em !important;
         color: rgba(230, 224, 246, 0.62) !important;
     }
+
+    #about-section .about-team-inline .member[data-member="thaha"] .avatar,
+    #about-section .about-team-inline .member[data-member="bharath"] .avatar {
+        --team-avatar-size: cover;
+        --team-avatar-x: center;
+        --team-avatar-y: top;
+    }
+
+    #about-section .about-team-inline .member[data-member="prince"] .avatar {
+        --team-avatar-size: 104% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: 4px;
+    }
+
+    #about-section .about-team-inline .member[data-member="mr"] .avatar {
+        --team-avatar-size: 102% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: 2px;
+    }
+
+    #about-section .about-team-inline .member[data-member="amal"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="adith"] .avatar {
+        --team-avatar-size: 132% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -34px;
+    }
+
+    #about-section .about-team-inline .member[data-member="akhil"] .avatar,
+    #about-section .about-team-inline .member[data-member="sanjay"] .avatar,
+    #about-section .about-team-inline .member[data-member="nibu"] .avatar,
+    #about-section .about-team-inline .member[data-member="akshay"] .avatar {
+        --team-avatar-size: 112% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="athul_s"] .avatar {
+        --team-avatar-size: 102% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -4px;
+    }
+
+    #about-section .about-team-inline .member[data-member="gokul"] .avatar,
+    #about-section .about-team-inline .member[data-member="nandagopan"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="athul_p"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: calc(50% - 5px);
+        --team-avatar-y: -14px;
+    }
 }
 
 /* Final mobile team fit correction: overrides older member-level sizing. */
@@ -4153,6 +4212,10 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         overflow: hidden !important;
     }
 
+    :root {
+        --mobile-services-media-scale: 1.24;
+    }
+
     #services-bg-video,
     #services-loop-video {
         display: block !important;
@@ -4160,7 +4223,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         height: 100% !important;
         object-fit: contain !important;
         object-position: center center !important;
-        transform: scale(1.08) !important;
+        transform: scale(var(--mobile-services-media-scale)) !important;
     }
 
     #services-bg-video {
@@ -4623,17 +4686,17 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     #services-bg-video,
     #services-loop-video {
-        transform: scale(1.18) !important;
+        transform: scale(var(--mobile-services-media-scale)) !important;
         transform-origin: 50% 50% !important;
     }
 
     #about-section .mobile-about-title {
         display: block !important;
         position: sticky !important;
-        top: calc(116px + env(safe-area-inset-top)) !important;
+        top: calc(92px + env(safe-area-inset-top)) !important;
         left: auto !important;
         width: max-content !important;
-        margin: calc(116px + env(safe-area-inset-top)) 0 0 30px !important;
+        margin: calc(92px + env(safe-area-inset-top)) 0 0 30px !important;
         z-index: 18 !important;
         font-family: var(--font-main) !important;
         font-size: 0.68rem !important;
@@ -4966,6 +5029,15 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         opacity: 0.22 !important;
     }
 
+    #portfolios-section .portfolio-item.has-video-mounted:not(.video-unavailable) .portfolio-image,
+    #portfolios-section .portfolio-item.is-playing .portfolio-image,
+    #portfolios-section .portfolio-item.is-selected .portfolio-image {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: none !important;
+    }
+
     #contact-section .contact-main {
         padding: calc(118px + env(safe-area-inset-top)) 30px 0 !important;
         z-index: 60 !important;
@@ -4978,9 +5050,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     body.contact-video-foreground #bg-video,
     body:has(#contact-section.active) #bg-video {
-        transform: translateY(calc(var(--mobile-lock-vh, 1vh) * 10)) scale(0.88) !important;
         transform-origin: 50% 50% !important;
-        object-position: center bottom !important;
     }
 
     #contact-section .contact-content-left,
@@ -4989,12 +5059,12 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 
     #contact-section .contact-text-block::before {
-        margin-bottom: 18px !important;
+        margin-bottom: 16px !important;
         font-family: var(--font-main) !important;
-        font-size: 0.68rem !important;
+        font-size: 0.56rem !important;
         line-height: 1 !important;
         font-weight: 600 !important;
-        letter-spacing: 0.26em !important;
+        letter-spacing: 0.24em !important;
         color: rgba(255, 255, 255, 0.76) !important;
     }
 
@@ -5247,6 +5317,79 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         line-height: 1.15 !important;
         letter-spacing: 0.03em !important;
         color: rgba(230, 224, 246, 0.62) !important;
+    }
+}
+
+/* Final mobile-only portrait crop tuning: desktop crop variables remain untouched. */
+@media (max-width: 768px) {
+    #about-section .about-team-inline .member[data-member="thaha"] .avatar,
+    #about-section .about-team-inline .member[data-member="bharath"] .avatar {
+        --team-avatar-size: cover;
+        --team-avatar-x: center;
+        --team-avatar-y: top;
+    }
+
+    #about-section .about-team-inline .member[data-member="prince"] .avatar {
+        --team-avatar-size: 104% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: 4px;
+    }
+
+    #about-section .about-team-inline .member[data-member="mr"] .avatar {
+        --team-avatar-size: 102% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: 2px;
+    }
+
+    #about-section .about-team-inline .member[data-member="amal"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="adith"] .avatar {
+        --team-avatar-size: 132% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -34px;
+    }
+
+    #about-section .about-team-inline .member[data-member="akhil"] .avatar,
+    #about-section .about-team-inline .member[data-member="sanjay"] .avatar,
+    #about-section .about-team-inline .member[data-member="nibu"] .avatar,
+    #about-section .about-team-inline .member[data-member="akshay"] .avatar {
+        --team-avatar-size: 112% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="athul_s"] .avatar {
+        --team-avatar-size: 102% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -4px;
+    }
+
+    #about-section .about-team-inline .member[data-member="gokul"] .avatar,
+    #about-section .about-team-inline .member[data-member="nandagopan"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: center;
+        --team-avatar-y: -14px;
+    }
+
+    #about-section .about-team-inline .member[data-member="athul_p"] .avatar {
+        --team-avatar-size: 116% auto;
+        --team-avatar-x: calc(50% - 5px);
+        --team-avatar-y: -14px;
+    }
+}
+
+/* Final mobile About gap trim: keep the team portraits close to the intro cue. */
+@media (max-width: 768px) {
+    #about-section .about-content {
+        padding-bottom: 16px !important;
+    }
+
+    #about-section .about-team-inline {
+        padding-top: 6px !important;
     }
 }
 

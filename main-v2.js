@@ -13,15 +13,56 @@ const mobileHamburger = document.getElementById('mobile-hamburger');
 const mobileNavClose = document.getElementById('mobile-nav-close');
 const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
+
+/**
+ * ANIMATION TUNING GUIDE
+ * Edit the constants below first. Most animation size, speed, and stitch timing
+ * is controlled here, then reused by the transition functions later in the file.
+ *
+ * Scale values:
+ * - 1 means original video size.
+ * - 1.3 means 30% larger.
+ * - 0.64 means 36% smaller.
+ *
+ * Duration values:
+ * - Measured in seconds.
+ * - Larger duration = slower animation.
+ * - Smaller duration = faster/snappier animation.
+ *
+ * Playback rate values:
+ * - 1 means normal video speed.
+ * - 2 means twice as fast.
+ * - 0.5 means half speed.
+ *
+ * Completion lead values:
+ * - Used when one video should hand off before its final frame.
+ * - Larger lead = cut away earlier.
+ * - Smaller lead = let the extro/intro play longer.
+ *
+ * Mobile contact chain:
+ * - MOBILE_CONTACT_CHAIN_INTRO_START_TIME controls where the Contact intro starts
+ *   after another section's extro. Keep at 0 if you want the full Contact intro.
+ * - MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD and
+ *   MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD control how early the
+ *   previous section's extro hands off into Contact on mobile.
+ * - MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION controls how quickly mobile
+ *   extros resize into the next intro scale before the crossfade.
+ * - MOBILE_SERVICES_MEDIA_SCALE should match the mobile CSS scale for the
+ *   Services video elements, so Services reverse starts without a size pop.
+ */
 const INTRO_PLAYBACK_RATE = 2.5;
 const REVERSE_PLAYBACK_RATE = 1.16;
-const HOME_LOGO_DISPLAY_SCALE = 1.18;
+const HOME_LOGO_DISPLAY_SCALE = 1.3;
+const MOBILE_UNIFORM_CINEMATIC_SCALE = HOME_LOGO_DISPLAY_SCALE;
+const ABOUT_MOBILE_CINEMATIC_SCALE = HOME_LOGO_DISPLAY_SCALE * 0.96;
+const CONTACT_MOBILE_CINEMATIC_SCALE = 1;
+const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
 const HOME_EQUILIBRIUM_SCALE = 0.64;
 const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
-const INTRO_ZOOM_START_SCALE = 0.70;
+const INTRO_ZOOM_START_SCALE = 0.66;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
@@ -29,10 +70,18 @@ const INTRO_HOME_COMPLETION_LEAD = 0.16;
 const VIDEO_HANDOFF_FADE_DURATION = 0.18;
 const VIDEO_HANDOFF_IN_FADE_DURATION = VIDEO_HANDOFF_FADE_DURATION;
 const VIDEO_HANDOFF_IN_START_OPACITY = 0.04;
+const SECTION_MEDIA_FADE_IN_DURATION = 0.38;
+const SECTION_MEDIA_FADE_OUT_DURATION = 0.34;
 const CONTACT_VIDEO_BASE_FILTER = 'brightness(1.06) contrast(1.035) saturate(1.02)';
 const CONTACT_VIDEO_POSITION_HORIZONTAL = '62% center';
 const CONTACT_VIDEO_POSITION_VERTICAL = 'center 58%';
+const ABOUT_INTRO_COMPLETION_LEAD_MOBILE = 0.22;
 const CONTACT_INTRO_COMPLETION_LEAD = 0.4;
+const CONTACT_INTRO_COMPLETION_LEAD_MOBILE = 0.08;
+// Contact's source artwork is larger than the shared Enso equilibrium frame.
+// These scales make its intro begin, and its outro finish, at the same visual size.
+const CONTACT_HANDOFF_SCALE_DESKTOP = 0.74;
+const CONTACT_HANDOFF_SCALE_MOBILE = 0.69;
 const CONTACT_EXTRO_MEDIA_DURATION = 2.836;
 const CONTACT_EXTRO_DURATION = 2.35;
 const CONTACT_EXTRO_EQUILIBRIUM_LEAD = 0.12;
@@ -51,6 +100,11 @@ const DESKTOP_SECTION_CHAIN_EQUILIBRIUM_SCALE = 0.995;
 const DESKTOP_SECTION_CHAIN_REVERSE_COMPLETION_LEAD = 1.28;
 const DESKTOP_SERVICES_CHAIN_REVERSE_COMPLETION_LEAD = 0.72;
 const DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.36;
+const MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.28;
+const MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD = 0.22;
+const MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 1.32;
+const MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 1.65;
+const MOBILE_CONTACT_CHAIN_INTRO_START_TIME = 0;
 const DESKTOP_ABOUT_CHAIN_INTRO_START_TIME = 0;
 const DESKTOP_HOME_DIRECT_INTRO_SOURCES = {};
 const DESKTOP_HOME_DIRECT_INTRO_START_TIMES = {
@@ -83,7 +137,26 @@ let mobileCompositionLock = null;
 const MOBILE_COMPOSITION_WIDTH_THRESHOLD = 48;
 
 function getHomeLogoDisplayScale() {
+    // Master home-logo scale switch. Mobile and desktop use different base scales.
     return isMobile ? HOME_LOGO_DISPLAY_SCALE : DESKTOP_HOME_LOGO_DISPLAY_SCALE;
+}
+
+function getMobileUniformCinematicScale() {
+    // Shared mobile scale for sections that should match the home/logo framing.
+    return MOBILE_UNIFORM_CINEMATIC_SCALE;
+}
+
+function getMobileCinematicScaleForPage(pageId = '') {
+    // Per-page mobile scale override. Change constants above, not this function.
+    if (pageId === 'about') return ABOUT_MOBILE_CINEMATIC_SCALE;
+    if (pageId === 'contact') return CONTACT_MOBILE_CINEMATIC_SCALE;
+    return getMobileUniformCinematicScale();
+}
+
+function getMobileServicesMediaScale() {
+    // Keep this matched with the mobile CSS transform on #services-bg-video / #services-loop-video.
+    const cssScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-services-media-scale'));
+    return Number.isFinite(cssScale) && cssScale > 0 ? cssScale : MOBILE_SERVICES_MEDIA_SCALE;
 }
 
 function getRevealHomeVideoScale(reverseSrc = '') {
@@ -108,12 +181,18 @@ function getDesktopHomeDirectVideoSrc(pageId) {
 }
 
 function getDesktopHomeDirectIntroDuration(pageId) {
+    // Desktop-only home-to-section intro speed map; values live in DESKTOP_HOME_DIRECT_INTRO_DURATIONS.
     if (isMobile) return DESKTOP_HOME_INTRO_HANDOFF_DURATION;
     return DESKTOP_HOME_DIRECT_INTRO_DURATIONS[pageId] ?? DESKTOP_HOME_INTRO_HANDOFF_DURATION;
 }
 
 function getContactExtroPlaybackRate() {
+    // Contact desktop extro speed = source media duration divided by desired visible duration.
     return CONTACT_EXTRO_MEDIA_DURATION / CONTACT_EXTRO_DURATION;
+}
+
+function getContactHandoffScale() {
+    return isMobile ? CONTACT_HANDOFF_SCALE_MOBILE : CONTACT_HANDOFF_SCALE_DESKTOP;
 }
 
 function queueSectionTransition(pageId) {
@@ -130,15 +209,6 @@ function runQueuedSectionTransition() {
     requestAnimationFrame(() => startVideoTransition(queuedTarget));
 }
 
-let isReturningAboutToTopForTransition = false;
-let pendingAboutTopTransitionTarget = null;
-let aboutTopReturnTween = null;
-
-function getAboutScrollTop() {
-    const aboutSection = document.getElementById('about-section');
-    return aboutSection ? aboutSection.scrollTop : 0;
-}
-
 function updateAboutTeamVideoFocus() {
     const aboutSection = document.getElementById('about-section');
     const inlineTeam = document.getElementById('about-team-inline');
@@ -152,61 +222,6 @@ function updateAboutTeamVideoFocus() {
         && aboutSection.classList.contains('active')
         && aboutSection.scrollTop >= fadeStart;
     document.body.classList.toggle('about-team-focus', shouldFocusTeam);
-}
-
-function shouldReturnAboutToTopBeforeTransition(pageId) {
-    if (isMobile) return false;
-    const aboutSection = document.getElementById('about-section');
-    if (!aboutSection || !aboutSection.classList.contains('active')) return false;
-
-    const aboutStyle = getComputedStyle(aboutSection);
-    const aboutIsVisible = aboutStyle.visibility !== 'hidden' && Number(aboutStyle.opacity || 0) > 0.05;
-    if (!aboutIsVisible) return false;
-
-    if (isReturningAboutToTopForTransition) {
-        pendingAboutTopTransitionTarget = pageId;
-        return true;
-    }
-
-    return getAboutScrollTop() > 24;
-}
-
-function returnAboutToTopBeforeTransition(pageId) {
-    const aboutSection = document.getElementById('about-section');
-    if (!aboutSection) return false;
-
-    pendingAboutTopTransitionTarget = pageId;
-    isReturningAboutToTopForTransition = true;
-    isAnimating = true;
-    if (aboutTopReturnTween) {
-        aboutTopReturnTween.kill();
-        aboutTopReturnTween = null;
-    }
-
-    const scrollState = { top: aboutSection.scrollTop };
-    aboutTopReturnTween = gsap.to(scrollState, {
-        top: 0,
-        duration: prefersReducedMotionQuery.matches ? 0.01 : 0.62,
-        ease: "sine.inOut",
-        overwrite: true,
-        onUpdate: () => {
-            aboutSection.scrollTop = scrollState.top;
-        },
-        onComplete: () => {
-            const nextTarget = pendingAboutTopTransitionTarget;
-            aboutSection.scrollTop = 0;
-            aboutTopReturnTween = null;
-            pendingAboutTopTransitionTarget = null;
-            isReturningAboutToTopForTransition = false;
-            isAnimating = false;
-            updateLocomotiveSection('about-section');
-
-            if (!nextTarget || nextTarget === 'about') return;
-            requestAnimationFrame(() => startVideoTransition(nextTarget));
-        }
-    });
-
-    return true;
 }
 
 function finishForwardSectionTransition(ownerToken = null) {
@@ -625,7 +640,7 @@ function getPortfolioLogoZoomScale() {
 }
 
 function getNoVideoLogoZoomScale(startScale = getHomeLogoDisplayScale()) {
-    if (isMobile) return getPortfolioLogoZoomScale();
+    if (isMobile) return getMobileUniformCinematicScale();
     const normalizedScale = Number.isFinite(startScale) && startScale > 0 ? startScale : getHomeLogoDisplayScale();
     return Math.min(getPortfolioLogoZoomScale(), normalizedScale * DESKTOP_NO_VIDEO_LOGO_ZOOM_RATIO);
 }
@@ -697,7 +712,7 @@ function animateNoVideoLogoIntro(pageId, transitionOwnerToken, onComplete) {
         section.scrollTop = 0;
     }
 
-    const startScale = getPrimaryVideoScale(isMobile ? SECTION_CHAIN_HOME_SCALE : HOME_EQUILIBRIUM_SCALE);
+    const startScale = getPrimaryVideoScale(isMobile ? getMobileUniformCinematicScale() : HOME_EQUILIBRIUM_SCALE);
     const zoomScale = Math.max(getNoVideoLogoZoomScale(startScale), startScale);
 
     gsap.killTweensOf(videoEl);
@@ -1049,13 +1064,19 @@ function shouldRouteSectionTransitionThroughHome(pageId) {
     if (!CINEMATIC_SECTION_STATES.has(pageId)) return false;
     if (!CINEMATIC_SECTION_STATES.has(state)) return false;
     if (state === pageId) return false;
-    // Blog transitions are content fades, not home-logo handoffs.
-    if (pageId === 'blogs' || state === 'blogs') return false;
+    // Blogs has no reverse media of its own, but cinematic sections must still
+    // complete their outro before Blogs performs its content reveal.
+    if (state === 'blogs') return false;
     if (HOME_EQUILIBRIUM_STATES.has(state)) return false;
     return true;
 }
 
 function routeSectionTransitionThroughHome(pageId) {
+    // Section-to-section routes go through a reverse/extro first, then into the next intro.
+    // To tune this path, use the CHAIN constants above:
+    // - reverse completion lead controls when the outgoing extro stops.
+    // - intro start time controls where the next intro begins.
+    // - handoff fade constants control how softly the two videos crossfade.
     const fromPageId = state;
     isRoutingThroughHome = true;
     shouldSeamlesslyStartNextIntro = false;
@@ -1064,16 +1085,24 @@ function routeSectionTransitionThroughHome(pageId) {
     warmTransitionForPage(pageId);
     warmPageResources(pageId);
     const nextIntroOffset = getResolvedIntroHandoffOffset(pageId, true);
-    const fromReverseSrc = getVideoSrc(fromPageId, true);
-    const visibleHomeSrc = videoEl?.currentSrc || videoEl?.src || '';
-    const visibleSourceNeedsDirectHandoffScale = !fromReverseSrc && visibleHomeSrc.includes('intro.mp4');
     const nextIntroEquilibriumTransform = {
-        scale: isMobile
-            ? (visibleSourceNeedsDirectHandoffScale ? HOME_DIRECT_HANDOFF_SCALE : SECTION_CHAIN_HOME_SCALE)
-            : DESKTOP_SECTION_CHAIN_EQUILIBRIUM_SCALE,
+        scale: pageId === 'contact'
+            ? getContactHandoffScale()
+            : (isMobile
+                ? getMobileCinematicScaleForPage(pageId)
+                : DESKTOP_SECTION_CHAIN_EQUILIBRIUM_SCALE),
         x: nextIntroOffset.x,
         y: nextIntroOffset.y
     };
+    const reverseEndTransform = fromPageId === 'contact'
+        ? { scale: getContactHandoffScale(), x: 0, y: 0 }
+        : (fromPageId === 'about'
+            ? {
+                scale: getPrimaryVideoScale(isMobile ? getMobileCinematicScaleForPage('about') : 1),
+                x: Number(gsap.getProperty(videoEl, 'x')) || 0,
+                y: Number(gsap.getProperty(videoEl, 'y')) || 0
+            }
+            : nextIntroEquilibriumTransform);
     if (!isMobile && pageId !== 'services' && hasCinematicForwardVideo(pageId)) {
         const handoffOffset = getResolvedIntroHandoffOffset(pageId, true);
         primeBufferedHandoffVideo(getVideoSrc(pageId), {
@@ -1081,12 +1110,16 @@ function routeSectionTransitionThroughHome(pageId) {
             x: handoffOffset.x,
             y: handoffOffset.y
         }, pageId === 'about' ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME : 0);
+    } else if (isMobile && pageId === 'contact' && hasCinematicForwardVideo(pageId)) {
+        primeBufferedHandoffVideo(getVideoSrc(pageId), nextIntroEquilibriumTransform, MOBILE_CONTACT_CHAIN_INTRO_START_TIME, { allowMobile: true });
     }
     setHeroNavReady(!isMobile);
 
     executeFinalReverse({
         revealHomeUi: false,
+        chainedTargetPageId: pageId,
         equilibriumTransform: nextIntroEquilibriumTransform,
+        reverseEndTransform,
         onHomeSettled: () => {
             pendingSeamlessIntroTransform = nextIntroEquilibriumTransform;
             shouldSeamlesslyStartNextIntro = true;
@@ -1151,6 +1184,7 @@ function setCustomCursorVisibility(isVisible, duration = 0.3) {
 }
 
 function getContactVideoObjectPosition() {
+    // Contact crop/framing knob. Change CONTACT_VIDEO_POSITION_* constants above.
     return isVertical() ? CONTACT_VIDEO_POSITION_VERTICAL : CONTACT_VIDEO_POSITION_HORIZONTAL;
 }
 
@@ -1164,13 +1198,45 @@ function lockContactVideoComposition({ resetTransform = true } = {}) {
     if (resetTransform) {
         contactVideoState.x = 0;
         contactVideoState.y = '0vh';
-        contactVideoState.scale = 1;
+        contactVideoState.scale = isMobile ? getMobileCinematicScaleForPage('contact') : 1;
     }
 
     gsap.set(videoEl, contactVideoState);
 }
 
-function setContactVideoForegroundMode(isEnabled) {
+function getMobileContactSettleY() {
+    // Mobile Contact final vertical settle.
+    // Increase the returned value to move the handshake lower; decrease it to move higher.
+    const lockedVh = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-lock-vh'));
+    const viewportUnit = Number.isFinite(lockedVh) && lockedVh > 0 ? lockedVh : window.innerHeight / 100;
+    const narrowPhoneBoost = Math.max(0, 390 - window.innerWidth) * 1.7;
+    return Math.round(Math.min(Math.max(viewportUnit * 8 + narrowPhoneBoost, 42), 190));
+}
+
+function slideMobileContactVideoDown() {
+    if (!isMobile || !videoEl || typeof gsap === 'undefined') return;
+
+    videoEl.style.objectPosition = getContactVideoObjectPosition();
+
+    gsap.killTweensOf(videoEl);
+
+    gsap.set(videoEl, {
+        x: 0,
+        y: 0,
+        scale: getMobileCinematicScaleForPage('contact'),
+        transformOrigin: '50% 50%'
+    });
+
+    gsap.to(videoEl, {
+        y: getMobileContactSettleY(),
+        scale: getMobileCinematicScaleForPage('contact'),
+        duration: 1.1,
+        ease: 'power3.inOut',
+        overwrite: 'auto'
+    });
+}
+
+function setContactVideoForegroundMode(isEnabled, { resetTransform = isEnabled || state === 'contact' } = {}) {
     document.body.classList.toggle('contact-video-foreground', Boolean(isEnabled));
     if (videoContainer) {
         videoContainer.style.pointerEvents = 'none';
@@ -1184,8 +1250,10 @@ function setContactVideoForegroundMode(isEnabled) {
             opacity: 1,
             filter: CONTACT_VIDEO_BASE_FILTER
         });
+    } else if (resetTransform) {
+        gsap.set(videoEl, { x: 0, y: '0vh', scale: isMobile ? getMobileUniformCinematicScale() : 1, clearProps: 'filter' });
     } else {
-        gsap.set(videoEl, { x: 0, y: '0vh', scale: 1, clearProps: 'filter' });
+        gsap.set(videoEl, { clearProps: 'filter' });
     }
 }
 
@@ -1421,6 +1489,47 @@ function clearTransientVideoState() {
     removeManagedVideoListenerFrom(videoEl, 'timeupdate', '_managedTimeupdateHandler');
 }
 
+function clearServicesPlaybackHandlers({ pause = false } = {}) {
+    const servicesVideos = [
+        document.getElementById('services-bg-video'),
+        document.getElementById('services-loop-video')
+    ].filter(Boolean);
+
+    servicesVideos.forEach((video) => {
+        if (video._checkTime) {
+            video.removeEventListener('timeupdate', video._checkTime);
+            video._checkTime = null;
+        }
+        if (video._startAmbientLoop) {
+            video.removeEventListener('ended', video._startAmbientLoop);
+            video._startAmbientLoop = null;
+        }
+        if (pause) {
+            try { video.pause(); } catch (_) {}
+        }
+    });
+}
+
+function clearSectionTransitionTweens(pageId) {
+    const targetMap = {
+        about: ['.about-content', '.reveal-text'],
+        services: ['#services-bg-video', '#services-loop-video', '.services-text-overlay', '.services-gradient-overlay'],
+        portfolios: ['.portfolio-item'],
+        blogs: ['#blogs-section .blogs-container h1', '#blogs-section .blog-card', '#blogs-section .blog-social-icons'],
+        contact: ['.contact-plum-glow', '.contact-reveal', '.contact-social-link', '.contact-cta']
+    };
+    const targets = (targetMap[pageId] || []).flatMap(selector => gsap.utils.toArray(selector));
+    if (targets.length) gsap.killTweensOf(targets);
+    if (pageId === 'services') clearServicesPlaybackHandlers();
+}
+
+function clearTransitionBoundaryState(outgoingPageId) {
+    clearTransientVideoState();
+    gsap.killTweensOf([videoEl, handoffVideoBuffer].filter(Boolean));
+    clearSectionTransitionTweens(outgoingPageId);
+
+}
+
 function getVideoObjectFit(src) {
     if (!isMobile) return 'cover';
     return 'contain';
@@ -1484,6 +1593,8 @@ function videoUsesSource(video, src) {
 function applyVideoPresentation(video, src, transformState = {}) {
     if (!video) return;
 
+    // Shared presentation setup for the visible video and the hidden handoff buffer.
+    // transformState.scale changes size; x/y move the frame; opacity controls visibility.
     gsap.killTweensOf(video);
     video.style.objectFit = getVideoObjectFit(src);
     video.style.objectPosition = getVideoObjectPosition(src);
@@ -1501,8 +1612,10 @@ function applyVideoPresentation(video, src, transformState = {}) {
     });
 }
 
-function primeBufferedHandoffVideo(src, transformState = {}, startTime = 0) {
-    if (!src || isMobile || !videoContainer) return;
+function primeBufferedHandoffVideo(src, transformState = {}, startTime = 0, options = {}) {
+    // Preloads a video into the hidden handoff buffer before it becomes visible.
+    // startTime lets you skip part of a clip; keep it at 0 for the full intro.
+    if (!src || (isMobile && !options.allowMobile) || !videoContainer) return;
 
     const bufferVideo = getHandoffVideoBuffer();
     const handoffStartTime = Math.max(0, Number(startTime) || 0);
@@ -1785,6 +1898,8 @@ function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
 }
 
 function activateBufferedVideo(bufferVideo, options = {}) {
+    // Swaps the hidden buffer into #bg-video. This is the main stitch/crossfade point.
+    // VIDEO_HANDOFF_FADE_DURATION and VIDEO_HANDOFF_IN_FADE_DURATION control speed.
     const outgoingVideo = videoEl;
     if (!bufferVideo || bufferVideo === outgoingVideo) return outgoingVideo;
     const instantReveal = Boolean(options.instantReveal);
@@ -1794,6 +1909,7 @@ function activateBufferedVideo(bufferVideo, options = {}) {
     const outgoingOpacity = Number.isFinite(computedOutgoingOpacity)
         ? computedOutgoingOpacity
         : (Number(gsap.getProperty(outgoingVideo, 'opacity')) || 0);
+    const shouldCrossfade = !instantReveal && outgoingOpacity > 0.05 && (!isMobile || options.mobileCrossfade);
     outgoingVideo.id = 'handoff-video-buffer';
     bufferVideo.id = 'bg-video';
     videoEl = bufferVideo;
@@ -1803,7 +1919,7 @@ function activateBufferedVideo(bufferVideo, options = {}) {
         gsap.set(bufferVideo, { opacity: 1, clearProps: 'filter' });
         gsap.set(outgoingVideo, { opacity: 0, clearProps: 'filter' });
         outgoingVideo.pause();
-    } else if (!isMobile && outgoingOpacity > 0.05) {
+    } else if (shouldCrossfade) {
         gsap.set(bufferVideo, { opacity: VIDEO_HANDOFF_IN_START_OPACITY, clearProps: 'filter' });
         gsap.set(outgoingVideo, { opacity: Math.min(outgoingOpacity, 1), clearProps: 'filter' });
         gsap.timeline({
@@ -1831,13 +1947,22 @@ function activateBufferedVideo(bufferVideo, options = {}) {
 }
 
 function playVideo(src, onComplete, seamless = false, shouldLoop = false, playbackRate = 1.0, completionLead = 0.08, handoffOptions = {}) {
+    // Generic video transition runner.
+    // playbackRate controls clip speed; completionLead controls how early onComplete fires.
+    // handoffOptions.startTime/endTransform are where size, movement, and stitch timing enter.
     const transitionToken = ++videoTransitionToken;
     clearTransientVideoState();
     const isReverseTransition = Boolean(src && src.includes('reverse'));
     const shouldApplyHandoffBlur = !seamless || isReverseTransition || handoffOptions.buffered;
     const handoffBlur = isReverseTransition ? 'blur(2.5px)' : 'blur(1.5px)';
     const handoffBlurDuration = isReverseTransition ? 0.5 : 0.36;
-    const shouldUseBufferedHandoff = Boolean(handoffOptions.buffered && seamless && !shouldLoop && videoContainer && !isMobile);
+    const shouldUseBufferedHandoff = Boolean(
+        handoffOptions.buffered
+        && seamless
+        && !shouldLoop
+        && videoContainer
+        && (!isMobile || handoffOptions.allowMobileBuffered)
+    );
 
     if (!src) {
         if (seamless) {
@@ -1926,7 +2051,6 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
             if (transitionToken !== videoTransitionToken) return;
             videoEl.playbackRate = playbackRate;
             if (seamless && isMobile) {
-                gsap.set(videoEl, { opacity: 1 });
                 leaveMobileHomeState();
             }
             if (typeof handoffOptions.beforeReveal === 'function') {
@@ -1934,7 +2058,18 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
             }
 
             if (seamless && !shouldUseBufferedHandoff) {
-                gsap.set(videoEl, { opacity: handoffOptions.revealOpacity ?? 1 });
+                const revealOpacity = handoffOptions.revealOpacity ?? 1;
+                const currentOpacity = Number(gsap.getProperty(videoEl, 'opacity'));
+                if (isMobile && !isReverseTransition && revealOpacity > currentOpacity) {
+                    gsap.to(videoEl, {
+                        opacity: revealOpacity,
+                        duration: SECTION_MEDIA_FADE_IN_DURATION,
+                        ease: 'sine.out',
+                        overwrite: 'auto'
+                    });
+                } else {
+                    gsap.set(videoEl, { opacity: revealOpacity });
+                }
             }
 
             if (shouldApplyHandoffBlur) {
@@ -2022,7 +2157,8 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
             hasCommittedPlayback = true;
             if (shouldUseBufferedHandoff) {
                 activateBufferedVideo(playbackVideo, {
-                    instantReveal: handoffOptions.instantReveal
+                    instantReveal: handoffOptions.instantReveal,
+                    mobileCrossfade: handoffOptions.mobileCrossfade
                 });
                 animateBufferedTransform();
             }
@@ -2055,14 +2191,31 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
     };
 
     if (seamless) {
-        const initialState = { opacity: handoffOptions.initialOpacity ?? 1 };
+        const initialOpacity = handoffOptions.initialOpacity ?? (isMobile && !isReverseTransition && !shouldUseBufferedHandoff ? 0 : 1);
+        const initialState = { opacity: initialOpacity };
         if (shouldApplyHandoffBlur) {
             initialState.filter = handoffBlur;
         } else {
             initialState.clearProps = 'filter';
         }
-        gsap.set(videoEl, initialState);
-        startPlayback();
+        const currentOpacity = Number(gsap.getProperty(videoEl, 'opacity'));
+        const beginPlayback = () => {
+            gsap.set(videoEl, initialState);
+            startPlayback();
+        };
+
+        if (isMobile && !isReverseTransition && currentOpacity > initialOpacity) {
+            gsap.to(videoEl, {
+                opacity: initialOpacity,
+                ...(shouldApplyHandoffBlur ? { filter: handoffBlur } : {}),
+                duration: SECTION_MEDIA_FADE_OUT_DURATION,
+                ease: 'sine.inOut',
+                overwrite: 'auto',
+                onComplete: beginPlayback
+            });
+        } else {
+            beginPlayback();
+        }
     } else {
         gsap.to(videoEl, {
             opacity: 0,
@@ -2480,11 +2633,6 @@ function initNavSystems() {
             }
             
             const pageId = targetId.split('-')[0];
-            if (shouldReturnAboutToTopBeforeTransition(pageId)) {
-                returnAboutToTopBeforeTransition(pageId);
-                return;
-            }
-
             startVideoTransition(pageId);
         });
     });
@@ -2494,11 +2642,6 @@ initNavSystems();
 function startVideoTransition(pageId) {
     warmTransitionForPage(pageId);
     warmPageResources(pageId);
-
-    if (shouldReturnAboutToTopBeforeTransition(pageId)) {
-        returnAboutToTopBeforeTransition(pageId);
-        return;
-    }
 
     setHeroNavReady(!isMobile);
     if (isMobile) {
@@ -2533,13 +2676,13 @@ function startVideoTransition(pageId) {
     }
 
     if (state === pageId) return;
+    const previousState = state;
+    clearTransitionBoundaryState(previousState);
     const transitionOwnerToken = ++videoTransitionToken;
-    clearTransientVideoState();
     isAnimating = true;
     if (queuedSectionTransitionTarget === pageId) {
         queuedSectionTransitionTarget = null;
     }
-    const previousState = state;
     state = pageId;
     const seamlessIntroHandoff = consumeSeamlessIntroHandoff();
     const isSeamlessIntroHandoff = seamlessIntroHandoff.active;
@@ -2553,11 +2696,16 @@ function startVideoTransition(pageId) {
     const shouldScaleIntroFromVisibleHome = !isMobile && useBufferedIntroHandoff && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const shouldScaleServicesFromVisibleHome = pageId === 'services' && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const shouldScaleNoVideoFromVisibleHome = !isMobile && useEquilibriumNoVideoReveal && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
+    const mobileUniformScale = getMobileUniformCinematicScale();
+    const mobileTargetScale = getMobileCinematicScaleForPage(pageId);
     const introEquilibriumScale = isEquilibriumIntroHandoff
         ? (isMobile
-            ? (isSeamlessIntroHandoff ? visibleSeamlessEquilibriumScale : SECTION_CHAIN_HOME_SCALE)
+            ? mobileTargetScale
             : (isSeamlessIntroHandoff ? visibleSeamlessEquilibriumScale : HOME_EQUILIBRIUM_SCALE))
-        : SECTION_CHAIN_HOME_SCALE;
+        : (isMobile ? mobileTargetScale : SECTION_CHAIN_HOME_SCALE);
+    const introStartScale = pageId === 'contact' && isEquilibriumIntroHandoff
+        ? getContactHandoffScale()
+        : introEquilibriumScale;
     const visibleHomeSourceScale = (shouldScaleIntroFromVisibleHome || shouldScaleServicesFromVisibleHome || shouldScaleNoVideoFromVisibleHome)
         ? getVisibleHomeSourceScale()
         : introEquilibriumScale;
@@ -2569,8 +2717,8 @@ function startVideoTransition(pageId) {
     const shouldSettleVisibleHomeBeforeNoVideo = false;
     const shouldSettleVisibleHomeBeforeServices = false;
     const visibleHomeHandoffScale = (shouldSettleVisibleHomeBeforeNoVideo || shouldSettleVisibleHomeBeforeServices)
-        ? (isMobile ? HOME_DIRECT_HANDOFF_SCALE : getVisibleHomeSourceScale())
-        : (isMobile ? SECTION_CHAIN_HOME_SCALE : HOME_EQUILIBRIUM_SCALE);
+        ? (isMobile ? mobileTargetScale : getVisibleHomeSourceScale())
+        : (isMobile ? mobileTargetScale : HOME_EQUILIBRIUM_SCALE);
     const forwardVideoSrc = shouldScaleIntroFromVisibleHome
         ? getDesktopHomeDirectVideoSrc(pageId)
         : getVideoSrc(pageId);
@@ -2671,17 +2819,23 @@ function startVideoTransition(pageId) {
                 : 0;
             bufferedIntroHandoffOptions = {
                 buffered: true,
-                startTime: directHomeIntroStartTime || ((!isMobile && isSeamlessIntroHandoff && pageId === 'about')
-                    ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME
-                    : 0),
+                allowMobileBuffered: isMobile && (pageId === 'about' || pageId === 'contact'),
+                mobileCrossfade: isMobile && pageId === 'contact',
+                startTime: isMobile && isSeamlessIntroHandoff && pageId === 'contact'
+                    ? MOBILE_CONTACT_CHAIN_INTRO_START_TIME
+                    : (directHomeIntroStartTime || ((!isMobile && isSeamlessIntroHandoff && pageId === 'about')
+                        ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME
+                        : 0)),
                 instantReveal: shouldScaleIntroFromVisibleHome,
                 startTransform: {
-                    scale: shouldScaleIntroFromVisibleHome ? homeSectionIntroStartScale : introEquilibriumScale,
+                    scale: pageId === 'contact'
+                        ? getContactHandoffScale()
+                        : (shouldScaleIntroFromVisibleHome ? homeSectionIntroStartScale : introStartScale),
                     x: handoffOffset.x,
                     y: handoffOffset.y
                 },
                 endTransform: {
-                    scale: 1,
+                    scale: isMobile ? mobileTargetScale : 1,
                     x: 0,
                     y: targetY,
                     duration: shouldScaleIntroFromVisibleHome
@@ -2690,6 +2844,8 @@ function startVideoTransition(pageId) {
                     ease: "sine.inOut"
                 }
             };
+            // The outgoing frame keeps its own transform; the hidden buffer owns
+            // the incoming intro scale until activateBufferedVideo swaps them.
             if (shouldSettleVisibleHomeBeforeIntro) {
                 primeBufferedHandoffVideo(forwardVideoSrc, bufferedIntroHandoffOptions.startTransform);
                 introHandoffSettleTween = gsap.to(videoEl, {
@@ -2699,12 +2855,6 @@ function startVideoTransition(pageId) {
                     duration: 0.62,
                     ease: "sine.inOut",
                     overwrite: 'auto'
-                });
-            } else {
-                gsap.set(videoEl, {
-                    scale: shouldScaleIntroFromVisibleHome ? visibleHomeSourceScale : introEquilibriumScale,
-                    x: handoffOffset.x,
-                    y: handoffOffset.y
                 });
             }
         } else if (useEquilibriumNoVideoReveal) {
@@ -2729,7 +2879,7 @@ function startVideoTransition(pageId) {
         }
         if (!useBufferedIntroHandoff && !useEquilibriumNoVideoReveal) {
             gsap.to(videoEl, {
-                scale: 1,
+                scale: isMobile ? mobileTargetScale : 1,
                 x: 0,
                 y: targetY,
                 duration: isSeamlessIntroHandoff ? 0.54 : 0.68,
@@ -2745,7 +2895,8 @@ function startVideoTransition(pageId) {
         document.body.classList.remove('anti-gravity-active');
     }
 
-    // Services uses its own dedicated video — skip global bg-video transition
+    // Services uses its own dedicated videos. Tune Services scale/crop mostly in CSS
+    // (#services-bg-video and #services-loop-video), not in the global #bg-video path.
     if (pageId === 'services') {
         // Hide custom cursor on services page for a clean cinematic look
         setCustomCursorVisibility(false);
@@ -2787,10 +2938,29 @@ function startVideoTransition(pageId) {
                     servicesFrameCommitted = true;
                     section.classList.add('active');
                     setElementInteractivity(section, true);
-                    gsap.set(section, { visibility: 'visible', autoAlpha: 1 });
+                    if (isMobile) {
+                        gsap.set(section, { visibility: 'visible' });
+                        gsap.to(section, {
+                            autoAlpha: 1,
+                            duration: SECTION_MEDIA_FADE_IN_DURATION,
+                            ease: "sine.out",
+                            overwrite: true
+                        });
+                    } else {
+                        gsap.set(section, { visibility: 'visible', autoAlpha: 1 });
+                    }
                     fadeServicesGradientIn();
                     if (servicesVideo) {
-                        gsap.set(servicesVideo, { opacity: 1 });
+                        if (isMobile) {
+                            gsap.to(servicesVideo, {
+                                opacity: 1,
+                                duration: SECTION_MEDIA_FADE_IN_DURATION,
+                                ease: "sine.out",
+                                overwrite: true
+                            });
+                        } else {
+                            gsap.set(servicesVideo, { opacity: 1 });
+                        }
                         if (shouldScaleServicesIntroFromEquilibrium) {
                             gsap.to(servicesVideo, {
                                 scale: 1,
@@ -2803,7 +2973,21 @@ function startVideoTransition(pageId) {
                             });
                         }
                     }
-                    gsap.set(videoEl, { opacity: 0, clearProps: 'filter' });
+                    if (isMobile) {
+                        gsap.to(videoEl, {
+                            opacity: 0,
+                            duration: SECTION_MEDIA_FADE_OUT_DURATION,
+                            ease: "sine.inOut",
+                            overwrite: true,
+                            onComplete: () => {
+                                if (transitionOwnerToken === videoTransitionToken) {
+                                    gsap.set(videoEl, { clearProps: 'filter' });
+                                }
+                            }
+                        });
+                    } else {
+                        gsap.set(videoEl, { opacity: 0, clearProps: 'filter' });
+                    }
                     if (isMobile) {
                         gsap.to('.services-text-overlay', {
                             opacity: 1,
@@ -2925,10 +3109,10 @@ function startVideoTransition(pageId) {
 
                         const commitLoopFrame = () => {
                             if (transitionOwnerToken !== videoTransitionToken) return;
-	                            gsap.to(servicesLoop, { opacity: 1, duration: 0.24, ease: "sine.out", overwrite: true });
+	                            gsap.to(servicesLoop, { opacity: 1, duration: isMobile ? SECTION_MEDIA_FADE_IN_DURATION : 0.24, ease: "sine.out", overwrite: true });
 	                            gsap.to(servicesVideo, {
 	                                opacity: 0,
-	                                duration: 0.26,
+	                                duration: isMobile ? SECTION_MEDIA_FADE_OUT_DURATION : 0.26,
                                 ease: "sine.inOut",
                                 overwrite: true,
                                 onComplete: () => {
@@ -3009,9 +3193,11 @@ function startVideoTransition(pageId) {
     }
 
     const useSeamlessForwardPlayback = isEquilibriumIntroHandoff || isSeamlessIntroHandoff || Boolean(bufferedIntroHandoffOptions);
-    const forwardCompletionLead = pageId === 'contact'
-        ? CONTACT_INTRO_COMPLETION_LEAD
-        : (useSeamlessForwardPlayback ? 0.015 : 0.08);
+    const forwardCompletionLead = pageId === 'about' && isMobile
+        ? ABOUT_INTRO_COMPLETION_LEAD_MOBILE
+        : (pageId === 'contact'
+            ? (isMobile ? CONTACT_INTRO_COMPLETION_LEAD_MOBILE : CONTACT_INTRO_COMPLETION_LEAD)
+            : (useSeamlessForwardPlayback ? 0.015 : 0.08));
     const startForwardVideoPlayback = () => playVideo(forwardVideoSrc, () => {
         const section = document.getElementById(pageId + '-section');
         if(section) {
@@ -3039,7 +3225,16 @@ function startVideoTransition(pageId) {
                     pointerEvents: 'auto',
                     ease: "sine.out"
                 });
-                videoEl.playbackRate = 1.5; // Speed up about video
+                videoEl.playbackRate = isMobile ? 1 : 1.5; // Let the mobile logo settle before freezing.
+                if (isMobile) {
+                    const freezeAboutLogoFrame = () => {
+                        if (videoEl.duration && videoEl.currentTime >= videoEl.duration - 0.05) {
+                            videoEl.pause();
+                            removeManagedVideoListener('timeupdate', '_managedTimeupdateHandler');
+                        }
+                    };
+                    addManagedVideoListener('timeupdate', '_managedTimeupdateHandler', freezeAboutLogoFrame);
+                }
                 gsap.to('.reveal-text', { opacity: 1, y: 0, stagger: 0.12, duration: 0.54, delay: 0.2, ease: "sine.out" });
             }
 
@@ -3053,11 +3248,19 @@ function startVideoTransition(pageId) {
                 gsap.set('.contact-reveal', { opacity: 0, y: 24 });
                 gsap.set('.contact-social-link', { opacity: 0, y: 18 });
 
+                const contactCopyDelay = isMobile ? 0.82 : 0.12;
+                const contactGlowDelay = isMobile ? 0.24 : 0;
+
+                if (isMobile) {
+                    slideMobileContactVideoDown();
+                }
+
                 gsap.to('.contact-plum-glow', {
                     opacity: 0.5,
                     scale: 1.04,
                     filter: 'blur(30px)',
                     duration: 1.15,
+                    delay: contactGlowDelay,
                     ease: 'power2.out'
                 });
                 gsap.to('.contact-reveal', {
@@ -3065,7 +3268,7 @@ function startVideoTransition(pageId) {
                     y: 0,
                     stagger: 0.1,
                     duration: 0.65,
-                    delay: 0.12,
+                    delay: contactCopyDelay,
                     ease: 'power2.out'
                 });
                 gsap.to('.contact-social-link', {
@@ -3073,7 +3276,7 @@ function startVideoTransition(pageId) {
                     y: 0,
                     stagger: 0.05,
                     duration: 0.45,
-                    delay: 0.34,
+                    delay: isMobile ? contactCopyDelay + 0.2 : 0.34,
                     ease: 'power2.out'
                 });
                 
@@ -3275,11 +3478,13 @@ function executeFinalReverse(options = {}) {
     const {
         revealHomeUi = true,
         onHomeSettled = null,
-        equilibriumTransform = null
+        equilibriumTransform = null,
+        reverseEndTransform = null,
+        chainedTargetPageId = null
     } = options;
     if (isAnimating) return;
     isAnimating = true;
-    clearTransientVideoState();
+    clearTransitionBoundaryState(state);
     setContactVideoForegroundMode(false);
     suspendAllLocomotiveSections();
     clearTeamHash();
@@ -3303,12 +3508,21 @@ function executeFinalReverse(options = {}) {
     const isNoVideoChainedReverse = !reverseSrc && !revealHomeUi;
     const isAboutReverse = reversePageId === 'about' || activeSection?.id === 'about-section';
     const isContactReverse = reversePageId === 'contact';
+    const currentReverseTransform = {
+        scale: getPrimaryVideoScale(isMobile ? getMobileCinematicScaleForPage(reversePageId) : 1),
+        x: Number(gsap.getProperty(videoEl, 'x')) || 0,
+        y: Number(gsap.getProperty(videoEl, 'y')) || 0
+    };
     const defaultHomeSettleScale = revealHomeUi
         ? getRevealHomeVideoScale(reverseSrc)
-        : (isMobile ? SECTION_CHAIN_HOME_SCALE : HOME_EQUILIBRIUM_SCALE);
-    const homeSettleScale = equilibriumTransform?.scale ?? defaultHomeSettleScale;
-    const homeSettleX = equilibriumTransform?.x ?? 0;
-    const homeSettleY = equilibriumTransform?.y ?? "0vh";
+        : (isMobile ? getMobileUniformCinematicScale() : HOME_EQUILIBRIUM_SCALE);
+    const resolvedReverseEndTransform = reverseEndTransform
+        || (isContactReverse
+            ? { scale: getContactHandoffScale(), x: 0, y: 0 }
+            : (isAboutReverse ? currentReverseTransform : equilibriumTransform));
+    const homeSettleScale = resolvedReverseEndTransform?.scale ?? equilibriumTransform?.scale ?? defaultHomeSettleScale;
+    const homeSettleX = resolvedReverseEndTransform?.x ?? equilibriumTransform?.x ?? 0;
+    const homeSettleY = resolvedReverseEndTransform?.y ?? equilibriumTransform?.y ?? "0vh";
     const reverseCompletionLead = (!revealHomeUi && !isMobile && isServicesReverse)
         ? DESKTOP_SERVICES_CHAIN_REVERSE_COMPLETION_LEAD
         : (!revealHomeUi && !isMobile && isContactReverse)
@@ -3317,6 +3531,10 @@ function executeFinalReverse(options = {}) {
     const reversePlaybackRate = (!isMobile && isContactReverse)
         ? getContactExtroPlaybackRate()
         : REVERSE_PLAYBACK_RATE;
+    // Mobile chained extro cutoff. Larger values cut away earlier before the extro reaches its final logo frame.
+    const mobileReverseCompletionLead = (!revealHomeUi && isMobile && chainedTargetPageId === 'contact')
+        ? (isServicesReverse ? MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD : MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD)
+        : MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD;
 
     if (activeSection) {
         if (!isServicesReverse) {
@@ -3344,6 +3562,16 @@ function executeFinalReverse(options = {}) {
         primeBufferedHandoffVideo(reverseSrc);
     }
 
+    if (isMobile && (isAboutReverse || isContactReverse) && reverseSrc) {
+        const reverseScalePage = isContactReverse ? 'contact' : 'about';
+        gsap.set(videoEl, {
+            scale: getMobileCinematicScaleForPage(reverseScalePage),
+            x: 0,
+            y: '0vh',
+            transformOrigin: '50% 50%'
+        });
+    }
+
     if (isServicesReverse) {
         // Clear Services UI quickly; the cinematic continuity should be owned
         // by the decoded reverse video frame, not by a long opacity crossfade.
@@ -3369,16 +3597,21 @@ function executeFinalReverse(options = {}) {
 
     let servicesReverseRevealed = false;
     const scheduleChainedReverseEquilibriumTween = () => {
-        if (revealHomeUi || isMobile) return;
+        // Chained reverses should arrive at the next intro scale before the buffered/crossfaded intro starts.
+        // About's reverse clip is the sole movement owner; Contact always scales down.
+        if (isAboutReverse || (revealHomeUi && !isContactReverse)) return;
 
-        const transformDuration = DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION;
-        const transformLead = reverseCompletionLead;
+        const transformDuration = isMobile
+            ? MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION
+            : DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION;
+        const transformLead = isMobile ? mobileReverseCompletionLead : reverseCompletionLead;
         const mediaDuration = Number(videoEl.duration);
         const mediaCurrentTime = Number(videoEl.currentTime) || 0;
         const mediaRate = Math.max(0.01, Math.abs(videoEl.playbackRate || reversePlaybackRate || 1));
+        const mediaUntilCompletion = Math.max(0, Math.max(0, mediaDuration - mediaCurrentTime) - transformLead);
         const transformDelay = Number.isFinite(mediaDuration) && mediaDuration > 0
-            ? Math.max(0, (Math.max(0, mediaDuration - mediaCurrentTime) / mediaRate) - transformDuration - transformLead)
-            : 0.62;
+            ? Math.max(0, (mediaUntilCompletion / mediaRate) - transformDuration)
+            : (isMobile ? 0.12 : 0.62);
 
         gsap.to(videoEl, {
             scale: homeSettleScale,
@@ -3395,7 +3628,7 @@ function executeFinalReverse(options = {}) {
         if (servicesReverseRevealed) return;
         servicesReverseRevealed = true;
 
-        const servicesReverseScale = SECTION_CHAIN_HOME_SCALE;
+        const servicesReverseScale = isMobile ? getMobileServicesMediaScale() : SECTION_CHAIN_HOME_SCALE;
         const servicesReverseOpacity = 1;
         gsap.killTweensOf([videoEl, '#services-loop-video', '#services-bg-video', '.services-text-overlay', '.services-gradient-overlay']);
         gsap.set(videoEl, {
@@ -3422,7 +3655,7 @@ function executeFinalReverse(options = {}) {
         ? { noVideoDelay: isPortfolioNoVideoReverse ? Math.round(PORTFOLIO_LOGO_ZOOM_OUT_DURATION * 1000) : (activeSection ? (revealHomeUi ? 560 : 190) : 70) }
         : (!isMobile && !isServicesReverse ? {
             buffered: true,
-            endTransform: !revealHomeUi ? {
+            endTransform: (!isAboutReverse && (!revealHomeUi || isContactReverse)) ? {
                 scale: homeSettleScale,
                 x: homeSettleX,
                 y: homeSettleY,
@@ -3532,11 +3765,14 @@ function executeFinalReverse(options = {}) {
         if (revealHomeUi) {
             setCustomCursorVisibility(true, 0.53);
         }
-    }, true, false, reversePlaybackRate, revealHomeUi ? 0.08 : (!isMobile ? reverseCompletionLead : 0), reverseHandoffOptions);
+    }, true, false, reversePlaybackRate, revealHomeUi ? 0.08 : (isMobile ? mobileReverseCompletionLead : reverseCompletionLead), reverseHandoffOptions);
 
-    if (!isServicesReverse) {
+    if (!isServicesReverse && reverseSrc) {
         addManagedVideoListener('playing', '_managedPlayingHandler', () => {
             videoEl.playbackRate = reversePlaybackRate;
+            if (isMobile && (!revealHomeUi || isContactReverse)) {
+                scheduleChainedReverseEquilibriumTween();
+            }
         }, true);
     }
 }
@@ -4245,7 +4481,9 @@ function openPortfolioCaseStudy(caseId, meta = {}, opener = null) {
 
 function markPortfolioVideoUnavailable(item, video) {
     item.classList.add('video-unavailable');
+    item.classList.remove('has-video-mounted');
     item.classList.remove('is-playing');
+    getPortfolioVideoShell(item)?.classList.remove('is-mounted');
     if (video) {
         try { video.pause(); } catch(e) {}
         video.setAttribute('aria-hidden', 'true');
@@ -4305,6 +4543,7 @@ function mountPortfolioVideo(item) {
     configurePortfolioVideo(video);
     shell.appendChild(video);
     shell.classList.add('is-mounted');
+    item.classList.add('has-video-mounted');
 
     return video;
 }
@@ -4325,6 +4564,7 @@ function unmountPortfolioVideo(item) {
 
     pausePortfolioVideo(item, video);
     shell.classList.remove('is-mounted');
+    item.classList.remove('has-video-mounted');
     video.remove();
 }
 
@@ -4536,7 +4776,49 @@ function initPortfolioSystem() {
             existingVideo.addEventListener('canplay', requestPortfolioPlaybackSync);
         }
 
-        item.addEventListener('click', () => {
+        let touchStart = null;
+        let suppressTapUntil = 0;
+
+        item.addEventListener('touchstart', (event) => {
+            const touch = event.touches?.[0];
+            if (!touch) return;
+            touchStart = {
+                x: touch.clientX,
+                y: touch.clientY,
+                moved: false
+            };
+        }, { passive: true });
+
+        item.addEventListener('touchmove', (event) => {
+            if (!touchStart) return;
+            const touch = event.touches?.[0];
+            if (!touch) return;
+            const dx = touch.clientX - touchStart.x;
+            const dy = touch.clientY - touchStart.y;
+            if (Math.hypot(dx, dy) > 10) {
+                touchStart.moved = true;
+                suppressTapUntil = performance.now() + 450;
+            }
+        }, { passive: true });
+
+        item.addEventListener('touchend', () => {
+            if (touchStart?.moved) {
+                suppressTapUntil = performance.now() + 450;
+            }
+            touchStart = null;
+        }, { passive: true });
+
+        item.addEventListener('touchcancel', () => {
+            suppressTapUntil = performance.now() + 450;
+            touchStart = null;
+        }, { passive: true });
+
+        item.addEventListener('click', (event) => {
+            if (performance.now() < suppressTapUntil) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             openPortfolioCaseStudy(item.dataset.caseId, meta, item);
         });
 
@@ -4546,11 +4828,6 @@ function initPortfolioSystem() {
             openPortfolioCaseStudy(item.dataset.caseId, meta, item);
         });
 
-        // Touch: open the same case-study panel instead of leaving taps as video-only previews.
-        item.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            openPortfolioCaseStudy(item.dataset.caseId, meta, item);
-        }, { passive: false });
     });
 
     requestPortfolioPlaybackSync();
