@@ -13,6 +13,112 @@ const mobileHamburger = document.getElementById('mobile-hamburger');
 const mobileNavClose = document.getElementById('mobile-nav-close');
 const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
+const transitionAudioSources = {
+    about: './audio/about-us-click-transition.ogg',
+    services: './audio/services-click-transition.ogg',
+    portfolios: './audio/portfolio-click-transition.ogg',
+    blogs: './audio/blogs-click-transition.ogg',
+    contact: './audio/contact-click-transition.ogg',
+    contactHome: './audio/contact-page-to-home-click-transition.ogg'
+};
+const transitionAudioPlayers = new Map();
+let activeTransitionAudioPage = null;
+const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 1800;
+
+function getTransitionAudio(pageId) {
+    const src = transitionAudioSources[pageId];
+    if (!src) return null;
+
+    if (!transitionAudioPlayers.has(pageId)) {
+        const audio = new Audio(src);
+        audio.preload = 'auto';
+        audio.volume = 0.82;
+        transitionAudioPlayers.set(pageId, audio);
+    }
+
+    return transitionAudioPlayers.get(pageId);
+}
+
+function warmTransitionAudio(pageId) {
+    const audio = getTransitionAudio(pageId);
+    if (!audio) return;
+    try { audio.load(); } catch (_) {}
+}
+
+function waitForTransitionAudioToFinish(pageId, transitionOwnerToken, callback, fallbackMs = PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS) {
+    const audio = getTransitionAudio(pageId);
+    if (!audio || activeTransitionAudioPage !== pageId || audio.paused) {
+        callback();
+        return;
+    }
+
+    let didFinish = false;
+    let fallbackTimer = null;
+    const finish = () => {
+        if (didFinish) return;
+        didFinish = true;
+        audio.removeEventListener('ended', finish);
+        audio.removeEventListener('pause', finish);
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        if (transitionOwnerToken !== null && transitionOwnerToken !== videoTransitionToken) return;
+        callback();
+    };
+
+    const remainingMs = Number.isFinite(audio.duration) && audio.duration > 0
+        ? Math.max(0, (audio.duration - audio.currentTime) * 1000 + 80)
+        : fallbackMs;
+
+    if (remainingMs <= 90) {
+        finish();
+        return;
+    }
+
+    audio.addEventListener('ended', finish, { once: true });
+    audio.addEventListener('pause', finish, { once: true });
+    fallbackTimer = setTimeout(finish, Math.min(remainingMs, fallbackMs));
+}
+
+function stopTransitionAudio(exceptPageId = null) {
+    transitionAudioPlayers.forEach((audio, pageId) => {
+        if (pageId === exceptPageId) return;
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+        } catch (_) {}
+    });
+    if (activeTransitionAudioPage !== exceptPageId) {
+        activeTransitionAudioPage = null;
+    }
+}
+
+function playTransitionAudio(pageId) {
+    const audio = getTransitionAudio(pageId);
+    if (!audio) {
+        stopTransitionAudio();
+        return;
+    }
+
+    stopTransitionAudio(pageId);
+    activeTransitionAudioPage = pageId;
+    try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 0.82;
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
+        }
+    } catch (_) {}
+}
+
+window.__transitionAudioDebug = {
+    getActivePage: () => activeTransitionAudioPage,
+    getState: (pageId) => {
+        const audio = getTransitionAudio(pageId);
+        if (!audio) return null;
+        return { paused: audio.paused, currentTime: audio.currentTime, duration: audio.duration, src: audio.currentSrc || audio.src };
+    }
+};
 
 /**
  * ANIMATION TUNING GUIDE
@@ -59,10 +165,10 @@ const CONTACT_MOBILE_CINEMATIC_SCALE = 1;
 const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
-const HOME_EQUILIBRIUM_SCALE = 0.64;
+const HOME_EQUILIBRIUM_SCALE = 0.32;
 const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
-const INTRO_ZOOM_START_SCALE = 0.66;
+const INTRO_ZOOM_START_SCALE = 0.33;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
@@ -81,7 +187,7 @@ const CONTACT_INTRO_COMPLETION_LEAD_MOBILE = 0.08;
 // Contact's source artwork is larger than the shared Enso equilibrium frame.
 // These scales make its intro begin, and its outro finish, at the same visual size.
 const CONTACT_HANDOFF_SCALE_DESKTOP = 0.74;
-const CONTACT_HANDOFF_SCALE_MOBILE = 0.69;
+const CONTACT_HANDOFF_SCALE_MOBILE = 0.84;
 const CONTACT_EXTRO_MEDIA_DURATION = 2.836;
 const CONTACT_EXTRO_DURATION = 2.35;
 const CONTACT_EXTRO_EQUILIBRIUM_LEAD = 0.12;
@@ -103,8 +209,10 @@ const DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.36;
 const MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.28;
 const MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD = 0.22;
 const MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 1.32;
-const MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 1.65;
+const MOBILE_CONTACT_ABOUT_REVERSE_COMPLETION_LEAD = 0.035;
+const MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 0.08;
 const MOBILE_CONTACT_CHAIN_INTRO_START_TIME = 0;
+const MOBILE_ABOUT_CHAIN_INTRO_START_TIME = 0.12;
 const DESKTOP_ABOUT_CHAIN_INTRO_START_TIME = 0;
 const DESKTOP_HOME_DIRECT_INTRO_SOURCES = {};
 const DESKTOP_HOME_DIRECT_INTRO_START_TIMES = {
@@ -194,6 +302,7 @@ function getContactExtroPlaybackRate() {
 function getContactHandoffScale() {
     return isMobile ? CONTACT_HANDOFF_SCALE_MOBILE : CONTACT_HANDOFF_SCALE_DESKTOP;
 }
+
 
 function queueSectionTransition(pageId) {
     if (!pageId || pageId === state) return;
@@ -578,6 +687,9 @@ function hideSection(section, { duration = 0.3, immediate = false } = {}) {
     if (section.id === 'about-section') {
         document.body.classList.remove('about-team-focus');
     }
+    if (section.id === 'contact-section') {
+        document.body.classList.remove('contact-form-focus');
+    }
     setElementInteractivity(section, false);
     if (section.id === 'portfolios-section') {
         pausePortfolioVideos();
@@ -643,9 +755,7 @@ function getNoVideoLogoZoomScale(startScale = getHomeLogoDisplayScale()) {
     if (isMobile) return getMobileUniformCinematicScale();
     const normalizedScale = Number.isFinite(startScale) && startScale > 0 ? startScale : getHomeLogoDisplayScale();
     return Math.min(getPortfolioLogoZoomScale(), normalizedScale * DESKTOP_NO_VIDEO_LOGO_ZOOM_RATIO);
-}
-
-function revealPortfolioSectionContent(section, { transitionOwnerToken = null, duration = 0.72 } = {}) {
+}function revealPortfolioSectionContent(section, { transitionOwnerToken = null, duration = 0.72 } = {}) {
     if (transitionOwnerToken !== null && transitionOwnerToken !== videoTransitionToken) return;
     if (!section) return;
 
@@ -669,7 +779,9 @@ function revealNoVideoSectionContent(pageId, section, { transitionOwnerToken = n
     if (!section) return;
 
     if (pageId === 'portfolios') {
-        revealPortfolioSectionContent(section, { transitionOwnerToken, duration });
+        waitForTransitionAudioToFinish('portfolios', transitionOwnerToken, () => {
+            revealPortfolioSectionContent(section, { transitionOwnerToken, duration });
+        });
         return;
     }
 
@@ -765,7 +877,7 @@ function animatePortfolioLogoExit({ scale, x = 0, y = '0vh', transitionOwnerToke
     if (!videoEl || typeof gsap === 'undefined') return;
 
     const targetScale = scale ?? getHomeLogoDisplayScale();
-    const zoomScale = Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale));
+    const zoomScale = isMobile ? targetScale : Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale));
 
     gsap.killTweensOf(videoEl);
     gsap.set(videoEl, {
@@ -1084,6 +1196,24 @@ function routeSectionTransitionThroughHome(pageId) {
     warmTransitionForPage(fromPageId, true);
     warmTransitionForPage(pageId);
     warmPageResources(pageId);
+
+    if (isMobile && fromPageId === 'contact' && pageId === 'services') {
+        const homeStableTransform = { scale: getHomeLogoDisplayScale(), x: 0, y: '0vh' };
+        executeFinalReverse({
+            revealHomeUi: false,
+            chainedTargetPageId: pageId,
+            equilibriumTransform: homeStableTransform,
+            reverseEndTransform: homeStableTransform,
+            onHomeSettled: () => {
+                shouldSeamlesslyStartNextIntro = false;
+                pendingSeamlessIntroTransform = null;
+                isRoutingThroughHome = false;
+                startVideoTransition(pageId);
+            }
+        });
+        return;
+    }
+
     const nextIntroOffset = getResolvedIntroHandoffOffset(pageId, true);
     const nextIntroEquilibriumTransform = {
         scale: pageId === 'contact'
@@ -1094,8 +1224,13 @@ function routeSectionTransitionThroughHome(pageId) {
         x: nextIntroOffset.x,
         y: nextIntroOffset.y
     };
+    const contactToAboutMobile = isMobile && fromPageId === 'contact' && pageId === 'about';
+    const contactToServicesMobile = isMobile && fromPageId === 'contact' && pageId === 'services';
+    const nextIntroStartTransform = (contactToAboutMobile || contactToServicesMobile)
+        ? { ...nextIntroEquilibriumTransform, scale: getContactHandoffScale() }
+        : nextIntroEquilibriumTransform;
     const reverseEndTransform = fromPageId === 'contact'
-        ? { scale: getContactHandoffScale(), x: 0, y: 0 }
+        ? (pageId === 'about' ? nextIntroStartTransform : { scale: getContactHandoffScale(), x: 0, y: 0 })
         : (fromPageId === 'about'
             ? {
                 scale: getPrimaryVideoScale(isMobile ? getMobileCinematicScaleForPage('about') : 1),
@@ -1110,8 +1245,13 @@ function routeSectionTransitionThroughHome(pageId) {
             x: handoffOffset.x,
             y: handoffOffset.y
         }, pageId === 'about' ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME : 0);
-    } else if (isMobile && pageId === 'contact' && hasCinematicForwardVideo(pageId)) {
-        primeBufferedHandoffVideo(getVideoSrc(pageId), nextIntroEquilibriumTransform, MOBILE_CONTACT_CHAIN_INTRO_START_TIME, { allowMobile: true });
+    } else if (isMobile && (pageId === 'about' || pageId === 'contact') && hasCinematicForwardVideo(pageId)) {
+        primeBufferedHandoffVideo(
+            getVideoSrc(pageId),
+            nextIntroStartTransform,
+            pageId === 'contact' ? MOBILE_CONTACT_CHAIN_INTRO_START_TIME : (pageId === 'about' ? MOBILE_ABOUT_CHAIN_INTRO_START_TIME : 0),
+            { allowMobile: true }
+        );
     }
     setHeroNavReady(!isMobile);
 
@@ -1121,7 +1261,7 @@ function routeSectionTransitionThroughHome(pageId) {
         equilibriumTransform: nextIntroEquilibriumTransform,
         reverseEndTransform,
         onHomeSettled: () => {
-            pendingSeamlessIntroTransform = nextIntroEquilibriumTransform;
+            pendingSeamlessIntroTransform = nextIntroStartTransform;
             shouldSeamlesslyStartNextIntro = true;
             isRoutingThroughHome = false;
             startVideoTransition(pageId);
@@ -1210,7 +1350,7 @@ function getMobileContactSettleY() {
     const lockedVh = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-lock-vh'));
     const viewportUnit = Number.isFinite(lockedVh) && lockedVh > 0 ? lockedVh : window.innerHeight / 100;
     const narrowPhoneBoost = Math.max(0, 390 - window.innerWidth) * 1.7;
-    return Math.round(Math.min(Math.max(viewportUnit * 8 + narrowPhoneBoost, 42), 190));
+    return Math.round(Math.min(Math.max(viewportUnit * 18 + narrowPhoneBoost, 96), 260));
 }
 
 function slideMobileContactVideoDown() {
@@ -1686,16 +1826,17 @@ function waitForFirstDecodedFrame(video, callback, immediateIfReady = false) {
 }
 
 function getRuntimeHomeEquilibriumSrc() {
-    return getVideoSrc('services', true);
+    return getVideoSrc('about', true);
 }
 
 function getRuntimeHomeEquilibriumTransform() {
     return {
-        scale: getHomeLogoDisplayScale(),
+        scale: isMobile ? getHomeLogoDisplayScale() : 1,
         x: 0,
         y: '0vh'
     };
 }
+
 
 function waitForVideoFrameCommit(video, callback, immediateIfReady = true) {
     let hasCommitted = false;
@@ -1848,7 +1989,50 @@ function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
             !videoUsesSource(bufferVideo, src) ||
             bufferVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
         ) {
-            normalizeAndComplete();
+            const finishForcedHomeFrame = () => {
+                videoEl.pause();
+                videoEl.style.objectFit = getVideoObjectFit(src);
+                videoEl.style.objectPosition = getVideoObjectPosition(src);
+                normalizeAndComplete();
+            };
+            applyVideoPresentation(videoEl, src, {
+                opacity: 1,
+                scale: homeTransform.scale,
+                x: homeTransform.x,
+                y: homeTransform.y,
+                filter: 'none'
+            });
+            if (!videoUsesSource(videoEl, src)) {
+                videoEl.src = src;
+                videoEl.load();
+            }
+            const seekForcedHomeFrame = () => {
+                const duration = videoEl.duration;
+                if (!Number.isFinite(duration) || duration <= 0) {
+                    finishForcedHomeFrame();
+                    return;
+                }
+                let hasFinished = false;
+                const finishOnce = () => {
+                    if (hasFinished) return;
+                    hasFinished = true;
+                    requestAnimationFrame(finishForcedHomeFrame);
+                };
+                videoEl.addEventListener('seeked', finishOnce, { once: true });
+                setTimeout(finishOnce, 500);
+                try {
+                    videoEl.currentTime = Math.max(0, duration - HOME_EQUILIBRIUM_FRAME_LEAD);
+                } catch(e) {
+                    finishOnce();
+                }
+            };
+            if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
+                seekForcedHomeFrame();
+            } else {
+                videoEl.addEventListener('loadedmetadata', seekForcedHomeFrame, { once: true });
+                videoEl.addEventListener('canplay', seekForcedHomeFrame, { once: true });
+                setTimeout(seekForcedHomeFrame, 900);
+            }
             return;
         }
 
@@ -2399,7 +2583,7 @@ function enterMobileHomeState(options = {}) {
     if (!isMobile) return;
     if (USE_DESKTOP_CINEMATIC_ON_MOBILE) {
         lockMobileComposition();
-        const { showNavigation = true } = options;
+        const { showNavigation = true, settleScale = getHomeLogoDisplayScale() } = options;
         state = showNavigation ? 'mobile-nav' : 'stabilize';
         setHeroNavReady(showNavigation);
         prepareMobileNavFade({ home: true });
@@ -2410,7 +2594,7 @@ function enterMobileHomeState(options = {}) {
         gsap.set(videoEl, {
             opacity: 1,
             visibility: 'visible',
-            scale: getHomeLogoDisplayScale(),
+            scale: settleScale,
             x: 0,
             y: '0vh',
             objectPosition: 'center center',
@@ -2525,7 +2709,7 @@ function playIntro() {
 
     state = 'intro';
 
-    const introStartScale = isMobile ? getHomeLogoDisplayScale() : INTRO_ZOOM_START_SCALE;
+    const introStartScale = isMobile ? 1 : INTRO_ZOOM_START_SCALE;
     normalizePrimaryVideoState({
         opacity: 1,
         scale: introStartScale,
@@ -2610,6 +2794,7 @@ function initNavSystems() {
             const pageId = targetId.split('-')[0];
             warmTransitionForPage(pageId);
             warmPageResources(pageId);
+            warmTransitionAudio(pageId);
         };
 
         link.addEventListener('mouseenter', warmTarget);
@@ -2700,7 +2885,7 @@ function startVideoTransition(pageId) {
     const mobileTargetScale = getMobileCinematicScaleForPage(pageId);
     const introEquilibriumScale = isEquilibriumIntroHandoff
         ? (isMobile
-            ? mobileTargetScale
+            ? (isSeamlessIntroHandoff ? visibleSeamlessEquilibriumScale : mobileTargetScale)
             : (isSeamlessIntroHandoff ? visibleSeamlessEquilibriumScale : HOME_EQUILIBRIUM_SCALE))
         : (isMobile ? mobileTargetScale : SECTION_CHAIN_HOME_SCALE);
     const introStartScale = pageId === 'contact' && isEquilibriumIntroHandoff
@@ -2729,7 +2914,9 @@ function startVideoTransition(pageId) {
     const visibleVideoObjectPosition = pageId === 'contact' && (!useBufferedIntroHandoff || isMobile)
         ? getContactVideoObjectPosition()
         : 'center center';
-    setContactVideoForegroundMode(false);
+    setContactVideoForegroundMode(false, {
+        resetTransform: !(isMobile && pageId === 'contact' && isEquilibriumIntroHandoff)
+    });
     normalizePrimaryVideoState({
         objectPosition: visibleVideoObjectPosition
     });
@@ -2823,9 +3010,11 @@ function startVideoTransition(pageId) {
                 mobileCrossfade: isMobile && pageId === 'contact',
                 startTime: isMobile && isSeamlessIntroHandoff && pageId === 'contact'
                     ? MOBILE_CONTACT_CHAIN_INTRO_START_TIME
-                    : (directHomeIntroStartTime || ((!isMobile && isSeamlessIntroHandoff && pageId === 'about')
-                        ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME
-                        : 0)),
+                    : (isMobile && isSeamlessIntroHandoff && pageId === 'about'
+                        ? MOBILE_ABOUT_CHAIN_INTRO_START_TIME
+                        : (directHomeIntroStartTime || ((!isMobile && isSeamlessIntroHandoff && pageId === 'about')
+                            ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME
+                            : 0))),
                 instantReveal: shouldScaleIntroFromVisibleHome,
                 startTransform: {
                     scale: pageId === 'contact'
@@ -2838,9 +3027,12 @@ function startVideoTransition(pageId) {
                     scale: isMobile ? mobileTargetScale : 1,
                     x: 0,
                     y: targetY,
-                    duration: shouldScaleIntroFromVisibleHome
-                        ? getDesktopHomeDirectIntroDuration(pageId)
-                        : DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION,
+                    duration: isMobile && isSeamlessIntroHandoff && pageId === 'about'
+                        ? 0.78
+                        : (shouldScaleIntroFromVisibleHome
+                            ? getDesktopHomeDirectIntroDuration(pageId)
+                            : DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION),
+                    delay: isMobile && isSeamlessIntroHandoff && pageId === 'about' ? 0.18 : 0,
                     ease: "sine.inOut"
                 }
             };
@@ -3186,9 +3378,17 @@ function startVideoTransition(pageId) {
     const shouldLoop = false;
 
     if ((pageId === 'portfolios' || pageId === 'blogs') && useEquilibriumNoVideoReveal) {
-        animateNoVideoLogoIntro(pageId, transitionOwnerToken, () => {
-            finishForwardSectionTransition(transitionOwnerToken);
-        });
+        const startNoVideoIntro = () => {
+            animateNoVideoLogoIntro(pageId, transitionOwnerToken, () => {
+                finishForwardSectionTransition(transitionOwnerToken);
+            });
+        };
+
+        if (pageId === 'portfolios') {
+            waitForTransitionAudioToFinish('portfolios', transitionOwnerToken, startNoVideoIntro);
+        } else {
+            startNoVideoIntro();
+        }
         return;
     }
 
@@ -3438,16 +3638,96 @@ function resetAboutView({ revealSection = true, revealContent = true } = {}) {
     document.body.classList.remove('about-team-focus');
 }
 
+function returnToStableHomeDirectly() {
+    if (isAnimating) return;
+    isAnimating = true;
+    clearTransitionBoundaryState(state);
+    setContactVideoForegroundMode(false);
+    suspendAllLocomotiveSections();
+    clearTeamHash();
+    stopTransitionAudio();
+
+    if (isBlogArticleOverlayOpen) {
+        window.closeBlogArticle(false);
+    }
+    if (detailOverlay) {
+        hideTeamDetailOverlay();
+    }
+
+    settleSectionsForHome();
+
+    const heroUi = document.getElementById('hero-ui');
+    if (heroUi) {
+        heroUi.style.display = 'grid';
+        gsap.set(heroUi, { opacity: 0, filter: 'blur(7px)', scale: 1.008 });
+    }
+    gsap.set('#center-nav', { opacity: 0, pointerEvents: 'none' });
+    gsap.set(document.getElementById('status-label'), { opacity: 0 });
+
+    commitRuntimeHomeEquilibriumFrame(() => {
+        gsap.set(videoEl, {
+            scale: getHomeLogoDisplayScale(),
+            x: 0,
+            y: '0vh'
+        });
+        state = 'stabilize';
+        if (heroUi) {
+            gsap.to(heroUi, {
+                filter: 'blur(0px)',
+                opacity: 1,
+                scale: 1,
+                duration: 0.54,
+                ease: 'sine.out',
+                overwrite: true
+            });
+        }
+        gsap.to('#center-nav', {
+            opacity: 1,
+            pointerEvents: 'auto',
+            duration: 0.34,
+            ease: 'sine.out',
+            onStart: () => setHeroNavReady(true)
+        });
+        gsap.to(document.getElementById('status-label'), { opacity: 1, duration: 0.44, ease: 'sine.out' });
+        setCustomCursorVisibility(true, 0.2);
+        scheduleBackgroundWarmup();
+        primeDesktopHomeDirectContactHandoff();
+        isAnimating = false;
+        runQueuedSectionTransition();
+    }, { crossfade: false });
+}
+
 function backToHome() {
     if (isAnimating) return;
-    if (isMobile && (state === 'mobile-landing' || state === 'mobile-nav')) {
+    if (state === 'contact') {
+        playTransitionAudio('contactHome');
+    } else {
+        stopTransitionAudio();
+    }
+    if (isMobile && state === 'mobile-landing') {
         enterMobileHomeState();
+        return;
+    }
+    if (isMobile && state === 'mobile-nav') {
+        const currentHomeScale = Number(gsap.getProperty(videoEl, 'scale'));
+        enterMobileHomeState({
+            showNavigation: true,
+            settleScale: Number.isFinite(currentHomeScale) && currentHomeScale > 0
+                ? currentHomeScale
+                : getHomeLogoDisplayScale()
+        });
         return;
     }
     if (isMobile && document.body.classList.contains('show-mobile-nav')) {
         fadeMobileNavOut();
     }
-    
+
+    if (!isMobile) {
+        if (HOME_EQUILIBRIUM_STATES.has(state) && !isTeamSectionVisible()) return;
+        returnToStableHomeDirectly();
+        return;
+    }
+
     const teamSec = document.getElementById('team-section');
     const isFromTeam = isTeamSectionVisible();
 
@@ -3516,10 +3796,13 @@ function executeFinalReverse(options = {}) {
     const defaultHomeSettleScale = revealHomeUi
         ? getRevealHomeVideoScale(reverseSrc)
         : (isMobile ? getMobileUniformCinematicScale() : HOME_EQUILIBRIUM_SCALE);
+    const mobileHomeReturnTransform = (isMobile && revealHomeUi && isAboutReverse)
+        ? { scale: defaultHomeSettleScale, x: 0, y: "0vh" }
+        : null;
     const resolvedReverseEndTransform = reverseEndTransform
         || (isContactReverse
-            ? { scale: getContactHandoffScale(), x: 0, y: 0 }
-            : (isAboutReverse ? currentReverseTransform : equilibriumTransform));
+            ? (mobileHomeReturnTransform || { scale: getContactHandoffScale(), x: 0, y: 0 })
+            : (isAboutReverse ? (mobileHomeReturnTransform || currentReverseTransform) : equilibriumTransform));
     const homeSettleScale = resolvedReverseEndTransform?.scale ?? equilibriumTransform?.scale ?? defaultHomeSettleScale;
     const homeSettleX = resolvedReverseEndTransform?.x ?? equilibriumTransform?.x ?? 0;
     const homeSettleY = resolvedReverseEndTransform?.y ?? equilibriumTransform?.y ?? "0vh";
@@ -3528,13 +3811,17 @@ function executeFinalReverse(options = {}) {
         : (!revealHomeUi && !isMobile && isContactReverse)
             ? CONTACT_EXTRO_EQUILIBRIUM_LEAD
             : DESKTOP_SECTION_CHAIN_REVERSE_COMPLETION_LEAD;
-    const reversePlaybackRate = (!isMobile && isContactReverse)
+    const reversePlaybackRate = isContactReverse
         ? getContactExtroPlaybackRate()
         : REVERSE_PLAYBACK_RATE;
     // Mobile chained extro cutoff. Larger values cut away earlier before the extro reaches its final logo frame.
-    const mobileReverseCompletionLead = (!revealHomeUi && isMobile && chainedTargetPageId === 'contact')
-        ? (isServicesReverse ? MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD : MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD)
-        : MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD;
+    const mobileReverseCompletionLead = (!revealHomeUi && isMobile && isContactReverse && chainedTargetPageId === 'about')
+        ? MOBILE_CONTACT_ABOUT_REVERSE_COMPLETION_LEAD
+        : (!revealHomeUi && isMobile && isContactReverse && chainedTargetPageId === 'services')
+            ? CONTACT_EXTRO_EQUILIBRIUM_LEAD
+            : ((!revealHomeUi && isMobile && chainedTargetPageId === 'contact')
+                ? (isServicesReverse ? MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD : MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD)
+                : MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD);
 
     if (activeSection) {
         if (!isServicesReverse) {
@@ -3598,8 +3885,8 @@ function executeFinalReverse(options = {}) {
     let servicesReverseRevealed = false;
     const scheduleChainedReverseEquilibriumTween = () => {
         // Chained reverses should arrive at the next intro scale before the buffered/crossfaded intro starts.
-        // About's reverse clip is the sole movement owner; Contact always scales down.
-        if (isAboutReverse || (revealHomeUi && !isContactReverse)) return;
+        // About returns to the exact home logo scale; Contact keeps its smaller handoff scale because that clip artwork is larger.
+        if ((!revealHomeUi && isAboutReverse) || (revealHomeUi && !isAboutReverse && !isContactReverse)) return;
 
         const transformDuration = isMobile
             ? MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION
@@ -3675,7 +3962,10 @@ function executeFinalReverse(options = {}) {
             state = 'stabilize';
             if (revealHomeUi && isMobile) {
                 settleSectionsForHome();
-                enterMobileHomeState({ showNavigation: true });
+                enterMobileHomeState({
+                    showNavigation: true,
+                    settleScale: homeSettleScale
+                });
             }
             if (!revealHomeUi) {
                 setHeroNavReady(false);
@@ -3765,7 +4055,7 @@ function executeFinalReverse(options = {}) {
         if (revealHomeUi) {
             setCustomCursorVisibility(true, 0.53);
         }
-    }, true, false, reversePlaybackRate, revealHomeUi ? 0.08 : (isMobile ? mobileReverseCompletionLead : reverseCompletionLead), reverseHandoffOptions);
+    }, true, false, reversePlaybackRate, (revealHomeUi && isContactReverse) ? CONTACT_EXTRO_EQUILIBRIUM_LEAD : (revealHomeUi ? 0.08 : (isMobile ? mobileReverseCompletionLead : reverseCompletionLead)), reverseHandoffOptions);
 
     if (!isServicesReverse && reverseSrc) {
         addManagedVideoListener('playing', '_managedPlayingHandler', () => {
@@ -3811,6 +4101,40 @@ if (aboutScrollSection) {
     aboutScrollSection.addEventListener('scroll', updateAboutTeamVideoFocus, { passive: true });
 }
 window.addEventListener('resize', updateAboutTeamVideoFocus);
+
+function updateMobileContactFormFocus() {
+    const contactSection = document.getElementById('contact-section');
+    if (!contactSection || !isMobile || state !== 'contact' || !contactSection.classList.contains('active')) {
+        document.body.classList.remove('contact-form-focus');
+        return;
+    }
+
+    const threshold = Math.min(260, Math.max(150, window.innerHeight * 0.34));
+    document.body.classList.toggle('contact-form-focus', contactSection.scrollTop > threshold);
+}
+
+const contactScrollSection = document.getElementById('contact-section');
+if (contactScrollSection) {
+    contactScrollSection.addEventListener('scroll', updateMobileContactFormFocus, { passive: true });
+}
+window.addEventListener('resize', updateMobileContactFormFocus);
+
+document.addEventListener('click', (event) => {
+    const cue = event.target.closest('.contact-form-cue');
+    if (!cue) return;
+
+    event.preventDefault();
+    const contactSection = document.getElementById('contact-section');
+    const formBlock = document.querySelector('#contact-section .contact-form-block');
+    if (!contactSection || !formBlock) return;
+
+    const targetTop = Math.max(0, formBlock.offsetTop - 34);
+    contactSection.scrollTo({
+        top: targetTop,
+        behavior: prefersReducedMotionQuery.matches ? 'auto' : 'smooth'
+    });
+    document.body.classList.add('contact-form-focus');
+});
 
 window.addEventListener('hashchange', () => {
     if (window.location.hash === '#team' && state !== 'about') {
@@ -4304,6 +4628,17 @@ function attachPortfolioImage(item, title, index) {
         media.insertBefore(fallbackImage, media.firstChild);
     }
 
+    let overlay = media.querySelector('.portfolio-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'portfolio-overlay';
+        overlay.innerHTML = '<div class="portfolio-info"><h3 class="project-title"></h3></div>';
+        media.appendChild(overlay);
+    }
+
+    const titleEl = overlay.querySelector('.project-title');
+    if (titleEl) titleEl.textContent = title;
+
     fallbackImage.src = imageUrl;
     return imageUrl;
 }
@@ -4742,6 +5077,37 @@ function bindPortfolioPlaybackEvents() {
 
     isPortfolioPlaybackBound = true;
 }
+let portfolioHoverLabel = null;
+
+function ensurePortfolioHoverLabel() {
+    if (portfolioHoverLabel) return portfolioHoverLabel;
+    portfolioHoverLabel = document.createElement('div');
+    portfolioHoverLabel.className = 'portfolio-hover-label';
+    portfolioHoverLabel.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(portfolioHoverLabel);
+    return portfolioHoverLabel;
+}
+
+function positionPortfolioHoverLabel(clientX, clientY) {
+    if (!portfolioHoverLabel) return;
+    const offsetX = 18;
+    const offsetY = 26;
+    portfolioHoverLabel.style.left = `${clientX + offsetX}px`;
+    portfolioHoverLabel.style.top = `${clientY + offsetY}px`;
+}
+
+function showPortfolioHoverLabel(text, clientX, clientY) {
+    if (isMobile || !text) return;
+    const label = ensurePortfolioHoverLabel();
+    label.textContent = text;
+    positionPortfolioHoverLabel(clientX, clientY);
+    label.classList.add('is-visible');
+}
+
+function hidePortfolioHoverLabel() {
+    if (!portfolioHoverLabel) return;
+    portfolioHoverLabel.classList.remove('is-visible');
+}
 
 // --- PORTFOLIO INTERACTION ENGINE ---
 function initPortfolioSystem() {
@@ -4864,6 +5230,8 @@ function initPortfolioSystem() {
 const originalStartVideoTransition = startVideoTransition;
 startVideoTransition = function(pageId) {
     warmPageResources(pageId);
+    warmTransitionAudio(pageId);
+    if (!transitionAudioSources[pageId]) stopTransitionAudio();
 
     if (isAnimating) {
         queueSectionTransition(pageId);
@@ -4888,6 +5256,10 @@ startVideoTransition = function(pageId) {
     if (shouldRouteSectionTransitionThroughHome(pageId)) {
         routeSectionTransitionThroughHome(pageId);
         return;
+    }
+
+    if (transitionAudioSources[pageId] && state !== pageId) {
+        playTransitionAudio(pageId);
     }
 
     originalStartVideoTransition(pageId);

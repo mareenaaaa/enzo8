@@ -84,7 +84,7 @@ body.about-team-focus #bg-video {
 @media (min-width: 769px) {
     #bg-video {
         opacity: 0;
-        transform: scale(0.64);
+        transform: scale(0.32);
     }
 }
 
@@ -2930,38 +2930,89 @@ body.cursor-hover #custom-cursor-dot {
 
 .portfolio-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 3;
-    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 30%);
     display: flex;
     align-items: flex-end;
-    padding: 25px;
-    opacity: 1; /* Always visible for titles as per screenshot */
+    padding: 24px;
+    opacity: 0;
+    transform: translateY(12px) scale(0.986);
+    transition: opacity 0.32s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.portfolio-overlay::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 58%;
+    background:
+        linear-gradient(180deg, rgba(2, 4, 10, 0) 0%, rgba(3, 7, 16, 0.12) 18%, rgba(3, 7, 16, 0.78) 66%, rgba(2, 5, 12, 0.96) 100%),
+        radial-gradient(circle at 18% 100%, rgba(0, 194, 255, 0.2), transparent 44%),
+        radial-gradient(circle at 82% 110%, rgba(122, 64, 184, 0.18), transparent 38%);
+    backdrop-filter: blur(16px) saturate(1.14);
+    -webkit-backdrop-filter: blur(16px) saturate(1.14);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+}
+
+.portfolio-overlay::after {
+    content: "";
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    width: min(108px, 24%);
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(104, 226, 255, 0.96), rgba(104, 226, 255, 0.14));
+    box-shadow: 0 0 18px rgba(72, 214, 255, 0.34);
+    transform: scaleX(0.72);
+    transform-origin: left center;
+    transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .portfolio-info {
-    width: 100%;
-    text-align: left;
+    position: relative;
+    z-index: 1;
+    width: min(100%, 460px);
+    padding: 18px 18px 8px 0;
 }
 
 .project-category {
-    display: none; /* Hidden for cleaner look like screenshot */
+    display: none;
 }
 
 .project-title {
-    font-family: var(--font-main);
-    font-size: 1.1rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    color: white;
     margin: 0;
+    color: rgba(248, 251, 255, 0.98);
+    font-family: var(--font-main);
+    font-size: clamp(0.94rem, 1.08vw, 1.12rem);
+    font-weight: 650;
+    letter-spacing: 0.12em;
+    line-height: 1.28;
+    text-transform: uppercase;
+    text-wrap: balance;
+    text-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.44),
+        0 0 22px rgba(0, 174, 239, 0.12);
 }
 
 .project-desc {
-    display: none; /* Hidden like screenshot */
+    display: none;
+}
+
+.portfolio-item:hover .portfolio-overlay,
+.portfolio-item:focus-visible .portfolio-overlay,
+.portfolio-item:focus-within .portfolio-overlay {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.portfolio-item:hover .portfolio-overlay::after,
+.portfolio-item:focus-visible .portfolio-overlay::after,
+.portfolio-item:focus-within .portfolio-overlay::after {
+    transform: scaleX(1);
 }
 
 .portfolio-case-modal {
@@ -2970,10 +3021,10 @@ body.cursor-hover #custom-cursor-dot {
     z-index: 10000;
     display: grid;
     place-items: center;
-    padding: clamp(26px, 4.4vw, 68px);
+    padding: clamp(18px, 3.6vw, 52px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.28s ease;
+    transition: opacity 0.3s ease;
 }
 
 .portfolio-case-modal.is-open {
@@ -2985,29 +3036,40 @@ body.cursor-hover #custom-cursor-dot {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 50% 42%, rgba(0, 174, 239, 0.12), transparent 34%),
-        rgba(0, 0, 0, 0.86);
-    backdrop-filter: blur(6px);
+        radial-gradient(circle at 50% 28%, rgba(0, 194, 255, 0.11), transparent 24%),
+        radial-gradient(circle at 86% 12%, rgba(126, 68, 188, 0.12), transparent 24%),
+        rgba(2, 4, 10, 0.82);
+    backdrop-filter: blur(16px) saturate(1.08);
+    -webkit-backdrop-filter: blur(16px) saturate(1.08);
 }
 
 .portfolio-case-modal__panel {
     position: relative;
-    width: min(1040px, 100%);
-    max-height: min(84vh, 760px);
+    width: min(1240px, 100%);
+    height: min(86vh, 860px);
     display: grid;
-    grid-template-columns: minmax(285px, 0.78fr) minmax(0, 1.22fr);
+    grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.22fr);
     overflow: hidden;
-    border: 1px solid rgba(0, 174, 239, 0.22);
-    border-radius: 8px;
+    border: 1px solid rgba(88, 210, 255, 0.16);
+    border-radius: 24px;
     background:
-        linear-gradient(135deg, rgba(0, 174, 239, 0.08), transparent 34%),
-        linear-gradient(180deg, #07080e 0%, #010105 100%);
+        linear-gradient(135deg, rgba(8, 22, 39, 0.97) 0%, rgba(4, 8, 17, 0.988) 46%, rgba(2, 4, 10, 0.996) 100%);
     box-shadow:
-        0 28px 80px rgba(0, 0, 0, 0.56),
-        0 0 42px rgba(0, 174, 239, 0.08);
+        0 40px 120px rgba(0, 0, 0, 0.56),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 46px rgba(0, 174, 239, 0.08);
     color: #fff;
-    transform: translateY(14px) scale(0.985);
-    transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(16px) scale(0.986);
+    transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portfolio-case-modal__panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(122deg, rgba(86, 214, 255, 0.08), transparent 18%, transparent 58%, rgba(152, 91, 255, 0.05) 100%);
 }
 
 .portfolio-case-modal.is-open .portfolio-case-modal__panel {
@@ -3015,28 +3077,53 @@ body.cursor-hover #custom-cursor-dot {
 }
 
 .portfolio-case-modal__meta {
-    padding: clamp(42px, 4.6vw, 62px) clamp(34px, 4vw, 56px);
-    border-right: 1px solid rgba(0, 174, 239, 0.14);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(42px, 4.6vw, 68px) clamp(28px, 3.4vw, 50px);
+    border-right: 1px solid rgba(88, 210, 255, 0.1);
     background:
-        radial-gradient(circle at 20% 8%, rgba(0, 174, 239, 0.18), transparent 40%),
-        #050912;
+        radial-gradient(circle at 14% 12%, rgba(0, 194, 255, 0.18), transparent 32%),
+        linear-gradient(180deg, rgba(4, 18, 31, 0.96), rgba(2, 9, 17, 0.98));
+}
+
+.portfolio-case-modal__meta::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(255,255,255,0), rgba(95, 217, 255, 0.3), rgba(255,255,255,0));
 }
 
 .portfolio-case-modal__content {
     min-height: 0;
+    height: 100%;
     display: grid;
-    grid-template-rows: minmax(180px, 0.78fr) minmax(0, 1fr);
-    padding: clamp(18px, 2vw, 28px);
-    gap: clamp(18px, 2vw, 26px);
+    grid-template-rows: auto minmax(0, 1fr);
+    padding: clamp(24px, 2.2vw, 32px);
+    gap: clamp(18px, 2vw, 24px);
+    overflow: hidden;
 }
 
 .portfolio-case-modal__media {
     position: relative;
-    min-height: 220px;
-    background: #020308;
-    border: 1px solid rgba(0, 174, 239, 0.12);
-    border-radius: 6px;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    background:
+        radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.06), transparent 28%),
+        linear-gradient(180deg, rgba(4, 7, 14, 0.96), rgba(2, 4, 10, 0.98));
+    border: 1px solid rgba(88, 210, 255, 0.1);
+    border-radius: 18px;
     overflow: hidden;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 20px 42px rgba(0, 0, 0, 0.32);
 }
 
 .portfolio-case-modal__media:empty {
@@ -3046,100 +3133,224 @@ body.cursor-hover #custom-cursor-dot {
 .portfolio-case-modal__player {
     width: 100%;
     height: 100%;
-    min-height: 220px;
+    min-height: 100%;
     display: block;
-    background: #020308;
+    background: transparent;
+    --media-object-fit: cover;
+    --media-object-position: center;
+    --controls-backdrop-color: rgba(5, 7, 14, 0.42);
+    --controls-border-radius: 18px;
 }
 
 .portfolio-case-modal__eyebrow {
-    display: block;
-    margin-bottom: 20px;
-    color: rgba(255, 255, 255, 0.58);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+    color: rgba(210, 233, 246, 0.72);
     font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.26em;
+    font-weight: 700;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
+}
+
+.portfolio-case-modal__eyebrow::before {
+    content: "";
+    width: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(88, 214, 255, 0.92), rgba(88, 214, 255, 0.18));
+    box-shadow: 0 0 16px rgba(88, 214, 255, 0.28);
 }
 
 .portfolio-case-modal__title {
     margin: 0;
-    color: #fff;
+    color: #f8fbff;
     font-family: var(--font-main);
-    font-size: clamp(1.4rem, 2.45vw, 2.35rem);
-    line-height: 1.02;
+    font-size: clamp(1.48rem, 2.14vw, 2.9rem);
+    line-height: 1;
     font-weight: 760;
-    letter-spacing: 0;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    max-width: 8.5ch;
 }
 
 .portfolio-case-modal__role {
-    margin-top: 24px;
-    color: rgba(255, 255, 255, 0.66);
-    font-size: 0.74rem;
-    line-height: 1.8;
-    letter-spacing: 0.16em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.portfolio-case-modal__role-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 14px;
+    border: 1px solid rgba(114, 219, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(218, 232, 243, 0.7);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1.2;
     text-transform: uppercase;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .portfolio-case-modal__body {
+    position: relative;
     min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow-x: hidden;
     overflow-y: auto;
-    padding: clamp(28px, 3.1vw, 42px) clamp(32px, 3.8vw, 52px);
-    border: 1px solid rgba(0, 174, 239, 0.09);
-    border-radius: 6px;
-    background: rgba(2, 3, 8, 0.48);
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scrollbar-gutter: stable both-edges;
+    padding: clamp(30px, 3vw, 44px);
+    border: 1px solid rgba(88, 210, 255, 0.1);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(5, 8, 15, 0.92), rgba(3, 6, 12, 0.86));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.035),
+        0 16px 36px rgba(0, 0, 0, 0.16);
+    scrollbar-width: auto;
+    scrollbar-color: rgba(92, 214, 255, 0.36) rgba(255, 255, 255, 0.025);
+}
+
+.portfolio-case-modal__body::before {
+    content: "Case Notes";
+    display: inline-block;
+    margin: 0 0 20px;
+    color: rgba(196, 227, 242, 0.56);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
 }
 
 .portfolio-case-modal__body p {
     margin: 0 0 18px;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: clamp(0.9rem, 1.1vw, 1rem);
-    line-height: 1.8;
-    letter-spacing: 0;
+    color: rgba(230, 237, 246, 0.86);
+    font-size: clamp(0.96rem, 1vw, 1.04rem);
+    line-height: 1.95;
+    letter-spacing: 0.004em;
 }
 
 .portfolio-case-modal__body p:last-child {
     margin-bottom: 0;
 }
 
+.portfolio-case-modal__body::-webkit-scrollbar {
+    width: 12px;
+}
+
+.portfolio-case-modal__body::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(84, 212, 255, 0.5), rgba(84, 212, 255, 0.18));
+    background-clip: padding-box;
+}
+
+.portfolio-case-modal__body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 999px;
+}
+
 .portfolio-case-modal__close {
     position: absolute;
     top: 18px;
     right: 18px;
-    z-index: 2;
-    width: 36px;
-    height: 36px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 3;
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
-    font-size: 1.2rem;
+    background: rgba(4, 8, 15, 0.58);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.26rem;
     line-height: 1;
     cursor: pointer;
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
 
 .portfolio-case-modal__close:hover,
 .portfolio-case-modal__close:focus-visible {
-    border-color: rgba(0, 174, 239, 0.7);
+    border-color: rgba(83, 208, 255, 0.72);
     background: rgba(0, 174, 239, 0.16);
+    transform: scale(1.04);
     outline: none;
 }
 
 @media (max-width: 768px) {
+    .portfolio-overlay {
+        opacity: 1;
+        transform: none;
+        padding: 16px;
+    }
+
+    .portfolio-overlay::before {
+        height: 58%;
+    }
+
+    .portfolio-overlay::after {
+        left: 16px;
+        bottom: 16px;
+        width: 72px;
+    }
+
+    .portfolio-info {
+        width: 100%;
+        padding: 12px 12px 6px 0;
+    }
+
+    .project-title {
+        font-size: 0.84rem;
+        letter-spacing: 0.1em;
+    }
+
     .portfolio-case-modal {
-        padding: 14px;
+        padding: 12px;
     }
 
     .portfolio-case-modal__panel {
-        max-height: 88svh;
+        width: 100%;
+        height: 90svh;
+        max-height: 90svh;
         grid-template-columns: 1fr;
+        border-radius: 18px;
     }
 
     .portfolio-case-modal__meta {
-        padding: 26px 24px 20px;
+        justify-content: flex-start;
+        gap: 18px;
+        padding: 60px 22px 18px;
         border-right: 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .portfolio-case-modal__meta::before {
+        display: none;
+    }
+
+    .portfolio-case-modal__title {
+        max-width: none;
+        font-size: clamp(1.34rem, 7.2vw, 2.14rem);
+    }
+
+    .portfolio-case-modal__role-chip {
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 0.62rem;
+        letter-spacing: 0.12em;
     }
 
     .portfolio-case-modal__content {
@@ -3148,13 +3359,26 @@ body.cursor-hover #custom-cursor-dot {
         gap: 14px;
     }
 
-    .portfolio-case-modal__body {
-        padding: 24px;
+    .portfolio-case-modal__media {
+        aspect-ratio: 16 / 10;
+        border-radius: 14px;
     }
 
-    .portfolio-case-modal__media,
-    .portfolio-case-modal__player {
-        min-height: 190px;
+    .portfolio-case-modal__body {
+        padding: 22px 18px 24px;
+        border-radius: 14px;
+    }
+
+    .portfolio-case-modal__body p {
+        font-size: 0.92rem;
+        line-height: 1.84;
+    }
+
+    .portfolio-case-modal__close {
+        top: 14px;
+        right: 14px;
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -4366,9 +4590,9 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     #services-section .service-item,
     #services-section .service-item.left-col,
     #services-section .service-item.right-col {
-        left: 30vw !important;
+        left: 24vw !important;
         right: auto !important;
-        width: 66vw !important;
+        width: 72vw !important;
         max-width: 238px !important;
         padding: 0 !important;
         text-align: left !important;
@@ -4380,13 +4604,13 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         text-shadow: 0 0 16px rgba(18, 202, 224, 0.24), 0 1px 14px rgba(0, 0, 0, 0.78) !important;
     }
 
-    #services-section .item-concept { top: 26.7% !important; }
-    #services-section .item-cinema  { top: 35.3% !important; }
-    #services-section .item-editing { top: 43.3% !important; }
-    #services-section .item-sound   { top: 52.5% !important; }
-    #services-section .item-vfx     { top: 60.9% !important; }
-    #services-section .item-3d      { top: 69% !important; }
-    #services-section .item-colour  { top: 78.8% !important; }
+    #services-section .item-concept { top: 22.8% !important; }
+    #services-section .item-cinema  { top: 31.6% !important; }
+    #services-section .item-editing { top: 40.9% !important; }
+    #services-section .item-sound   { top: 52.2% !important; }
+    #services-section .item-vfx     { top: 61.9% !important; }
+    #services-section .item-3d      { top: 72.3% !important; }
+    #services-section .item-colour  { top: 83.0% !important; }
 
     #portfolios-section {
         overflow-y: auto !important;
@@ -4963,14 +5187,41 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         gap: 8px !important;
     }
 
-    #portfolios-section .portfolio-hero-full,
     #portfolios-section .client-marquee-section,
     #portfolios-section .portfolio-footer-full {
         display: none !important;
     }
 
+    #portfolios-section .portfolio-hero-full {
+        display: block !important;
+        position: relative !important;
+        width: calc(100% - 44px) !important;
+        max-width: 360px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        aspect-ratio: 16 / 9 !important;
+        margin: calc(100px + env(safe-area-inset-top)) auto 18px !important;
+        overflow: hidden !important;
+        border-radius: 2px !important;
+        background: #050509 !important;
+    }
+
+    #portfolios-section .portfolio-hero-full .bg-fill,
+    #portfolios-section .portfolio-hero-full mux-player {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
+    #portfolios-section .portfolio-hero-caption,
+    #portfolios-section .portfolio-hero-full > div:not(.portfolio-hero-caption) {
+        display: none !important;
+    }
+
     #portfolios-section .portfolio-container {
-        padding: calc(100px + env(safe-area-inset-top)) 18px 92px !important;
+        padding: 0 22px 92px !important;
         max-width: none !important;
         margin: 0 !important;
     }
@@ -4988,27 +5239,27 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     #portfolios-section .portfolio-item.large,
     #portfolios-section .portfolio-item.span-2 {
         display: block !important;
-        width: 88% !important;
+        width: 100% !important;
         aspect-ratio: 16 / 9 !important;
-        margin: 0 0 18px 0 !important;
+        margin: 0 auto 18px !important;
         border-radius: 2px !important;
         overflow: hidden !important;
         background: #050509 !important;
     }
 
     #portfolios-section .portfolio-item:nth-child(3n + 1) {
-        width: 96% !important;
-        margin-left: 0 !important;
+        width: 100% !important;
+        margin-left: auto !important;
     }
 
     #portfolios-section .portfolio-item:nth-child(3n + 2) {
-        width: 78% !important;
+        width: 100% !important;
         margin-left: auto !important;
     }
 
     #portfolios-section .portfolio-item:nth-child(3n) {
-        width: 90% !important;
-        margin-left: 7% !important;
+        width: 100% !important;
+        margin-left: auto !important;
     }
 
     #portfolios-section .portfolio-video-shell,
@@ -5393,3 +5644,773 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 }
 
+
+.about-team-hint {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #about-section .about-team-bridge {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-top: 10px !important;
+    }
+
+    #about-section .about-team-hint {
+        display: block !important;
+        margin: 0 !important;
+        max-width: 260px !important;
+        font-size: clamp(0.78rem, 3.45vw, 0.95rem) !important;
+        line-height: 1.45 !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.02em !important;
+        text-align: center !important;
+        color: rgba(238, 244, 255, 0.78) !important;
+        text-shadow: 0 0 20px rgba(24, 206, 230, 0.18) !important;
+    }
+
+    #about-section #meet-team-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: auto !important;
+        min-width: 196px !important;
+        min-height: 42px !important;
+        margin-top: 0 !important;
+        padding: 0 18px !important;
+        border: 1px solid rgba(145, 231, 255, 0.34) !important;
+        border-radius: 999px !important;
+        border-bottom: 1px solid rgba(145, 231, 255, 0.34) !important;
+        background: linear-gradient(135deg, rgba(10, 188, 218, 0.12), rgba(255, 255, 255, 0.035)) !important;
+        box-shadow: 0 0 24px rgba(0, 200, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.045) !important;
+        color: rgba(255, 255, 255, 0.86) !important;
+        text-align: center !important;
+        animation: aboutTeamInviteBreath 2.8s ease-in-out infinite !important;
+    }
+
+    #about-section .about-scroll-cue {
+        margin-top: 18px !important;
+        border-color: rgba(145, 231, 255, 0.38) !important;
+        box-shadow: 0 0 22px rgba(0, 200, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    }
+}
+
+@keyframes aboutTeamInviteBreath {
+    0%, 100% {
+        transform: translateY(0);
+        box-shadow: 0 0 20px rgba(0, 200, 255, 0.10), inset 0 0 0 1px rgba(255, 255, 255, 0.045);
+    }
+
+    50% {
+        transform: translateY(3px);
+        box-shadow: 0 0 34px rgba(0, 200, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.095);
+    }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    #about-section #meet-team-btn {
+        animation: none !important;
+    }
+}
+
+/* Final mobile contact form: reuse desktop form, adapted for phone screens. */
+@media (max-width: 768px) {
+    #contact-section {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #contact-section .contact-main {
+        height: auto !important;
+        min-height: 100svh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 30px !important;
+        padding: calc(116px + env(safe-area-inset-top)) 26px 118px !important;
+        box-sizing: border-box !important;
+    }
+
+    #contact-section .contact-content-left,
+    #contact-section .contact-text-block,
+    #contact-section .contact-form-block {
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: 0 auto !important;
+    }
+
+    #contact-section .contact-text-block {
+        margin-bottom: 250px !important;
+    }
+
+    #contact-section .contact-form-block,
+    #contact-section .contact-info-grid,
+    #contact-section .contact-social-row {
+        display: block !important;
+    }
+
+    #contact-section .contact-form-block {
+        position: relative !important;
+        z-index: 70 !important;
+        padding: 22px 0 0 !important;
+    }
+
+    #contact-section .contact-form-label {
+        margin: 0 0 14px !important;
+        font-size: 0.58rem !important;
+        line-height: 1 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.28em !important;
+        text-transform: uppercase !important;
+        color: rgba(235, 229, 246, 0.68) !important;
+    }
+
+    #contact-section .contact-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    #contact-section .contact-form-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    #contact-section .contact-input {
+        width: 100% !important;
+        height: 46px !important;
+        padding: 0 16px !important;
+        border: 1px solid rgba(216, 205, 235, 0.22) !important;
+        border-radius: 8px !important;
+        background: rgba(24, 17, 35, 0.72) !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        font-size: 0.78rem !important;
+        letter-spacing: 0.01em !important;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025), 0 14px 34px rgba(0, 0, 0, 0.20) !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    #contact-section .contact-input::placeholder {
+        color: rgba(223, 215, 235, 0.42) !important;
+    }
+
+    #contact-section .contact-input:focus {
+        border-color: rgba(0, 240, 255, 0.54) !important;
+        background: rgba(31, 22, 45, 0.82) !important;
+        box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.15), 0 0 28px rgba(0, 188, 220, 0.12) !important;
+    }
+
+    #contact-section .contact-textarea {
+        height: 118px !important;
+        min-height: 118px !important;
+        padding-top: 14px !important;
+        resize: vertical !important;
+    }
+
+    #contact-section .contact-form form,
+    #contact-section #contactForm > div:last-child {
+        width: 100% !important;
+    }
+
+    #contact-section #contactForm > div:last-child {
+        justify-content: stretch !important;
+        align-items: stretch !important;
+        margin-top: 6px !important;
+        flex-direction: column !important;
+    }
+
+    #contact-section .contact-send-btn {
+        width: 100% !important;
+        min-height: 48px !important;
+        border-radius: 999px !important;
+        border-color: rgba(235, 229, 246, 0.40) !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        color: rgba(255, 255, 255, 0.86) !important;
+        font-size: 0.62rem !important;
+        letter-spacing: 0.28em !important;
+        box-shadow: 0 0 28px rgba(0, 188, 220, 0.08) !important;
+    }
+
+    #contact-section .contact-info-grid {
+        display: grid !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: 4px auto 0 !important;
+        padding: 0 !important;
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+    }
+
+    #contact-section .contact-info-label {
+        font-size: 0.56rem !important;
+        letter-spacing: 0.28em !important;
+        color: rgba(235, 229, 246, 0.52) !important;
+    }
+
+    #contact-section .contact-info-text {
+        font-size: 0.76rem !important;
+        line-height: 1.5 !important;
+        color: rgba(238, 242, 248, 0.70) !important;
+    }
+
+    #contact-section .contact-social-row {
+        display: flex !important;
+        gap: 12px !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: -88px auto 78px !important;
+        padding: 0 26px !important;
+        box-sizing: border-box !important;
+        text-align: left !important;
+        z-index: 70 !important;
+    }
+}
+
+/* Final mobile blogs title alignment. */
+@media (max-width: 768px) {
+    #blogs-section .blogs-container h1 {
+        left: auto !important;
+        width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        text-align: center !important;
+    }
+}
+
+/* Final mobile portfolio closing showreel: mirror desktop footer feature. */
+@media (max-width: 768px) {
+    #portfolios-section .portfolio-footer-full {
+        display: block !important;
+        position: relative !important;
+        width: calc(100% - 44px) !important;
+        max-width: 360px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        aspect-ratio: 16 / 9 !important;
+        margin: 8px auto 96px !important;
+        overflow: hidden !important;
+        border-radius: 2px !important;
+        background: #050509 !important;
+    }
+
+    #portfolios-section .portfolio-footer-full .bg-fill,
+    #portfolios-section .portfolio-footer-full mux-player {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        opacity: 0.82 !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div {
+        display: none !important;
+    }
+}
+
+/* Final mobile portfolio closing reel spacing and label. */
+@media (max-width: 768px) {
+    #portfolios-section .portfolio-container {
+        padding-bottom: 18px !important;
+    }
+
+    #portfolios-section .portfolio-footer-full {
+        margin: 0 auto 54px !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type {
+        display: block !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 100% !important;
+        padding: 0 22px !important;
+        text-align: center !important;
+        color: white !important;
+        z-index: 10 !important;
+        box-sizing: border-box !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type h2 {
+        margin: 0 0 8px !important;
+        font-size: clamp(1.48rem, 9vw, 2.35rem) !important;
+        line-height: 0.95 !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.08em !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type div {
+        width: 42px !important;
+        height: 2px !important;
+        margin: 14px auto !important;
+        background: var(--neon-blue) !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type p {
+        margin: 0 !important;
+        font-size: clamp(0.46rem, 2.5vw, 0.66rem) !important;
+        line-height: 1 !important;
+        letter-spacing: 0.42em !important;
+        color: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:last-of-type {
+        display: block !important;
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: 4 !important;
+        pointer-events: none !important;
+        background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.58) 100%) !important;
+    }
+}
+
+/* Final mobile portfolio footer reel clarity: smaller label, clear video. */
+@media (max-width: 768px) {
+    #portfolios-section .portfolio-footer-full .bg-fill,
+    #portfolios-section .portfolio-footer-full mux-player {
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type h2 {
+        font-size: clamp(0.92rem, 5.6vw, 1.35rem) !important;
+        letter-spacing: 0.10em !important;
+        text-shadow: 0 1px 10px rgba(0, 0, 0, 0.48) !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type div {
+        width: 26px !important;
+        margin: 8px auto !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:first-of-type p {
+        font-size: clamp(0.34rem, 1.8vw, 0.48rem) !important;
+        letter-spacing: 0.34em !important;
+        color: rgba(255, 255, 255, 0.66) !important;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    #portfolios-section .portfolio-footer-full > div:last-of-type {
+        display: none !important;
+        background: transparent !important;
+    }
+}
+
+/* Final mobile top showreel caption: small bottom-left label. */
+@media (max-width: 768px) {
+    #portfolios-section .portfolio-hero-caption {
+        display: block !important;
+        position: absolute !important;
+        left: 16px !important;
+        bottom: 14px !important;
+        z-index: 10 !important;
+        color: white !important;
+        text-align: left !important;
+        pointer-events: none !important;
+    }
+
+    #portfolios-section .portfolio-hero-caption p {
+        margin: 0 0 5px !important;
+        font-size: clamp(0.34rem, 1.8vw, 0.48rem) !important;
+        line-height: 1 !important;
+        letter-spacing: 0.34em !important;
+        opacity: 0.68 !important;
+        text-transform: uppercase !important;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    #portfolios-section .portfolio-hero-title {
+        margin: 0 !important;
+        font-size: clamp(0.92rem, 5.6vw, 1.35rem) !important;
+        line-height: 0.95 !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.10em !important;
+        text-transform: uppercase !important;
+        text-shadow: 0 1px 10px rgba(0, 0, 0, 0.48) !important;
+    }
+}
+
+/* Final mobile contact scroll flow: intro first, form after scroll. */
+@media (max-width: 768px) {
+    #contact-section {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scroll-padding-top: 0 !important;
+    }
+
+    #contact-section .contact-main {
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 100svh !important;
+        overflow: visible !important;
+        padding: calc(116px + env(safe-area-inset-top)) 26px 118px !important;
+        box-sizing: border-box !important;
+    }
+
+    #contact-section .contact-content-left {
+        display: block !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+    }
+
+    #contact-section .contact-text-block {
+        width: 100% !important;
+        max-width: 342px !important;
+        min-height: calc(100svh - 116px - env(safe-area-inset-top)) !important;
+        margin: 0 auto !important;
+        padding: 0 0 42svh !important;
+        box-sizing: border-box !important;
+    }
+
+    #contact-section .contact-form-block {
+        display: block !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: 0 auto !important;
+        padding: 34px 0 0 !important;
+        position: relative !important;
+        z-index: 70 !important;
+    }
+
+    #contact-section .contact-info-grid {
+        display: grid !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: 28px auto 0 !important;
+        padding: 0 !important;
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+        z-index: 70 !important;
+    }
+
+    #contact-section .contact-social-row {
+        display: flex !important;
+        gap: 12px !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 342px !important;
+        margin: -92px auto 72px !important;
+        padding: 0 26px !important;
+        box-sizing: border-box !important;
+        z-index: 70 !important;
+    }
+}
+
+/* Final mobile contact scroll unlock: override composition lock for contact only. */
+@media (max-width: 768px) {
+    body.mobile-composition-locked #contact-section.active,
+    #contact-section.active {
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        overscroll-behavior-y: contain !important;
+    }
+
+    body.mobile-composition-locked #contact-section.active .contact-main,
+    #contact-section.active .contact-main {
+        min-height: 190svh !important;
+        padding-bottom: 150px !important;
+    }
+}
+
+/* Final mobile contact form focus: hide hand graphic when the form is reached. */
+@media (max-width: 768px) {
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video {
+        opacity: 0 !important;
+        filter: none !important;
+        transition: opacity 0.38s ease !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block {
+        padding-top: 42px !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block::before {
+        content: "";
+        display: block;
+        width: 42px;
+        height: 2px;
+        margin: 0 0 22px;
+        background: rgba(0, 240, 255, 0.55);
+        box-shadow: 0 0 18px rgba(0, 240, 255, 0.22);
+    }
+}
+
+/* Final mobile contact social position: keep icons below contact info. */
+@media (max-width: 768px) {
+    #contact-section .contact-social-row {
+        justify-content: flex-start !important;
+        margin: 34px auto 96px !important;
+        padding: 0 !important;
+    }
+}
+
+.contact-form-cue {
+    display: none;
+}
+
+/* Final mobile contact scroll cue: make the form discoverable. */
+@media (max-width: 768px) {
+    #contact-section .contact-form-cue {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        min-height: 38px !important;
+        margin: 22px 0 0 !important;
+        padding: 0 16px !important;
+        border: 1px solid rgba(145, 231, 255, 0.34) !important;
+        border-radius: 999px !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        color: rgba(255, 255, 255, 0.82) !important;
+        font-family: var(--font-main) !important;
+        font-size: 0.58rem !important;
+        line-height: 1 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.22em !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 0 22px rgba(0, 200, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+        animation: contactCuePulse 2.4s ease-in-out infinite !important;
+    }
+
+    #contact-section .contact-form-cue span {
+        display: inline-block !important;
+        animation: contactCueArrow 1.35s ease-in-out infinite !important;
+    }
+
+    body.contact-form-focus #contact-section .contact-form-cue {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        animation: none !important;
+    }
+}
+
+@keyframes contactCuePulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+}
+
+@keyframes contactCueArrow {
+    0%, 100% { transform: translateY(-2px); opacity: 0.55; }
+    50% { transform: translateY(3px); opacity: 1; }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    #contact-section .contact-form-cue,
+    #contact-section .contact-form-cue span {
+        animation: none !important;
+    }
+}
+
+/* Final mobile contact motion polish: cue belongs to handshake, graphic slides away on form focus. */
+@media (max-width: 768px) {
+    #contact-section.active {
+        position: fixed !important;
+    }
+
+    #contact-section.active .contact-form-cue {
+        position: absolute !important;
+        left: 50% !important;
+        top: calc(100svh - 118px) !important;
+        z-index: 92 !important;
+        margin: 0 !important;
+        transform: translate3d(-50%, 0, 0) !important;
+        transition: opacity 0.46s ease, translate 0.46s ease, filter 0.46s ease !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-cue {
+        opacity: 0 !important;
+        translate: -32vw 0 !important;
+        filter: blur(3px) !important;
+        pointer-events: none !important;
+    }
+
+    body.contact-video-foreground #bg-video,
+    body:has(#contact-section.active) #bg-video {
+        translate: 0 0 !important;
+        opacity: 1 !important;
+        transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1), translate 0.68s cubic-bezier(0.22, 1, 0.36, 1), filter 0.58s ease !important;
+    }
+
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video {
+        opacity: 0 !important;
+        translate: -22vw 0 !important;
+        filter: saturate(0.86) contrast(0.92) !important;
+    }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    #contact-section.active .contact-form-cue,
+    body.contact-video-foreground #bg-video,
+    body:has(#contact-section.active) #bg-video {
+        transition: none !important;
+    }
+}
+
+/* Final mobile contact cue refinement: motion belongs to the cue, not the hand graphic. */
+@media (max-width: 768px) {
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video,
+    body.contact-video-foreground #bg-video,
+    body:has(#contact-section.active) #bg-video {
+        opacity: 1 !important;
+        translate: 0 0 !important;
+        filter: none !important;
+    }
+
+    #contact-section.active .contact-form-cue {
+        min-width: 104px !important;
+        min-height: 54px !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        padding: 8px 16px 9px !important;
+        border-color: rgba(145, 231, 255, 0.24) !important;
+        background: rgba(0, 0, 0, 0.18) !important;
+        backdrop-filter: blur(8px) !important;
+        animation: contactScrollCueFloat 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite !important;
+    }
+
+    #contact-section .contact-cue-text {
+        font-size: 0.52rem !important;
+        line-height: 1 !important;
+        letter-spacing: 0.26em !important;
+        text-transform: uppercase !important;
+        color: rgba(255, 255, 255, 0.66) !important;
+    }
+
+    #contact-section .contact-cue-arrow {
+        font-size: 1.42rem !important;
+        line-height: 0.85 !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        animation: contactScrollArrowDrop 1.25s ease-in-out infinite !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-cue {
+        opacity: 0 !important;
+        translate: 0 20px !important;
+        filter: blur(2px) !important;
+        pointer-events: none !important;
+    }
+}
+
+@keyframes contactScrollCueFloat {
+    0%, 100% { transform: translate3d(-50%, 0, 0); }
+    50% { transform: translate3d(-50%, 7px, 0); }
+}
+
+@keyframes contactScrollArrowDrop {
+    0%, 100% { transform: translateY(-3px); opacity: 0.5; }
+    50% { transform: translateY(5px); opacity: 1; }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    #contact-section.active .contact-form-cue,
+    #contact-section .contact-cue-arrow {
+        animation: none !important;
+    }
+}
+
+/* Final mobile contact form foreground: blur the graphic behind the form. */
+@media (max-width: 768px) {
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video {
+        opacity: 0.26 !important;
+        translate: 0 0 !important;
+        filter: blur(10px) brightness(0.58) saturate(0.72) !important;
+        transition: opacity 0.42s ease, filter 0.42s ease !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block {
+        position: relative !important;
+        z-index: 140 !important;
+        padding: 24px 18px 20px !important;
+        border: 1px solid rgba(180, 230, 255, 0.18) !important;
+        border-radius: 18px !important;
+        background:
+            linear-gradient(180deg, rgba(13, 11, 24, 0.82), rgba(5, 8, 16, 0.76)) !important;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46), 0 0 38px rgba(0, 190, 220, 0.10) !important;
+        backdrop-filter: blur(18px) saturate(1.08) !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block::before {
+        margin-bottom: 18px !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-input {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border-color: rgba(216, 229, 245, 0.22) !important;
+    }
+}
+
+/* Final mobile contact form smooth layer: no animated blur, no glitch. */
+@media (max-width: 768px) {
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video {
+        opacity: 0.18 !important;
+        translate: 0 0 !important;
+        filter: brightness(0.5) saturate(0.82) !important;
+        transition: opacity 0.34s ease !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block {
+        background: linear-gradient(180deg, rgba(8, 8, 16, 0.94), rgba(4, 8, 14, 0.92)) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: translateZ(0) !important;
+        will-change: auto !important;
+    }
+}
+
+/* Final mobile contact: remove special form overlay panel, keep original design language. */
+@media (max-width: 768px) {
+    body.contact-form-focus.contact-video-foreground #bg-video,
+    body.contact-form-focus:has(#contact-section.active) #bg-video {
+        opacity: 1 !important;
+        translate: 0 0 !important;
+        filter: none !important;
+        transition: none !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block {
+        padding: 34px 0 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-form-block::before {
+        display: none !important;
+    }
+
+    body.contact-form-focus #contact-section.active .contact-input {
+        background: rgba(24, 17, 35, 0.72) !important;
+        border-color: rgba(216, 205, 235, 0.22) !important;
+    }
+}
