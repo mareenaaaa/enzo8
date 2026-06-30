@@ -1,0 +1,42 @@
+});
+
+window.openBlogArticle = function() {
+    const overlay = document.getElementById('blog-article-overlay');
+    const targets = getBlogArticleAnimationTargets();
+    if (!overlay) return;
+    isBlogArticleOverlayOpen = true;
+    setElementInteractivity(overlay, true);
+    gsap.killTweensOf(overlay);
+    gsap.killTweensOf(targets);
+    gsap.set(targets, { opacity: 0, y: 24 });
+    gsap.to(overlay, { 
+        opacity: 1, 
+        duration: 0.42, 
+        ease: "power2.out" 
+    });
+    gsap.to(targets, {
+        opacity: 1,
+        y: 0,
+        duration: 0.46,
+        stagger: 0.04,
+        delay: 0.08,
+        ease: "power3.out",
+        clearProps: "transform"
+    });
+    deactivateLocomotiveSection('blogs-section');
+    activateLocomotiveSection('blog-article-overlay', { reset: true });
+};
+
+window.closeBlogArticle = function(resumeUnderlying = true) {
+    const overlay = document.getElementById('blog-article-overlay');
+    const targets = getBlogArticleAnimationTargets();
+    if (!overlay) return;
+    isBlogArticleOverlayOpen = false;
+    setElementInteractivity(overlay, false);
+    gsap.killTweensOf(overlay);
+    gsap.killTweensOf(targets);
+    gsap.to(targets, {
+        opacity: 0,
+        y: 20,
+        duration: 0.2,
+        stagger: {

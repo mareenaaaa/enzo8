@@ -968,16 +968,16 @@ body.hero-nav-ready #experience-trigger {
         margin: 0 0 17px !important;
         font-size: 0.86rem !important;
         line-height: 1.13 !important;
-        font-weight: 700 !important;
+        font-weight: 300 !important;
         letter-spacing: 0 !important;
         color: rgba(255, 255, 255, 0.98) !important;
     }
 
     #contact-section .contact-question {
-        margin: 0 0 46px !important;
+        margin: 0 0 8px !important;
         font-size: 0.84rem !important;
         line-height: 1.35 !important;
-        font-weight: 600 !important;
+        font-weight: 300 !important;
         letter-spacing: 0 !important;
         color: rgba(255, 255, 255, 0.96) !important;
     }
@@ -986,10 +986,11 @@ body.hero-nav-ready #experience-trigger {
         margin: 0 !important;
         font-size: 0.83rem !important;
         line-height: 1.35 !important;
-        font-weight: 700 !important;
-        font-style: italic !important;
+        font-weight: 300 !important;
+        font-style: normal !important;
         letter-spacing: 0 !important;
-        color: rgba(255, 255, 255, 0.98) !important;
+        color: rgba(255, 255, 255, 0.96) !important;
+        text-shadow: none !important;
     }
 }
 
@@ -1107,9 +1108,14 @@ body.hero-nav-ready #experience-trigger {
     -ms-overflow-style: none;
 }
 
+.loco-active .loco-scroll-shell {
+    overflow-y: hidden !important;
+}
+
 .loco-scroll-content {
     width: 100%;
     min-height: 100%;
+    display: flow-root;
 }
 
 .loco-scroll-shell::-webkit-scrollbar {
@@ -2158,10 +2164,10 @@ body.cursor-hover #custom-cursor-dot {
 
 .detail-close-btn {
     position: absolute;
-    top: 50px;
-    left: 60px;
+    top: 80px;
+    left: 45px;
     font-family: var(--font-main);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     letter-spacing: 0.3em;
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
@@ -2271,7 +2277,27 @@ body.cursor-hover #custom-cursor-dot {
 }
 
 #blog-article-overlay .blog-article-content {
-    padding-top: 34px !important;
+    padding-top: 110px !important;
+    padding-bottom: 110px !important;
+}
+
+#blog-article-overlay .blog-article-content h3 {
+    font-family: var(--font-main, 'Montserrat', sans-serif);
+    font-size: clamp(1.35rem, 1.8vw, 1.75rem);
+    font-weight: 500;
+    color: #ffffff;
+    margin-top: 52px;
+    margin-bottom: 22px;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+}
+
+#blog-article-overlay .blog-article-content p {
+    font-size: clamp(1.0rem, 1.15vw, 1.12rem);
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.76);
+    font-weight: 300;
+    margin-bottom: 28px;
 }
 
 @media (max-width: 768px) {
@@ -3045,10 +3071,10 @@ body.cursor-hover #custom-cursor-dot {
 
 .portfolio-case-modal__panel {
     position: relative;
-    width: min(1240px, 100%);
-    height: min(86vh, 860px);
-    display: grid;
-    grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.22fr);
+    width: min(1340px, 94vw);
+    height: min(92vh, 960px);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     border: 1px solid rgba(88, 210, 255, 0.16);
     border-radius: 24px;
@@ -3061,6 +3087,14 @@ body.cursor-hover #custom-cursor-dot {
     color: #fff;
     transform: translateY(16px) scale(0.986);
     transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portfolio-case-modal__details {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.22fr);
+    flex: 1 1 45%;
+    min-height: 0;
+    width: 100%;
 }
 
 .portfolio-case-modal__panel::before {
@@ -3081,10 +3115,10 @@ body.cursor-hover #custom-cursor-dot {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 28px;
+    gap: 24px;
     min-height: 0;
     overflow: hidden;
-    padding: clamp(42px, 4.6vw, 68px) clamp(28px, 3.4vw, 50px);
+    padding: clamp(24px, 2.5vw, 36px) clamp(18px, 2vw, 28px);
     border-right: 1px solid rgba(88, 210, 255, 0.1);
     background:
         radial-gradient(circle at 14% 12%, rgba(0, 194, 255, 0.18), transparent 32%),
@@ -3101,32 +3135,35 @@ body.cursor-hover #custom-cursor-dot {
     background: linear-gradient(180deg, rgba(255,255,255,0), rgba(95, 217, 255, 0.3), rgba(255,255,255,0));
 }
 
-.portfolio-case-modal__content {
-    min-height: 0;
-    height: 100%;
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    padding: clamp(24px, 2.2vw, 32px);
-    gap: clamp(18px, 2vw, 24px);
-    overflow: hidden;
-}
-
+/* video strip – top ~55% of panel */
 .portfolio-case-modal__media {
     position: relative;
+    width: 100%;
+    flex: 0 0 55%;
     min-height: 0;
-    aspect-ratio: 16 / 9;
     background:
         radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.06), transparent 28%),
         linear-gradient(180deg, rgba(4, 7, 14, 0.96), rgba(2, 4, 10, 0.98));
-    border: 1px solid rgba(88, 210, 255, 0.1);
-    border-radius: 18px;
+    border-bottom: 1px solid rgba(88, 210, 255, 0.1);
     overflow: hidden;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.05),
-        0 20px 42px rgba(0, 0, 0, 0.32);
 }
 
 .portfolio-case-modal__media:empty {
+    display: none;
+}
+
+/* bottom strip – meta left + body right */
+.portfolio-case-modal__details {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* hide old __content wrapper (not used any more) */
+.portfolio-case-modal__content {
     display: none;
 }
 
@@ -3136,7 +3173,7 @@ body.cursor-hover #custom-cursor-dot {
     min-height: 100%;
     display: block;
     background: transparent;
-    --media-object-fit: cover;
+    --media-object-fit: contain;
     --media-object-position: center;
     --controls-backdrop-color: rgba(5, 7, 14, 0.42);
     --controls-border-radius: 18px;
@@ -3172,7 +3209,6 @@ body.cursor-hover #custom-cursor-dot {
     letter-spacing: -0.035em;
     text-wrap: balance;
     overflow-wrap: anywhere;
-    max-width: 8.5ch;
 }
 
 .portfolio-case-modal__role {
@@ -3202,8 +3238,8 @@ body.cursor-hover #custom-cursor-dot {
 
 .portfolio-case-modal__body {
     position: relative;
-    min-height: 0;
-    height: 100%;
+    padding: clamp(24px, 2.2vw, 32px) clamp(28px, 3vw, 42px);
+    overflow-y: auto;
     max-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
@@ -3325,14 +3361,18 @@ body.cursor-hover #custom-cursor-dot {
         width: 100%;
         height: 90svh;
         max-height: 90svh;
-        grid-template-columns: 1fr;
         border-radius: 18px;
+    }
+
+    .portfolio-case-modal__details {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
     }
 
     .portfolio-case-modal__meta {
         justify-content: flex-start;
         gap: 18px;
-        padding: 60px 22px 18px;
+        padding: 30px 22px 18px;
         border-right: 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -3354,19 +3394,18 @@ body.cursor-hover #custom-cursor-dot {
     }
 
     .portfolio-case-modal__content {
-        grid-template-rows: auto minmax(0, 1fr);
-        padding: 14px;
-        gap: 14px;
+        display: none;
     }
 
     .portfolio-case-modal__media {
-        aspect-ratio: 16 / 10;
-        border-radius: 14px;
+        flex: 0 0 38%;
+        border-radius: 18px 18px 0 0;
     }
 
     .portfolio-case-modal__body {
         padding: 22px 18px 24px;
-        border-radius: 14px;
+        border-radius: 0;
+        overflow: visible;
     }
 
     .portfolio-case-modal__body p {
@@ -3558,22 +3597,26 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 }
 
 .contact-content-left {
-    flex: 0 0 30%;
-    max-width: 400px;
+    flex: 0 0 54%;
+    max-width: 720px;
     height: 100%;
     min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0 0 24px;
+    padding: 24px 0 24px;
 }
 
 .contact-text-block {
     color: #ffffff;
+    max-width: 680px;
+    width: 100%;
 }
 
 .contact-form-block {
     /* form sits at the bottom of the left column */
+    max-width: 520px;
+    width: 100%;
 }
 
 .contact-reveal {
@@ -3582,33 +3625,40 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 }
 
 .contact-lead {
-    margin: 0 0 18px;
-    font-size: 0.88rem;
-    line-height: 1.7;
+    margin: 0 0 28px;
+    font-size: clamp(1.05rem, 1.22vw, 1.25rem);
+    line-height: 1.85;
     font-weight: 300;
     letter-spacing: 0.01em;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .contact-question,
 .contact-cta {
-    font-size: 0.88rem;
-    line-height: 1.6;
-    font-weight: 400;
+    margin: 0 0 8px;
+    font-size: clamp(1.05rem, 1.22vw, 1.25rem);
+    line-height: 1.85;
     letter-spacing: 0.01em;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .contact-question {
-    margin: 0 0 4px;
-    color: rgba(255, 255, 255, 0.9);
+    display: block;
 }
 
 .contact-cta {
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    color: rgba(255, 255, 255, 0.9);
-    transition: text-shadow 0.8s ease, color 0.8s ease;
+    display: block;
+    align-items: initial;
+    color: rgba(255, 255, 255, 0.78);
+    font-weight: 300;
+    transition: none;
+}
+
+.contact-cta:hover {
+    color: rgba(255, 255, 255, 0.78);
+    text-shadow: none;
 }
 
 .contact-visual-anchor {
@@ -3657,36 +3707,36 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 }
 
 .contact-form-label {
-    font-size: 0.58rem;
-    letter-spacing: 0.3em;
+    font-size: 0.64rem;
+    letter-spacing: 0.32em;
     color: rgba(255,255,255,0.45);
     font-weight: 500;
     text-transform: uppercase;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .contact-form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 0;
 }
 
 .contact-form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 16px;
 }
 
 .contact-input {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 8px;
-    padding: 13px 16px;
+    padding: 16px 20px;
     color: rgba(255,255,255,0.9);
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
     outline: none;
     transition: border-color 0.2s ease, background 0.2s ease;
     width: 100%;
@@ -3702,7 +3752,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 }
 
 .contact-textarea {
-    min-height: 110px;
+    min-height: 140px;
     resize: none;
 }
 
@@ -3713,10 +3763,10 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     border-radius: 30px;
     color: rgba(255,255,255,0.9);
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    padding: 15px 36px;
+    padding: 16px 42px;
     cursor: pointer;
     transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
     text-align: center;
@@ -3731,7 +3781,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 .contact-info-grid {
     position: absolute;
     bottom: 48px;
-    left: 38%;
+    left: 58%;
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -4372,16 +4422,18 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 
     #contact-section .contact-question {
-        margin-bottom: 38px !important;
+        margin-bottom: 8px !important;
         font-size: clamp(0.56rem, 2.75vw, 0.72rem) !important;
         line-height: 1.28 !important;
-        font-weight: 600 !important;
+        font-weight: 300 !important;
     }
 
     #contact-section .contact-cta {
         font-size: clamp(0.56rem, 2.75vw, 0.72rem) !important;
         line-height: 1.28 !important;
-        font-weight: 700 !important;
+        font-weight: 300 !important;
+        font-style: normal !important;
+        text-shadow: none !important;
     }
 
     #contact-mob-vid {
@@ -5053,16 +5105,16 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     #team-detail-overlay {
         align-items: flex-start !important;
         justify-content: center !important;
-        padding: calc(88px + env(safe-area-inset-top)) 22px 24px !important;
+        padding: calc(150px + env(safe-area-inset-top)) 22px 24px !important;
         overflow-y: auto !important;
         box-sizing: border-box !important;
     }
 
     #team-detail-overlay .detail-close-btn {
-        top: calc(27px + env(safe-area-inset-top)) !important;
-        left: 86px !important;
+        top: calc(75px + env(safe-area-inset-top)) !important;
+        left: 28px !important;
         max-width: calc(100vw - 142px) !important;
-        font-size: 0.56rem !important;
+        font-size: 0.65rem !important;
         line-height: 1 !important;
         letter-spacing: 0.24em !important;
         color: rgba(255, 255, 255, 0.66) !important;
@@ -5075,7 +5127,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        gap: 18px !important;
+        gap: 28px !important;
         transform: none !important;
     }
 
@@ -5087,8 +5139,8 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 
     #team-detail-overlay .detail-avatar-circle {
-        width: clamp(132px, 43vw, 176px) !important;
-        height: clamp(132px, 43vw, 176px) !important;
+        width: clamp(160px, 50vw, 220px) !important;
+        height: clamp(160px, 50vw, 220px) !important;
         border-width: 2px !important;
         box-shadow: 0 0 36px rgba(0, 240, 255, 0.12) !important;
     }
@@ -5101,23 +5153,23 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 
     #team-detail-overlay #detail-name {
-        font-size: clamp(1.05rem, 6vw, 1.42rem) !important;
+        font-size: clamp(1.4rem, 8vw, 1.8rem) !important;
         line-height: 1.08 !important;
-        margin: 0 0 8px !important;
+        margin: 0 0 12px !important;
         letter-spacing: 0.04em !important;
     }
 
     #team-detail-overlay #detail-role {
-        font-size: 0.58rem !important;
+        font-size: 0.72rem !important;
         line-height: 1.25 !important;
         letter-spacing: 0.22em !important;
-        margin: 0 0 16px !important;
+        margin: 0 0 24px !important;
     }
 
     #team-detail-overlay #detail-bio {
         max-width: 100% !important;
-        font-size: 0.72rem !important;
-        line-height: 1.58 !important;
+        font-size: 0.88rem !important;
+        line-height: 1.65 !important;
         color: rgba(235, 239, 248, 0.68) !important;
         margin: 0 !important;
         text-align: left !important;
@@ -5336,13 +5388,14 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 
     #contact-section .contact-question {
-        margin-bottom: 34px !important;
+        margin-bottom: 8px !important;
     }
 
     #contact-section .contact-cta {
         font-style: normal !important;
-        font-weight: 400 !important;
-        color: rgba(255, 255, 255, 0.86) !important;
+        font-weight: 300 !important;
+        color: rgba(238, 242, 248, 0.74) !important;
+        text-shadow: none !important;
     }
 }
 
@@ -6414,3 +6467,5 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         border-color: rgba(216, 205, 235, 0.22) !important;
     }
 }
+
+

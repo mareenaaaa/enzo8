@@ -6,6 +6,7 @@ let videoEl = document.getElementById('bg-video');
 let state = 'scatter'; // scatter | intro | about | services | portfolios | etc
 let isAnimating = false;
 let isMobile = window.innerWidth <= 768;
+let portfolioWarmupStarted = false; // declared early to avoid temporal dead zone
 
 const trigger = document.getElementById('experience-trigger');
 const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
@@ -165,8 +166,9 @@ const CONTACT_MOBILE_CINEMATIC_SCALE = 1;
 const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
-const HOME_EQUILIBRIUM_SCALE = 0.32;
-const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
+const HOME_EQUILIBRIUM_SCALE = 0.62;
+const DESKTOP_HOME_LOGO_DISPLAY_SCALE = 0.62; // matches intro video scale
+const DESKTOP_BRAND_HOME_RETURN_SCALE = 0.76; // only used when returning home from inner-page enso8/Home clicks
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
 const INTRO_ZOOM_START_SCALE = 0.33;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
@@ -198,7 +200,7 @@ const PORTFOLIO_LOGO_ZOOM_IN_DURATION = 0.62;
 const PORTFOLIO_LOGO_ZOOM_OUT_DURATION = 0.66;
 const PORTFOLIO_LOGO_FADE_DURATION = 0.38;
 const PORTFOLIO_LOGO_FADE_START = 0.18;
-const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = 0.91;
+const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = HOME_EQUILIBRIUM_SCALE;
 const DESKTOP_SECTION_HOME_RETURN_SCALE = DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE;
 const DESKTOP_HOME_INTRO_HANDOFF_DURATION = 0.88;
 const DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION = 0.56;
@@ -513,6 +515,9 @@ function deactivateLocomotiveSection(sectionId, { reset = false } = {}) {
         config.shell.scrollTop = 0;
     }
 
+    // Remove loco-active so native scroll is re-enabled on the shell
+    if (config.section) config.section.classList.remove('loco-active');
+
     if (activeLocomotiveId === sectionId) {
         activeLocomotiveId = null;
     }
@@ -546,6 +551,10 @@ function activateLocomotiveSection(sectionId, { reset = false } = {}) {
 
     const instance = createLocomotiveInstance(sectionId);
     if (!instance) return;
+
+    // Add loco-active so CSS locks out native scroll on the shell,
+    // preventing double-scroll that causes the bottom gap
+    if (config.section) config.section.classList.add('loco-active');
 
     requestAnimationFrame(() => {
         instance.update();
@@ -906,7 +915,7 @@ function animatePortfolioLogoExit({ scale, x = 0, y = '0vh', transitionOwnerToke
 }
 
 function getBlogArticleAnimationTargets() {
-    return gsap.utils.toArray('#blog-article-overlay .detail-close-btn, #blog-article-overlay .blog-article-content > *');
+    return gsap.utils.toArray('#blog-article-overlay .detail-close-btn, #blog-article-overlay .blog-article-panel.active > *');
 }
 
 initializeLayerInteractivity();
@@ -1198,7 +1207,7 @@ function routeSectionTransitionThroughHome(pageId) {
     warmPageResources(pageId);
 
     if (isMobile && fromPageId === 'contact' && pageId === 'services') {
-        const homeStableTransform = { scale: getHomeLogoDisplayScale(), x: 0, y: '0vh' };
+        const homeStableTransform = { scale: isMobile ? getHomeLogoDisplayScale() : 0.62, x: 0, y: '0vh' };
         executeFinalReverse({
             revealHomeUi: false,
             chainedTargetPageId: pageId,
@@ -1392,8 +1401,10 @@ function setContactVideoForegroundMode(isEnabled, { resetTransform = isEnabled |
         });
     } else if (resetTransform) {
         gsap.set(videoEl, { x: 0, y: '0vh', scale: isMobile ? getMobileUniformCinematicScale() : 1, clearProps: 'filter' });
+        videoEl.style.objectPosition = '';
     } else {
         gsap.set(videoEl, { clearProps: 'filter' });
+        videoEl.style.objectPosition = '';
     }
 }
 
@@ -1418,7 +1429,7 @@ if (CUSTOM_CURSOR_ENABLED) {
 
 const centerGlow = document.getElementById('center-glow');
 
-// Initialise glow at screen center using GSAP transforms (avoids % → px unit conflict)
+// Initialise glow at screen center using GSAP transforms (avoids % â†’ px unit conflict)
 if (centerGlow) {
     gsap.set(centerGlow, {
         xPercent: -50,
@@ -1831,7 +1842,7 @@ function getRuntimeHomeEquilibriumSrc() {
 
 function getRuntimeHomeEquilibriumTransform() {
     return {
-        scale: isMobile ? getHomeLogoDisplayScale() : 1,
+        scale: isMobile ? getHomeLogoDisplayScale() : 0.62,
         x: 0,
         y: '0vh'
     };
@@ -1949,9 +1960,13 @@ function prepareRuntimeHomeEquilibriumFrame(onReady = null) {
 
 function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
     const {
-        crossfade = false
+        crossfade = false,
+        desktopScale = null
     } = options;
     const homeTransform = getRuntimeHomeEquilibriumTransform();
+    if (!isMobile && Number.isFinite(desktopScale) && desktopScale > 0) {
+        homeTransform.scale = desktopScale;
+    }
 
     const normalizeAndComplete = () => {
         normalizePrimaryVideoState({
@@ -2709,7 +2724,7 @@ function playIntro() {
 
     state = 'intro';
 
-    const introStartScale = isMobile ? 1 : INTRO_ZOOM_START_SCALE;
+    const introStartScale = isMobile ? 1 : 0.62;
     normalizePrimaryVideoState({
         opacity: 1,
         scale: introStartScale,
@@ -2719,14 +2734,6 @@ function playIntro() {
         playbackRate: INTRO_PLAYBACK_RATE
     });
     prepareRuntimeHomeEquilibriumFrame();
-    if (!isMobile) {
-        gsap.to(videoEl, {
-            scale: INTRO_ZOOM_END_SCALE,
-            duration: INTRO_ZOOM_OUT_DURATION,
-            ease: "sine.out",
-            overwrite: 'auto'
-        });
-    }
 
     // Play intro video
     playVideo(getVideoSrc('intro'), () => {
@@ -3664,9 +3671,10 @@ function returnToStableHomeDirectly() {
     gsap.set('#center-nav', { opacity: 0, pointerEvents: 'none' });
     gsap.set(document.getElementById('status-label'), { opacity: 0 });
 
+    const returnHomeScale = isMobile ? getHomeLogoDisplayScale() : DESKTOP_BRAND_HOME_RETURN_SCALE;
     commitRuntimeHomeEquilibriumFrame(() => {
         gsap.set(videoEl, {
-            scale: getHomeLogoDisplayScale(),
+            scale: returnHomeScale,
             x: 0,
             y: '0vh'
         });
@@ -3694,7 +3702,7 @@ function returnToStableHomeDirectly() {
         primeDesktopHomeDirectContactHandoff();
         isAnimating = false;
         runQueuedSectionTransition();
-    }, { crossfade: false });
+    }, { crossfade: false, desktopScale: returnHomeScale });
 }
 
 function backToHome() {
@@ -4159,12 +4167,12 @@ const teamData = {
     thaha: { name: "Muhammed Thaha Jasmine", role: "Chief Executive Officer", bio: "As CEO, MJ oversees creative direction and post-production strategy at Enso 8, ensuring that storytelling, technology, and execution move in sync. His leadership is rooted in a deep understanding of both narrative and technical timelines, allowing the studio to deliver complex projects with precision and clarity." },
     mr: { name: "M R Vishnuprasad", role: "Creative Director", bio: "An embodied fictionist. While most advertising begins with formats and finishes with messaging, Vishnu begins elsewhere: with writing, performance, and the physicality of ideas. He situates his practice at the intersection of making and meaning." },
     bharath: { name: "Bharath R", role: "Managing Director", bio: "Overseeing creative execution, client relationships, and end-to-end production delivery. With a background in filmmaking and post-production, he brings a structured, outcome-driven approach to ensuring every project meets both creative and commercial objectives." },
-    amal: { name: "Amal Krishna", role: "Head of 3D Department", bio: "Leads the 3D Animation team at Enso8. He has over five years’ experience leading the delivery of high-quality 3D animation projects across commercial and digital platforms." },
+    amal: { name: "Amal Krishna", role: "Head of 3D Department", bio: "Leads the 3D Animation team at Enso8. He has over five yearsâ€™ experience leading the delivery of high-quality 3D animation projects across commercial and digital platforms." },
     nibu: { name: "Nibu Samuel", role: "2D Animator | Motion Graphics", bio: "A seasoned animator with over seventeen years of experience across character animation, motion graphics, and explainer-driven storytelling. He brings clarity, rhythm, and personality to visuals designed to inform, engage, and endure." },
     prince: { name: "Prince Dirron", role: "Chief Operations Officer", bio: "Oversees production workflows while actively contributing as a 3D artist. With a background rooted in problem-solving, visual execution, and marketing sensibility, he plays a key role in aligning creative ambition with operational efficiency." },
     athul_s: { name: "Athul Sudhakaran", role: "Editor", bio: "Video editor with over five years of professional experience delivering fast-paced, engaging content. His work is defined by strong rhythm, precise timing, and clear visual flow, with a particular strength in dynamic transitions and sharp, purposeful cuts." },
     nandagopan: { name: "Nandagopan P", role: "Sound Mixing Engineer", bio: "Sound designer and mixing engineer with six years of experience shaping cohesive soundscapes that support and strengthen narrative storytelling. He specialises in bringing together layers of sound into mixes that feel natural, immersive, and story-driven." },
-    gokul: { name: "Gokul R Nadh", role: "Sound Designer", bio: "Sound designer with over five years of experience crafting immersive audio landscapes for films, branded content, and digital media. His work focuses on shaping atmosphere, emotion, and texture, using sound as a narrative tool that deepens the viewer’s connection." },
+    gokul: { name: "Gokul R Nadh", role: "Sound Designer", bio: "Sound designer with over five years of experience crafting immersive audio landscapes for films, branded content, and digital media. His work focuses on shaping atmosphere, emotion, and texture, using sound as a narrative tool that deepens the viewerâ€™s connection." },
     adith: { name: "Adith C Satheesh", role: "3D Generalist", bio: "3D Generalist with over five years of professional experience working on large-scale narrative and commercial productions. He specialises in photorealistic environments, lighting, and maintaining visual continuity across complex VFX pipelines." },
     sanjay: { name: "Sanjay S", role: "3D Generalist | Lighting/FX", bio: "Sanjay is a 3D generalist with over six years of experience crafting immersive digital visuals that balance technical precision with strong creative intent. He specialises in lighting, simulations, and visual effects, bringing concepts to life through detailed worlds that support narrative impact." },
     akhil: { name: "K O Akhil", role: "Senior Cinematographer", bio: "He has filmed enough to know that spectacle fades quickly. What remains is rhythm, continuity, and the strange intimacy between camera and subject. At Enso 8, he plays a central role in translating concepts into visual language that feels coherent." },
@@ -4198,29 +4206,25 @@ teamMembers.forEach(member => {
     });
 });
 
-window.openBlogArticle = function() {
+window.openBlogArticle = function(articleId = 'what-ai-does-well') {
     const overlay = document.getElementById('blog-article-overlay');
+    const panels = overlay ? overlay.querySelectorAll('.blog-article-panel') : [];
+    const activePanel = overlay ? overlay.querySelector('.blog-article-panel[data-article="' + articleId + '"]') : null;
+    if (!overlay || !panels.length) return;
+
+    panels.forEach((panel) => {
+        panel.style.display = panel === activePanel ? 'block' : 'none';
+        panel.classList.toggle('active', panel === activePanel);
+    });
+
     const targets = getBlogArticleAnimationTargets();
-    if (!overlay) return;
     isBlogArticleOverlayOpen = true;
     setElementInteractivity(overlay, true);
     gsap.killTweensOf(overlay);
     gsap.killTweensOf(targets);
     gsap.set(targets, { opacity: 0, y: 24 });
-    gsap.to(overlay, { 
-        opacity: 1, 
-        duration: 0.42, 
-        ease: "power2.out" 
-    });
-    gsap.to(targets, {
-        opacity: 1,
-        y: 0,
-        duration: 0.46,
-        stagger: 0.04,
-        delay: 0.08,
-        ease: "power3.out",
-        clearProps: "transform"
-    });
+    gsap.to(overlay, { opacity: 1, duration: 0.42, ease: "power2.out" });
+    gsap.to(targets, { opacity: 1, y: 0, duration: 0.46, stagger: 0.04, delay: 0.08, ease: "power3.out", clearProps: "transform" });
     deactivateLocomotiveSection('blogs-section');
     activateLocomotiveSection('blog-article-overlay', { reset: true });
 };
@@ -4237,17 +4241,10 @@ window.closeBlogArticle = function(resumeUnderlying = true) {
         opacity: 0,
         y: 20,
         duration: 0.2,
-        stagger: {
-            each: 0.02,
-            from: "start"
-        },
+        stagger: { each: 0.02, from: "start" },
         ease: "power2.in"
     });
-    gsap.to(overlay, { 
-        opacity: 0, 
-        duration: 0.3, 
-        ease: "power2.in" 
-    });
+    gsap.to(overlay, { opacity: 0, duration: 0.3, ease: "power2.in" });
     deactivateLocomotiveSection('blog-article-overlay', { reset: true });
     if (resumeUnderlying && state === 'blogs') {
         activateLocomotiveSection('blogs-section');
@@ -4255,8 +4252,13 @@ window.closeBlogArticle = function(resumeUnderlying = true) {
 };
 
 function closeTeamDetailExperience() {
-    hideTeamDetailOverlay();
-    if (isTeamSectionVisible()) {
+    if (!detailOverlay) return;
+    detailOverlay.classList.remove('active');
+    setElementInteractivity(detailOverlay, false);
+    gsap.to(detailOverlay, { opacity: 0, duration: 0.25, ease: "power2.in", onComplete: () => {
+        detailOverlay.style.opacity = '';
+    }});
+    if (typeof isTeamSectionVisible === 'function' && isTeamSectionVisible()) {
         activateLocomotiveSection('team-section');
     }
 }
@@ -4561,6 +4563,116 @@ const portfolioCaseStudies = {
             `Enso 8 served as Conformist, acting as the final architect of the high-resolution master. We assembled live action plates with complex visual effects so teleportation sequences felt seamless and immediate.`,
             `Our work protected material texture and color consistency across domestic interiors, Al Fahidi, desert buggy action, Burj Al Arab, and Palm Jumeirah. The final output met the quality standards required for a global tourism launch.`
         ]
+    },
+    "french-avenue-safari": {
+        brand: "French Avenue",
+        title: "French Avenue: Safari Breeze",
+        role: "3D animation, fluid dynamics, cinematic world-building",
+        paragraphs: [
+            `Fragrance is inherently abstract, experienced through memory, mood, and emotion rather than form. For Safari Breeze, our goal was to visualise the invisible: translating scent profiles into immersive cinematic worlds through material storytelling, fluid dynamics, and atmospheric design.`,
+            `Safari Breeze is a fragrance defined by contrast â€” warmth and freshness, intensity and freedom. To visualise the fragrance profile, we introduced a dynamic collision of elements: cascading orange citrus, vibrant green botanicals, and deep red berries. These components interact through fluid simulations, building momentum before converging to form the bottle itself.`,
+            `As the narrative unfolds, the environment transitions from shadowed macro close-ups into a lush, sun-drenched jungle, expanding the world and reinforcing the "Safari" spirit of exploration and vitality.`
+        ]
+    },
+    "french-avenue-jasmere": {
+        brand: "French Avenue",
+        title: "French Avenue: Jasmere",
+        role: "3D animation, minimalist cinematic direction, atmospheric design",
+        paragraphs: [
+            `This film was created by Enso 8 for French Avenue as part of an ongoing series of fragrance campaigns, following Safari Breeze. Building on the visual language established in earlier films, this project explores a refined, cinematic approach to translating scent into mood, movement, and atmosphere.`,
+            `Jasmere called for restraint, softness, and precision. The story centers on the slow blooming of a single white jasmine bud, symbolising purity and refined femininity. Every movement is deliberate, designed to feel weightless and controlled. The bottle is revealed within a dreamlike desert-at-dusk environment, where soft, directional lighting highlights gold accents and polished surfaces.`,
+            `The atmosphere remains quiet and ethereal, allowing the product to feel elevated and timeless. The final film presents Jasmere as a fragrance of understated luxury: sensory, intimate, and elegant, demonstrating Enso 8's ability to craft high-end beauty visuals through subtlety and precision.`
+        ]
+    },
+    "jbl-tour-one-m3": {
+        brand: "JBL",
+        title: "JBL Tour One M3: First Doesn't Follow",
+        role: "3D animation, liquid-metal simulations, live-action integration, post-production",
+        paragraphs: [
+            `The "First Doesn't Follow" campaign for JBL required a visual language that felt both premium and high-energy. Our objective was to create a rhythmic, fast-paced narrative highlighting the technical superiority of the Tour One M3 headphones â€” specifically focusing on sound purity, noise cancellation, and the innovative Smart TX features.`,
+            `We opened the film with liquid-metal simulations and fluid dynamics to represent the "Pro Sound" quality, using metallic textures that mirror the sleek finish of the headphones. We designed an intricate 3D breakdown of the Spatial 360 Head Tracking and Smart TX interface, making complex wireless streaming technology feel intuitive and visually arresting.`,
+            `Working with Burp Production, we integrated high-quality live-action shots of the product in use, transitioning from CG environments to a minimalist real-world studio setting to showcase the True Adaptive Noise Cancellation in a relatable context. The final commercial positions the JBL Tour One M3 as a leader in the audio space, highlighting Enso 8's ability to direct large-scale collaborations and deliver a global-standard aesthetic for world-class electronics brands.`
+        ]
+    },
+    "clikon-washing-machine": {
+        brand: "Clikon",
+        title: "Clikon AI-Powered Washing Machine",
+        role: "3D animation, exploded-view animation, end-to-end product film direction",
+        paragraphs: [
+            `For the Clikon AI-Powered Washing Machine, Enso 8 set out to transform a familiar household appliance into a refined expression of intelligence and engineering. Leading the project end-to-end, we crafted a cinematic product film that moves beyond surface aesthetics to reveal the unseen technology driving precision laundry care.`,
+            `The narrative opens with abstract liquid-light reflections gliding across the machine's sleek exterior, gradually resolving into the Smart Touch Control Panel and establishing a premium, tech-forward tone. To communicate the power of Direct Motion Technology, we developed a detailed exploded-view animation of the motor assembly, using high-fidelity metallic textures and controlled motion to emphasise durability, efficiency, and mechanical precision.`,
+            `The final film translates complex appliance engineering into a clear, visually arresting brand story, positioning Clikon as a premium, future-ready innovator in home technology.`
+        ]
+    },
+    "cultfit-massager-02": {
+        brand: "Cult.fit",
+        title: "Cult.fit Massager Gun: Break the Stone",
+        role: "3D animation, procedural fracturing simulation, conceptual storytelling",
+        paragraphs: [
+            `To introduce the Cult Gun Massager, the brief went beyond product demonstration â€” it asked for a visceral expression of relief. The creative idea centered on transforming muscle stiffness into a tangible antagonist: a mechanical, stone-like human form embodying extreme tension and pain. Enso 8 developed a custom procedural fracturing setup to simulate stone armor breaking on contact.`,
+            `Each impact from the massager triggers controlled cracks and collapses, turning relief into a visually felt event. The film transitions beneath the surface to reveal a deep-tissue view, where the silicone head's rhythmic motion dissolves stiffness at a muscular level. This technical moment grounds the metaphor in physical reality.`,
+            `Break the Stone transforms muscle recovery into a powerful visual metaphor: making relief immediate, physical, and unmistakable. The film demonstrates Enso 8's ability to combine procedural simulation with conceptual storytelling for high-impact product launches. Animation was executed by Enso 8, with concept, screenplay, and direction by 24fps Talkies.`
+        ]
+    },
+    "cultfit-massager-01": {
+        brand: "Cult.fit",
+        title: "Cult.fit Massager Gun: Get Moving Again",
+        role: "Character animation, transformation effects, CG and live-action integration",
+        paragraphs: [
+            `While Break the Stone leans into abstraction, Get Moving Again brings the idea of muscle recovery into everyday life. Set in a high-energy gym locker room, the film follows an athlete whose post-workout soreness makes even simple movement feel impossible.`,
+            `We animated the athlete with stone-like encrustations layered onto the body, visually expressing the weight, restriction, and frustration of sore muscles. As the Cult Gun Massager is applied, the stone surface crumbles away in a fluid transition, revealing the real actor beneath. This transformation bridges animation and live-action, symbolising immediate recovery and restored mobility.`,
+            `Get Moving Again grounds recovery in relatability: showing how quickly pain gives way to movement. The film highlights Enso 8's strength in character animation, transformation effects, and integrating CG seamlessly into real-world environments. Enso 8 led animation production, in collaboration with 24fps Talkies on concept, screenplay, and direction.`
+        ]
+    },
+    "adidas-cultfit": {
+        brand: "Adidas Ã— Cult.fit",
+        title: "Adidas Ã— Cult.fit: Adidas Strength+ Campaign",
+        role: "Animation, post-production, motion graphics, large-scale brand film",
+        paragraphs: [
+            `To announce the launch of Adidas Strength+ classes across more than 150 Cult.fit centers in India, the campaign needed to feel fast, powerful, and aspirational. Working alongside the creative direction of 24fps Talkies, Enso 8 led animation and post-production to craft a high-impact film capturing the intensity and discipline of professional strength training.`,
+            `The edit is driven by momentum. Fast-cut transitions, stylised glitch effects, and punchy visual accents mirror elevated heart rates, explosive movement, and the mental focus of high-performance workouts. Every visual beat was meticulously synchronised to a driving, percussive soundtrack â€” aligning animation, sound, and athlete movement from heavy lifts to dynamic jumps.`,
+            `Motion graphics and digital overlays, including Adidas Strength+ branding and interactive "Book Your Class Now" UI elements, were designed to feel embedded within the gym environment rather than layered on top. The final spot bridges Adidas's performance-driven legacy with Cult.fit's modern fitness culture, showcasing Enso 8's ability to deliver precision-driven animation and post-production for large-scale, multi-brand campaigns.`
+        ]
+    },
+    "kappa-culture": {
+        brand: "Kappa",
+        title: "Kappa Cultr: Festival Awakening",
+        role: "Concept, 3D animation, environment design, full production pipeline",
+        paragraphs: [
+            `For the Kappa Cultr Festival, Enso 8 set out to create more than an announcement film â€” we built a myth. The vision was to bridge nature and future technology through a single, unforgettable moment: the awakening of culture itself. The film centers on a monumental, retro-futuristic mechanical deity emerging from a forest landscape, transforming the environment into a high-energy festival arena.`,
+            `We developed the concept and screenplay around a symbolic seed of culture â€” a glowing cube that descends into a dark forest. Its arrival triggers a chain reaction, culminating in the emergence of a colossal robotic entity and the activation of the festival world. The central figure was designed as a hybrid of industrial machinery and retro television aesthetics, with a screen-based head displaying the CULTR identity, creating a bold ownable mascot anchored in both nostalgia and futurism.`,
+            `Dense forest environments and low-light, magic-hour rendering heighten contrast, allowing neon lasers, glowing surfaces, and digital elements to cut dramatically through the scene. Lighting became a storytelling tool, guiding the transition from mystery to spectacle. By owning the entire pipeline from concept to final render, Enso 8 demonstrated its strength in delivering high-concept brand films that combine narrative ambition, technical execution, and cultural impact.`
+        ]
+    },
+    "clikon-ironbox": {
+        brand: "Clikon",
+        title: "Clikon Super Heavy Weight Smart Iron",
+        role: "3D animation, environment design, sand simulation, product film",
+        paragraphs: [
+            `For the launch of the Clikon Super Heavy Weight Smart Iron, Enso 8 set out to visualise power, durability, and performance at an epic scale. Rather than placing the product in a conventional home environment, we crafted a cinematic narrative set within a vast desert landscape, using scale and terrain as metaphors for strength, resistance, and unstoppable performance.`,
+            `The film introduces the iron emerging from a shipping container like an industrial machine, cutting decisively through desert dunes. High-detail environment modeling and dynamic sand simulations convey mass, friction, and momentum â€” allowing the product's "super heavy weight" quality to be felt rather than stated. Precision lighting and surface reflections highlight the heated plate, anti-rust build, and ergonomic industrial design, reinforcing a sense of robustness and premium finish.`,
+            `The narrative resolves by transitioning from the harsh desert environment to a lifestyle payoff â€” perfectly pressed garments displayed on a billboard â€” bridging extreme power with everyday usability. By leading the project from concept to final render, Enso 8 transformed a household appliance into a high-performance visual statement, turning a functional USP into a compelling brand story.`
+        ]
+    },
+    "prestige-hexamagic": {
+        brand: "Prestige",
+        title: "Prestige Triply HexaMagic Cookware",
+        role: "3D visualisation, material rendering, technical product storytelling",
+        paragraphs: [
+            `For Prestige's Triply HexaMagic cookware, the challenge wasn't visibility â€” it was comprehension. The product's true advantage lives in engineering details too small to photograph, yet critical to performance. Working with 24fps Talkies, Enso 8 developed a high-fidelity 3D visualisation revealing the science behind the HexaMagic honeycomb structure, explaining durability, non-stick performance, and metal-spoon safety through motion.`,
+            `This macro-scale visualisation demonstrates how the raised steel network protects the non-stick coating from friction and wear, making the benefit immediately intuitive. The Triply construction was broken down layer by layer â€” revealing a 304 food-grade stainless steel cooking surface, a heavy-gauge aluminum core for uniform heat distribution, and a 430 stainless steel outer layer optimised for induction cooking.`,
+            `Hyper-realistic metallic textures and controlled lighting emphasise the cookware's precision engineering and refined finish, reinforcing Prestige's premium positioning. The result is a polished, high-impact product visualisation that showcases Enso 8's ability to translate complex technology into persuasive brand storytelling for industry leaders.`
+        ]
+    },
+    "protein-chef": {
+        brand: "Protein Chef",
+        title: "Protein Chef: Bread Superheroes",
+        role: "3D character animation, brand storytelling, e-commerce integration",
+        paragraphs: [
+            `In collaboration with 24fps Talkies, Enso 8 brought the Protein Chef bread range to life using dynamic 3D character animation, transforming each product variant into a superhero with a distinct personality and purpose. In a saturated health-food category, Protein Chef set out to make an everyday essential feel extraordinary.`,
+            `We designed a league of "Bread Superheroes," each visually expressing its nutritional benefit. From the spear-wielding Brown Bread to the haloed Multigrain hero, every character carried unique silhouettes, props, and attitudes â€” making health benefits instantly legible and memorable.`,
+            `Character animation was seamlessly integrated with a simulated e-commerce interface, guiding viewers from product discovery to a "protein-boosted" checkout. The result blended entertainment with clarity, mirroring the actual consumer journey and elevating the brand from functional staple to a character-driven experience.`
+        ]
     }
 };
 
@@ -4570,23 +4682,23 @@ const portfolioGridCaseMeta = [
     { caseId: "etihad-punctual", title: "Etihad Airways: Mission Reliably Punctual" },
     { caseId: "rolex-hannah", title: "Rolex Presents: Hannah Mills - Making Waves" },
     { caseId: "visit-ready-winter", title: "Visit Abu Dhabi: All Ready for Winter" },
-    { title: "French Avenue: Jasmere" },
+    { caseId: "french-avenue-jasmere", title: "French Avenue: Jasmere" },
     { caseId: "nissan-xtrail", title: "Nissan X-Trail: Defy Ordinary" },
     { caseId: "dubai-tourism", title: "Dubai Tourism: Ultimate Travel Hack" },
     { caseId: "damac-islands", title: "DAMAC Islands: Island State of Mind" },
-    { title: "French Avenue: Safari Breeze" },
-    { title: "JBL: Tour One M3" },
-    { title: "Adidas x Cultfit" },
-    { title: "Cultfit Massager 01" },
-    { title: "Cultfit Massager 02" },
+    { caseId: "french-avenue-safari", title: "French Avenue: Safari Breeze" },
+    { caseId: "jbl-tour-one-m3", title: "JBL: Tour One M3" },
+    { caseId: "adidas-cultfit", title: "Adidas x Cultfit" },
+    { caseId: "cultfit-massager-01", title: "Cultfit Massager 01" },
+    { caseId: "cultfit-massager-02", title: "Cultfit Massager 02" },
     { caseId: "infinix-quick", title: "Infinix Note 40 Series: Quick Charge, Quicker Success" },
     { caseId: "central-park-plaza", title: "Central Park Plaza: Urban Energy Meets Exclusive Luxury" },
     { caseId: "damac-riverside-anonymous", title: "DAMAC Riverside Views: Non-DAMAC Anonymous" },
     { caseId: "du-network", title: "du Network: The Network That Gets You" },
-    { title: "Clikon Washing Machine" },
-    { title: "Clikon Ironbox" },
-    { title: "Prestige Cookware: Triply HexaMagic" },
-    { title: "Kappa Culture" },
+    { caseId: "clikon-washing-machine", title: "Clikon Washing Machine" },
+    { caseId: "clikon-ironbox", title: "Clikon Ironbox" },
+    { caseId: "prestige-hexamagic", title: "Prestige Cookware: Triply HexaMagic" },
+    { caseId: "kappa-culture", title: "Kappa Culture" },
     { title: "Fleuriche: French Avenue 4K" },
     { title: "TATA Soulful" }
 ];
@@ -4597,7 +4709,7 @@ let portfolioPlaybackRaf = null;
 let activePortfolioSelectedMedia = null;
 const PORTFOLIO_AHEAD_PLAY_COUNT = 5;
 const PORTFOLIO_PRELOAD_BATCH_COUNT = 24;
-let portfolioWarmupStarted = false;
+// portfolioWarmupStarted is declared at the top of the file to avoid temporal dead zone
 
 function getPortfolioImageUrl(title, item, index = 0) {
     const normalizedTitle = String(title || '').trim().toLowerCase();
@@ -4669,19 +4781,19 @@ function ensurePortfolioCaseModal() {
     modal.setAttribute('aria-hidden', 'true');
     modal.innerHTML = `
         <div class="portfolio-case-modal__scrim" data-portfolio-case-close></div>
-	        <article class="portfolio-case-modal__panel" role="dialog" aria-modal="true" aria-labelledby="portfolio-case-title">
-	            <button class="portfolio-case-modal__close" type="button" aria-label="Close case study" data-portfolio-case-close>&times;</button>
-	            <aside class="portfolio-case-modal__meta">
-	                <span class="portfolio-case-modal__eyebrow" data-portfolio-case-brand></span>
-	                <h2 class="portfolio-case-modal__title" id="portfolio-case-title" data-portfolio-case-title></h2>
-	                <div class="portfolio-case-modal__role" data-portfolio-case-role></div>
-	            </aside>
-	            <div class="portfolio-case-modal__content">
-	                <div class="portfolio-case-modal__media" data-portfolio-case-media></div>
-	                <div class="portfolio-case-modal__body" data-portfolio-case-body></div>
-	            </div>
-	        </article>
-	    `;
+        <article class="portfolio-case-modal__panel" role="dialog" aria-modal="true" aria-labelledby="portfolio-case-title">
+            <button class="portfolio-case-modal__close" type="button" aria-label="Close case study" data-portfolio-case-close>&times;</button>
+            <div class="portfolio-case-modal__media" data-portfolio-case-media></div>
+            <div class="portfolio-case-modal__details">
+                <aside class="portfolio-case-modal__meta">
+                    <span class="portfolio-case-modal__eyebrow" data-portfolio-case-brand></span>
+                    <h2 class="portfolio-case-modal__title" id="portfolio-case-title" data-portfolio-case-title></h2>
+                    <div class="portfolio-case-modal__role" data-portfolio-case-role></div>
+                </aside>
+                <div class="portfolio-case-modal__body" data-portfolio-case-body></div>
+            </div>
+        </article>
+    `;
     document.body.appendChild(modal);
 
     modal.addEventListener('click', (event) => {
@@ -4731,6 +4843,7 @@ function playSelectedPortfolioMedia(opener, modal) {
     selectedPlayer.setAttribute('stream-type', 'on-demand');
     selectedPlayer.setAttribute('playsinline', '');
     selectedPlayer.setAttribute('preload', 'auto');
+    selectedPlayer.setAttribute('autoplay', 'any');
     selectedPlayer.setAttribute('controls', '');
     selectedPlayer.removeAttribute('muted');
     selectedPlayer.muted = false;
@@ -4849,7 +4962,6 @@ function configurePortfolioVideo(video) {
     video.setAttribute('preload', 'auto');
     video.muted = true;
     video.loop = true;
-    video.playsInline = true;
 }
 
 function mountPortfolioVideo(item) {
@@ -4987,7 +5099,6 @@ function playPortfolioVideo(item, video) {
     video.setAttribute('preload', 'auto');
     video.muted = true;
     video.loop = true;
-    video.playsInline = true;
     item.classList.add('is-playing');
 
     const playAttempt = video.play?.();
@@ -5302,7 +5413,7 @@ window.addEventListener('resize', () => {
     });
 });
 
-// ── MOBILE HAMBURGER MENU ──
+// â”€â”€ MOBILE HAMBURGER MENU â”€â”€
 if (mobileHamburger) {
     mobileHamburger.addEventListener('click', () => {
         if (!isMobile) return;
