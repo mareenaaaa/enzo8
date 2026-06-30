@@ -166,9 +166,8 @@ const CONTACT_MOBILE_CINEMATIC_SCALE = 1;
 const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
-const HOME_EQUILIBRIUM_SCALE = 0.62;
-const DESKTOP_HOME_LOGO_DISPLAY_SCALE = 0.62; // matches intro video scale
-const DESKTOP_BRAND_HOME_RETURN_SCALE = 0.76; // only used when returning home from inner-page enso8/Home clicks
+const HOME_EQUILIBRIUM_SCALE = 0.32;
+const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
 const INTRO_ZOOM_START_SCALE = 0.33;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
@@ -200,7 +199,7 @@ const PORTFOLIO_LOGO_ZOOM_IN_DURATION = 0.62;
 const PORTFOLIO_LOGO_ZOOM_OUT_DURATION = 0.66;
 const PORTFOLIO_LOGO_FADE_DURATION = 0.38;
 const PORTFOLIO_LOGO_FADE_START = 0.18;
-const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = HOME_EQUILIBRIUM_SCALE;
+const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = 0.91;
 const DESKTOP_SECTION_HOME_RETURN_SCALE = DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE;
 const DESKTOP_HOME_INTRO_HANDOFF_DURATION = 0.88;
 const DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION = 0.56;
@@ -1842,7 +1841,7 @@ function getRuntimeHomeEquilibriumSrc() {
 
 function getRuntimeHomeEquilibriumTransform() {
     return {
-        scale: isMobile ? getHomeLogoDisplayScale() : 0.62,
+        scale: isMobile ? getHomeLogoDisplayScale() : 1,
         x: 0,
         y: '0vh'
     };
@@ -1960,13 +1959,9 @@ function prepareRuntimeHomeEquilibriumFrame(onReady = null) {
 
 function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
     const {
-        crossfade = false,
-        desktopScale = null
+        crossfade = false
     } = options;
     const homeTransform = getRuntimeHomeEquilibriumTransform();
-    if (!isMobile && Number.isFinite(desktopScale) && desktopScale > 0) {
-        homeTransform.scale = desktopScale;
-    }
 
     const normalizeAndComplete = () => {
         normalizePrimaryVideoState({
@@ -2724,7 +2719,7 @@ function playIntro() {
 
     state = 'intro';
 
-    const introStartScale = isMobile ? 1 : 0.62;
+    const introStartScale = isMobile ? 1 : INTRO_ZOOM_START_SCALE;
     normalizePrimaryVideoState({
         opacity: 1,
         scale: introStartScale,
@@ -2734,6 +2729,14 @@ function playIntro() {
         playbackRate: INTRO_PLAYBACK_RATE
     });
     prepareRuntimeHomeEquilibriumFrame();
+    if (!isMobile) {
+        gsap.to(videoEl, {
+            scale: INTRO_ZOOM_END_SCALE,
+            duration: INTRO_ZOOM_OUT_DURATION,
+            ease: "sine.out",
+            overwrite: 'auto'
+        });
+    }
 
     // Play intro video
     playVideo(getVideoSrc('intro'), () => {
@@ -3671,10 +3674,9 @@ function returnToStableHomeDirectly() {
     gsap.set('#center-nav', { opacity: 0, pointerEvents: 'none' });
     gsap.set(document.getElementById('status-label'), { opacity: 0 });
 
-    const returnHomeScale = isMobile ? getHomeLogoDisplayScale() : DESKTOP_BRAND_HOME_RETURN_SCALE;
     commitRuntimeHomeEquilibriumFrame(() => {
         gsap.set(videoEl, {
-            scale: returnHomeScale,
+            scale: getHomeLogoDisplayScale(),
             x: 0,
             y: '0vh'
         });
@@ -3702,7 +3704,7 @@ function returnToStableHomeDirectly() {
         primeDesktopHomeDirectContactHandoff();
         isAnimating = false;
         runQueuedSectionTransition();
-    }, { crossfade: false, desktopScale: returnHomeScale });
+    }, { crossfade: false });
 }
 
 function backToHome() {
