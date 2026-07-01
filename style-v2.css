@@ -4259,10 +4259,6 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         display: none;
     }
 
-    #about-section .manifesto-container > p.reveal-text::first-line {
-        color: rgba(255, 255, 255, 0.92);
-        font-weight: 500;
-    }
 
     #meet-team-btn {
         font-size: 0.64rem !important;

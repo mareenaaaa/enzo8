@@ -173,6 +173,7 @@ const INTRO_ZOOM_START_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
+const MOBILE_INTRO_HOME_SETTLE_SCALE_DURATION = 0.72;
 const INTRO_HOME_COMPLETION_LEAD = 0.16;
 const VIDEO_HANDOFF_FADE_DURATION = 0.18;
 const VIDEO_HANDOFF_IN_FADE_DURATION = VIDEO_HANDOFF_FADE_DURATION;
@@ -1094,16 +1095,28 @@ function warmTransitionVideos() {
     ].filter(Boolean);
 
     const spacing = isMobile ? MOBILE_WARM_SPACING : DESKTOP_WARM_SPACING;
-    transitionSources.forEach((src, index) => {
+    const scheduleWarmSource = (src, delay, attempt = 0) => {
         setTimeout(() => {
-            if (isAnimating) return;
+            if (isAnimating && attempt < 8) {
+                scheduleWarmSource(src, spacing, attempt + 1);
+                return;
+            }
             preloadVideoSource(src);
-        }, index * spacing);
+        }, delay);
+    };
+
+    transitionSources.forEach((src, index) => {
+        scheduleWarmSource(src, index * spacing);
     });
 }
 
 function warmPageResources(pageId) {
     primeSectionMedia(pageId);
+
+    if (pageId === 'blogs') {
+        const blogsSection = document.getElementById('blogs-section');
+        hydrateLazyImages(blogsSection);
+    }
 
     if (pageId === 'portfolios') {
         schedulePortfolioWarmup();
@@ -1159,6 +1172,7 @@ function scheduleBackgroundWarmup() {
             () => warmPageResources('about'),
             () => warmPageResources('services'),
             () => warmPageResources('contact'),
+            () => warmPageResources('blogs'),
             () => warmPageResources('portfolios')
         ];
 
@@ -1959,11 +1973,50 @@ function prepareRuntimeHomeEquilibriumFrame(onReady = null) {
 
 function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
     const {
-        crossfade = false
+        crossfade = false,
+        smoothScale = false,
+        smoothScaleDuration = MOBILE_INTRO_HOME_SETTLE_SCALE_DURATION
     } = options;
     const homeTransform = getRuntimeHomeEquilibriumTransform();
 
+    const completeAfterNormalize = () => {
+        requestAnimationFrame(() => {
+            if (typeof onComplete === 'function') onComplete();
+        });
+    };
+
     const normalizeAndComplete = () => {
+        if (smoothScale && isMobile && typeof gsap !== 'undefined' && videoEl) {
+            gsap.killTweensOf(videoEl);
+            videoEl.playbackRate = 1;
+            videoEl.style.objectPosition = 'center center';
+            gsap.set(videoEl, {
+                opacity: 1,
+                x: homeTransform.x,
+                y: homeTransform.y,
+                transformOrigin: '50% 50%',
+                clearProps: 'filter'
+            });
+            gsap.to(videoEl, {
+                scale: homeTransform.scale,
+                duration: smoothScaleDuration,
+                ease: 'sine.inOut',
+                overwrite: 'auto',
+                onComplete: () => {
+                    normalizePrimaryVideoState({
+                        opacity: 1,
+                        scale: homeTransform.scale,
+                        x: homeTransform.x,
+                        y: homeTransform.y,
+                        objectPosition: 'center center',
+                        playbackRate: 1
+                    });
+                    completeAfterNormalize();
+                }
+            });
+            return;
+        }
+
         normalizePrimaryVideoState({
             opacity: 1,
             scale: homeTransform.scale,
@@ -1972,9 +2025,7 @@ function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
             objectPosition: 'center center',
             playbackRate: 1
         });
-        requestAnimationFrame(() => {
-            if (typeof onComplete === 'function') onComplete();
-        });
+        completeAfterNormalize();
     };
 
     if (isMobile || !videoContainer) {
@@ -2752,7 +2803,7 @@ function playIntro() {
 
             isAnimating = false;
             runQueuedSectionTransition();
-        }, { crossfade: !isMobile });
+        }, { crossfade: !isMobile, smoothScale: isMobile });
     }, false, false, INTRO_PLAYBACK_RATE, isMobile ? 0.08 : INTRO_HOME_COMPLETION_LEAD);
 }
 
