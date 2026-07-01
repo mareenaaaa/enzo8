@@ -166,10 +166,10 @@ const CONTACT_MOBILE_CINEMATIC_SCALE = 1;
 const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
-const HOME_EQUILIBRIUM_SCALE = 0.32;
+const HOME_EQUILIBRIUM_SCALE = 0.68;
 const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
-const INTRO_ZOOM_START_SCALE = 0.33;
+const INTRO_ZOOM_START_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
@@ -199,7 +199,7 @@ const PORTFOLIO_LOGO_ZOOM_IN_DURATION = 0.62;
 const PORTFOLIO_LOGO_ZOOM_OUT_DURATION = 0.66;
 const PORTFOLIO_LOGO_FADE_DURATION = 0.38;
 const PORTFOLIO_LOGO_FADE_START = 0.18;
-const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = 0.91;
+const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = HOME_EQUILIBRIUM_SCALE;
 const DESKTOP_SECTION_HOME_RETURN_SCALE = DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE;
 const DESKTOP_HOME_INTRO_HANDOFF_DURATION = 0.88;
 const DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION = 0.56;
@@ -1836,12 +1836,12 @@ function waitForFirstDecodedFrame(video, callback, immediateIfReady = false) {
 }
 
 function getRuntimeHomeEquilibriumSrc() {
-    return getVideoSrc('about', true);
+    return getVideoSrc('intro');
 }
 
 function getRuntimeHomeEquilibriumTransform() {
     return {
-        scale: isMobile ? getHomeLogoDisplayScale() : 1,
+        scale: isMobile ? getHomeLogoDisplayScale() : HOME_EQUILIBRIUM_SCALE,
         x: 0,
         y: '0vh'
     };
@@ -2397,7 +2397,6 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
             gsap.set(videoEl, initialState);
             startPlayback();
         };
-
         if (isMobile && !isReverseTransition && currentOpacity > initialOpacity) {
             gsap.to(videoEl, {
                 opacity: initialOpacity,
@@ -2729,14 +2728,6 @@ function playIntro() {
         playbackRate: INTRO_PLAYBACK_RATE
     });
     prepareRuntimeHomeEquilibriumFrame();
-    if (!isMobile) {
-        gsap.to(videoEl, {
-            scale: INTRO_ZOOM_END_SCALE,
-            duration: INTRO_ZOOM_OUT_DURATION,
-            ease: "sine.out",
-            overwrite: 'auto'
-        });
-    }
 
     // Play intro video
     playVideo(getVideoSrc('intro'), () => {
@@ -2925,7 +2916,10 @@ function startVideoTransition(pageId) {
         ? getContactVideoObjectPosition()
         : 'center center';
     setContactVideoForegroundMode(false, {
-        resetTransform: !(isMobile && pageId === 'contact' && isEquilibriumIntroHandoff)
+        resetTransform: !(
+            (isMobile && pageId === 'contact' && isEquilibriumIntroHandoff) ||
+            (!isMobile && isHomeEquilibriumSource && !isSeamlessIntroHandoff)
+        )
     });
     normalizePrimaryVideoState({
         objectPosition: visibleVideoObjectPosition
@@ -3681,6 +3675,7 @@ function returnToStableHomeDirectly() {
             y: '0vh'
         });
         state = 'stabilize';
+        document.body.classList.remove('anti-gravity-active');
         if (heroUi) {
             gsap.to(heroUi, {
                 filter: 'blur(0px)',

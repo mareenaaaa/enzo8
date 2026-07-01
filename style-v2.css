@@ -84,7 +84,7 @@ body.about-team-focus #bg-video {
 @media (min-width: 769px) {
     #bg-video {
         opacity: 0;
-        transform: scale(0.32);
+        transform: scale(0.68);
     }
 }
 
