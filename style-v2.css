@@ -58,6 +58,16 @@ body::after {
     opacity: 0.86;
 }
 
+body.blog-article-open #center-nav,
+body.blog-article-open #home-wordmark,
+body.blog-article-open #home-audio-toggle,
+body.blog-article-open #blogs-section > header,
+body.blog-article-open #blogs-section .blog-social-icons {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 #bg-video,
 #handoff-video-buffer {
     position: absolute;
@@ -1051,9 +1061,12 @@ body.hero-nav-ready #experience-trigger {
         background 0.24s ease;
 }
 
-.home-audio-toggle i {
-    font-size: 0.92rem;
-    line-height: 1;
+.home-audio-toggle img {
+    width: 18px;
+    height: 18px;
+    display: block;
+    opacity: 0.9;
+    filter: brightness(0) invert(1);
 }
 
 body.home-audio-control-visible .home-audio-toggle {

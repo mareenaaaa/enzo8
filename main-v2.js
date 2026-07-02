@@ -15,24 +15,38 @@ const mobileNavClose = document.getElementById('mobile-nav-close');
 const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
 const homeAudioToggle = document.getElementById('home-audio-toggle');
+const AUDIO_ICON_UNMUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-2.svg';
+const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-x.svg';
 const AMBIENCE_VOLUME = 0.34;
-const TRANSITION_AUDIO_VOLUME = 0.82;
-const transitionAudioSources = {
-    about: './audio/about-us-click-transition.ogg',
-    services: './audio/services-click-transition.ogg',
-    portfolios: './audio/portfolio-click-transition.ogg',
-    blogs: './audio/blogs-click-transition.ogg',
-    contact: './audio/contact-click-transition.ogg',
-    contactHome: './audio/contact-page-to-home-click-transition.ogg'
+const AMBIENCE_DUCKED_VOLUME = 0.22;
+const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
+const transitionAudioConfig = {
+    about: { src: './audio/about-us-click-transition.ogg', volume: 0.82 },
+    services: { src: './audio/services-click-transition.ogg', volume: 0.82 },
+    portfolios: { src: './audio/portfolio-click-transition.ogg', volume: 0.82 },
+    blogs: { src: './audio/blogs-click-transition.ogg', volume: 0.78 },
+    contact: { src: './audio/contact-click-transition.ogg', volume: 0.8 },
+    contactHome: { src: './audio/contact-page-to-home-click-transition.ogg', volume: 0.8 }
 };
 const transitionAudioPlayers = new Map();
 let activeTransitionAudioPage = null;
 let activePortfolioSelectedMedia = null;
+let lastTransitionAudioPage = null;
+let lastTransitionAudioTriggerAt = 0;
+let ambienceRestoreTimer = null;
 const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 1800;
 const ambienceAudio = new Audio('./audio/ambience.ogg');
 ambienceAudio.loop = true;
 ambienceAudio.preload = 'auto';
 ambienceAudio.volume = AMBIENCE_VOLUME;
+window.__siteAudioDebug = {
+    getAmbienceState: () => ({
+        currentTime: ambienceAudio.currentTime,
+        paused: ambienceAudio.paused,
+        muted: ambienceAudio.muted,
+        volume: ambienceAudio.volume
+    })
+};
 let masterAudioMuted = false;
 try {
     masterAudioMuted = window.localStorage?.getItem('enzo8AudioMuted') === 'true';
@@ -66,19 +80,76 @@ function updateHomeAudioToggleState() {
     homeAudioToggle.setAttribute('aria-pressed', masterAudioMuted ? 'true' : 'false');
     homeAudioToggle.setAttribute('aria-label', masterAudioMuted ? 'Unmute audio' : 'Mute audio');
 
-    const icon = homeAudioToggle.querySelector('i');
+    const icon = homeAudioToggle.querySelector('img');
     if (icon) {
-        icon.className = masterAudioMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+        icon.src = masterAudioMuted ? AUDIO_ICON_MUTED : AUDIO_ICON_UNMUTED;
     }
+}
+
+function getTransitionAudioVolume(pageId) {
+    return transitionAudioConfig[pageId]?.volume ?? 0.82;
+}
+
+function clearAmbienceRestoreTimer() {
+    if (!ambienceRestoreTimer) return;
+    clearTimeout(ambienceRestoreTimer);
+    ambienceRestoreTimer = null;
+}
+
+function restoreAmbienceAfterTransition() {
+    clearAmbienceRestoreTimer();
+    if (!masterAudioMuted && !ambienceAudio.paused) {
+        fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.3);
+    }
+}
+
+function clearTransitionAudioLifecycle(audio) {
+    if (!audio?._transitionLifecycle) return;
+    const lifecycle = audio._transitionLifecycle;
+    audio.removeEventListener('ended', lifecycle.finish);
+    audio.removeEventListener('pause', lifecycle.finish);
+    if (lifecycle.timer) clearTimeout(lifecycle.timer);
+    audio._transitionLifecycle = null;
+}
+
+function finalizeTransitionAudioPlayback(pageId, audio) {
+    if (activeTransitionAudioPage === pageId) {
+        activeTransitionAudioPage = null;
+    }
+    clearTransitionAudioLifecycle(audio);
+    restoreAmbienceAfterTransition();
+}
+
+function scheduleTransitionAudioLifecycle(pageId, audio) {
+    if (!audio) return;
+    clearTransitionAudioLifecycle(audio);
+
+    const finish = () => finalizeTransitionAudioPlayback(pageId, audio);
+    const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
+        ? Math.max(600, (audio.duration - (audio.currentTime || 0)) * 1000 + 120)
+        : 2200;
+
+    audio._transitionLifecycle = {
+        finish,
+        timer: setTimeout(finish, durationMs)
+    };
+    audio.addEventListener('ended', finish, { once: true });
+    audio.addEventListener('pause', finish, { once: true });
+}
+
+function duckAmbienceForTransition() {
+    if (masterAudioMuted || ambienceAudio.paused) return;
+    clearAmbienceRestoreTimer();
+    fadeMediaVolume(ambienceAudio, AMBIENCE_DUCKED_VOLUME, 0.14);
 }
 
 function applyMasterAudioState({ fadeAmbience = false } = {}) {
     document.body.classList.toggle('audio-muted', masterAudioMuted);
     updateHomeAudioToggleState();
 
-    transitionAudioPlayers.forEach((audio) => {
+    transitionAudioPlayers.forEach((audio, pageId) => {
         audio.muted = masterAudioMuted;
-        audio.volume = TRANSITION_AUDIO_VOLUME;
+        audio.volume = getTransitionAudioVolume(pageId);
     });
 
     if (activePortfolioSelectedMedia) {
@@ -112,7 +183,8 @@ function applyMasterAudioState({ fadeAmbience = false } = {}) {
 
 function ensureAmbiencePlayback() {
     applyMasterAudioState();
-    try { ambienceAudio.load(); } catch (_) {}
+    if (masterAudioMuted) return;
+    if (!ambienceAudio.paused && !ambienceAudio.ended) return;
 
     const playPromise = ambienceAudio.play();
     if (playPromise && typeof playPromise.catch === 'function') {
@@ -158,13 +230,13 @@ document.addEventListener('pointerdown', ensureAmbiencePlayback, { once: true, p
 document.addEventListener('keydown', ensureAmbiencePlayback, { once: true });
 
 function getTransitionAudio(pageId) {
-    const src = transitionAudioSources[pageId];
+    const src = transitionAudioConfig[pageId]?.src;
     if (!src) return null;
 
     if (!transitionAudioPlayers.has(pageId)) {
         const audio = new Audio(src);
         audio.preload = 'auto';
-        audio.volume = TRANSITION_AUDIO_VOLUME;
+        audio.volume = getTransitionAudioVolume(pageId);
         audio.muted = masterAudioMuted;
         transitionAudioPlayers.set(pageId, audio);
     }
@@ -212,8 +284,10 @@ function waitForTransitionAudioToFinish(pageId, transitionOwnerToken, callback, 
 }
 
 function stopTransitionAudio(exceptPageId = null) {
+    clearAmbienceRestoreTimer();
     transitionAudioPlayers.forEach((audio, pageId) => {
         if (pageId === exceptPageId) return;
+        clearTransitionAudioLifecycle(audio);
         try {
             audio.pause();
             audio.currentTime = 0;
@@ -222,6 +296,7 @@ function stopTransitionAudio(exceptPageId = null) {
     if (activeTransitionAudioPage !== exceptPageId) {
         activeTransitionAudioPage = null;
     }
+    restoreAmbienceAfterTransition();
 }
 
 function playTransitionAudio(pageId) {
@@ -236,19 +311,35 @@ function playTransitionAudio(pageId) {
         return;
     }
 
+    const now = performance.now();
+    const shouldIgnoreReplay = (
+        lastTransitionAudioPage === pageId &&
+        now - lastTransitionAudioTriggerAt < TRANSITION_AUDIO_REPLAY_GUARD_MS
+    ) || (
+        activeTransitionAudioPage === pageId &&
+        !audio.paused &&
+        audio.currentTime < 0.18
+    );
+
+    if (shouldIgnoreReplay) return;
+
+    lastTransitionAudioPage = pageId;
+    lastTransitionAudioTriggerAt = now;
     ensureAmbiencePlayback();
     stopTransitionAudio(pageId);
     activeTransitionAudioPage = pageId;
     try {
         audio.pause();
         audio.currentTime = 0;
-        audio.volume = TRANSITION_AUDIO_VOLUME;
+        audio.volume = getTransitionAudioVolume(pageId);
         audio.muted = false;
         const playPromise = audio.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(() => {});
         }
     } catch (_) {}
+    scheduleTransitionAudioLifecycle(pageId, audio);
+    duckAmbienceForTransition();
 }
 
 window.__transitionAudioDebug = {
@@ -3033,6 +3124,11 @@ function startVideoTransition(pageId) {
     warmTransitionForPage(pageId);
     warmPageResources(pageId);
 
+    if (pageId === 'blogs' && isBlogArticleOverlayOpen) {
+        window.closeBlogArticle(true);
+        return;
+    }
+
     setHeroNavReady(!isMobile);
     setHomeAudioControlVisible(false);
     if (isMobile) {
@@ -4423,10 +4519,13 @@ teamMembers.forEach(member => {
     });
 });
 
-window.openBlogArticle = function(articleId = 'what-ai-does-well') {
+window.openBlogArticle = function(articleId = 'ai-overview') {
     const overlay = document.getElementById('blog-article-overlay');
     const panels = overlay ? overlay.querySelectorAll('.blog-article-panel') : [];
-    const activePanel = overlay ? overlay.querySelector('.blog-article-panel[data-article="' + articleId + '"]') : null;
+    const activePanel = overlay
+        ? (overlay.querySelector('.blog-article-panel[data-article="' + articleId + '"]')
+            || overlay.querySelector('.blog-article-panel'))
+        : null;
     if (!overlay || !panels.length) return;
 
     panels.forEach((panel) => {
@@ -4436,6 +4535,7 @@ window.openBlogArticle = function(articleId = 'what-ai-does-well') {
 
     const targets = getBlogArticleAnimationTargets();
     isBlogArticleOverlayOpen = true;
+    document.body.classList.add('blog-article-open');
     setElementInteractivity(overlay, true);
     gsap.killTweensOf(overlay);
     gsap.killTweensOf(targets);
@@ -4451,6 +4551,7 @@ window.closeBlogArticle = function(resumeUnderlying = true) {
     const targets = getBlogArticleAnimationTargets();
     if (!overlay) return;
     isBlogArticleOverlayOpen = false;
+    document.body.classList.remove('blog-article-open');
     setElementInteractivity(overlay, false);
     gsap.killTweensOf(overlay);
     gsap.killTweensOf(targets);
@@ -5563,7 +5664,7 @@ startVideoTransition = function(pageId) {
     warmPageResources(pageId);
     warmTransitionAudio(pageId);
     setHomeAudioControlVisible(false);
-    if (!transitionAudioSources[pageId]) stopTransitionAudio();
+    if (!transitionAudioConfig[pageId]) stopTransitionAudio();
 
     if (isAnimating) {
         queueSectionTransition(pageId);
@@ -5590,7 +5691,7 @@ startVideoTransition = function(pageId) {
         return;
     }
 
-    if (transitionAudioSources[pageId] && state !== pageId) {
+    if (transitionAudioConfig[pageId] && state !== pageId) {
         playTransitionAudio(pageId);
     }
 
