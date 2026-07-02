@@ -23,7 +23,6 @@ const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volum
 const AMBIENCE_VOLUME = 0.34;
 const AMBIENCE_DUCKED_VOLUME = 0.22;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
-const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 1000;
 const transitionAudioConfig = {
     about: { src: './audio/about-us-click-transition.ogg', volume: 0.82 },
     services: { src: './audio/services-click-transition.ogg', volume: 0.82 },
@@ -38,7 +37,6 @@ let activePortfolioSelectedMedia = null;
 let lastTransitionAudioPage = null;
 let lastTransitionAudioTriggerAt = 0;
 let ambienceRestoreTimer = null;
-let pendingTransitionAudioStart = null;
 const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 1800;
 const ambienceAudio = new Audio('./audio/ambience.ogg');
 ambienceAudio.loop = true;
@@ -290,10 +288,6 @@ function waitForTransitionAudioToFinish(pageId, transitionOwnerToken, callback, 
 
 function stopTransitionAudio(exceptPageId = null) {
     clearAmbienceRestoreTimer();
-    if (pendingTransitionAudioStart && pendingTransitionAudioStart.pageId !== exceptPageId) {
-        clearTimeout(pendingTransitionAudioStart.timer);
-        pendingTransitionAudioStart = null;
-    }
     transitionAudioPlayers.forEach((audio, pageId) => {
         if (pageId === exceptPageId) return;
         clearTransitionAudioLifecycle(audio);
@@ -337,35 +331,18 @@ function playTransitionAudio(pageId) {
     ensureAmbiencePlayback();
     stopTransitionAudio(pageId);
     activeTransitionAudioPage = pageId;
-
-    const startPlayback = () => {
-        if (activeTransitionAudioPage !== pageId) return;
-        if (pendingTransitionAudioStart?.pageId === pageId) {
-            pendingTransitionAudioStart = null;
+    try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = getTransitionAudioVolume(pageId);
+        audio.muted = false;
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
         }
-        try {
-            audio.pause();
-            audio.currentTime = 0;
-            audio.volume = getTransitionAudioVolume(pageId);
-            audio.muted = false;
-            const playPromise = audio.play();
-            if (playPromise && typeof playPromise.catch === 'function') {
-                playPromise.catch(() => {});
-            }
-        } catch (_) {}
-        scheduleTransitionAudioLifecycle(pageId, audio);
-        duckAmbienceForTransition();
-    };
-
-    if (pageId === 'portfolios') {
-        pendingTransitionAudioStart = {
-            pageId,
-            timer: setTimeout(startPlayback, PORTFOLIO_TRANSITION_AUDIO_DELAY_MS)
-        };
-        return;
-    }
-
-    startPlayback();
+    } catch (_) {}
+    scheduleTransitionAudioLifecycle(pageId, audio);
+    duckAmbienceForTransition();
 }
 
 window.__transitionAudioDebug = {
