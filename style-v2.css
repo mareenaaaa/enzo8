@@ -2503,7 +2503,7 @@ body.cursor-hover #custom-cursor-dot {
     flex: 1;
 }
 
-/* Circular avatar â€” uses the card's own image, no person photo */
+/* Circular avatar - uses the card's own image, no person photo */
 .blog-avatar {
     width: 45px;
     height: 45px;
@@ -3933,7 +3933,7 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 }
 
-/* Mobile Nav Overlay & Hamburger â€” hidden on desktop */
+/* Mobile Nav Overlay & Hamburger - hidden on desktop */
 @media (max-width: 768px) {
     #portfolios-section {
         -webkit-overflow-scrolling: touch;
