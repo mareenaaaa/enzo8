@@ -23,7 +23,7 @@ const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volum
 const AMBIENCE_VOLUME = 0.34;
 const AMBIENCE_DUCKED_VOLUME = 0.22;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
-const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 300;
+const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 130;
 const transitionAudioConfig = {
     about: { src: './audio/about-us-click-transition.ogg', volume: 0.82 },
     services: { src: './audio/services-click-transition.ogg', volume: 0.82 },
