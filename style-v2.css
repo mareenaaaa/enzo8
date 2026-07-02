@@ -107,10 +107,6 @@ body::after {
     opacity: 0.86;
 }
 
-body.blog-article-open #center-nav,
-body.blog-article-open #home-wordmark,
-body.blog-article-open #home-audio-toggle,
-body.blog-article-open #blogs-section > header,
 body.blog-article-open #blogs-section .blog-social-icons {
     opacity: 0 !important;
     visibility: hidden !important;
