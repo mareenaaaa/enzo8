@@ -23,7 +23,7 @@ const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volum
 const AMBIENCE_VOLUME = 0.34;
 const AMBIENCE_DUCKED_VOLUME = 0.22;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
-const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 500;
+const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 300;
 const transitionAudioConfig = {
     about: { src: './audio/about-us-click-transition.ogg', volume: 0.82 },
     services: { src: './audio/services-click-transition.ogg', volume: 0.82 },
@@ -1144,11 +1144,13 @@ function animatePortfolioLogoIntro(transitionOwnerToken, onComplete) {
     animateNoVideoLogoIntro('portfolios', transitionOwnerToken, onComplete);
 }
 
-function animatePortfolioLogoExit({ scale, x = 0, y = '0vh', transitionOwnerToken = null } = {}) {
+function animatePortfolioLogoExit({ scale, x = 0, y = '0vh', transitionOwnerToken = null, suppressZoom = false } = {}) {
     if (!videoEl || typeof gsap === 'undefined') return;
 
     const targetScale = scale ?? getHomeLogoDisplayScale();
-    const zoomScale = isMobile ? targetScale : Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale));
+    const zoomScale = suppressZoom
+        ? targetScale
+        : (isMobile ? targetScale : Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale)));
 
     gsap.killTweensOf(videoEl);
     gsap.set(videoEl, {
@@ -4368,7 +4370,8 @@ function executeFinalReverse(options = {}) {
             scale: homeSettleScale,
             x: homeSettleX,
             y: homeSettleY,
-            transitionOwnerToken: videoTransitionToken + 1
+            transitionOwnerToken: videoTransitionToken + 1,
+            suppressZoom: !revealHomeUi
         });
     } else {
         gsap.to(videoEl, { opacity: 1, duration: 0.5, ease: "sine.inOut" });
