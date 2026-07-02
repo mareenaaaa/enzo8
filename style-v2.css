@@ -715,7 +715,8 @@ body.hero-nav-ready #experience-trigger {
     body.show-mobile-nav #mobile-brand-home,
     body.show-mobile-nav #mobile-hamburger,
     body.intro-active #mobile-brand-home,
-    body.intro-active #mobile-hamburger {
+    body.intro-active #mobile-hamburger,
+    body.intro-active #home-audio-toggle {
         display: none !important;
     }
 
@@ -1019,6 +1020,60 @@ body.hero-nav-ready #experience-trigger {
     color: var(--text-dim);
     z-index: 20;
     text-transform: uppercase;
+}
+
+.home-audio-toggle {
+    position: fixed;
+    right: calc(30px + env(safe-area-inset-right));
+    bottom: calc(25px + env(safe-area-inset-bottom));
+    z-index: 1120;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: rgba(6, 12, 20, 0.38);
+    color: rgba(255, 255, 255, 0.82);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(7px) scale(0.96);
+    cursor: pointer;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.08);
+    transition:
+        opacity 0.48s ease,
+        transform 0.48s ease,
+        color 0.24s ease,
+        border-color 0.24s ease,
+        background 0.24s ease;
+}
+
+.home-audio-toggle i {
+    font-size: 0.92rem;
+    line-height: 1;
+}
+
+body.home-audio-control-visible .home-audio-toggle {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.home-audio-toggle:hover,
+.home-audio-toggle:focus-visible {
+    color: #fff;
+    border-color: rgba(0, 240, 255, 0.48);
+    background: rgba(10, 24, 34, 0.58);
+    outline: none;
+}
+
+body.audio-muted .home-audio-toggle {
+    color: rgba(255, 255, 255, 0.58);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
 }
 
 /* --- ABOUT MOBILE VIDEO BACKGROUND --- */
@@ -4071,8 +4126,26 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     body.intro-active #video-container,
     body.intro-active .contact-social-row,
     body.intro-active #mobile-nav-overlay,
-    body.intro-active #mobile-hamburger {
+    body.intro-active #mobile-hamburger,
+    body.intro-active #home-audio-toggle {
         display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .home-audio-toggle {
+        right: calc(24px + env(safe-area-inset-right));
+        bottom: calc(24px + env(safe-area-inset-bottom));
+        z-index: 5210;
+        width: 42px;
+        height: 42px;
+        background: rgba(4, 9, 16, 0.34);
+    }
+
+    body.show-mobile-nav:not(.mobile-home-nav) .home-audio-toggle {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(7px) scale(0.96);
     }
 }
 

@@ -167,10 +167,12 @@ const MOBILE_SERVICES_MEDIA_SCALE = 1.24;
 const HOME_DIRECT_HANDOFF_SCALE = 1.04;
 const SECTION_CHAIN_HOME_SCALE = 1;
 const HOME_EQUILIBRIUM_SCALE = 0.68;
+const DESKTOP_HOME_INTRO_REFERENCE_SCALE = 0.61;
+const DESKTOP_HANDOFF_EQUILIBRIUM_SCALE = 0.995;
 const DESKTOP_HOME_LOGO_DISPLAY_SCALE = HOME_EQUILIBRIUM_SCALE;
 const HOME_EQUILIBRIUM_FRAME_LEAD = 0.06;
-const INTRO_ZOOM_START_SCALE = HOME_EQUILIBRIUM_SCALE;
-const INTRO_ZOOM_END_SCALE = HOME_EQUILIBRIUM_SCALE;
+const INTRO_ZOOM_START_SCALE = DESKTOP_HOME_INTRO_REFERENCE_SCALE;
+const INTRO_ZOOM_END_SCALE = DESKTOP_HOME_INTRO_REFERENCE_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
 const MOBILE_INTRO_HOME_SETTLE_SCALE_DURATION = 0.72;
@@ -200,13 +202,15 @@ const PORTFOLIO_LOGO_ZOOM_IN_DURATION = 0.62;
 const PORTFOLIO_LOGO_ZOOM_OUT_DURATION = 0.66;
 const PORTFOLIO_LOGO_FADE_DURATION = 0.38;
 const PORTFOLIO_LOGO_FADE_START = 0.18;
-const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = HOME_EQUILIBRIUM_SCALE;
+const DESKTOP_HOME_RETURN_REFERENCE_SCALE = DESKTOP_HANDOFF_EQUILIBRIUM_SCALE;
+const DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE = DESKTOP_HANDOFF_EQUILIBRIUM_SCALE;
 const DESKTOP_SECTION_HOME_RETURN_SCALE = DESKTOP_HOME_TO_SECTION_INTRO_START_SCALE;
 const DESKTOP_HOME_INTRO_HANDOFF_DURATION = 0.88;
 const DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION = 0.56;
-const DESKTOP_SECTION_CHAIN_EQUILIBRIUM_SCALE = 0.995;
+const DESKTOP_SECTION_CHAIN_EQUILIBRIUM_SCALE = DESKTOP_HANDOFF_EQUILIBRIUM_SCALE;
 const DESKTOP_SECTION_CHAIN_REVERSE_COMPLETION_LEAD = 1.28;
 const DESKTOP_SERVICES_CHAIN_REVERSE_COMPLETION_LEAD = 0.72;
+const DESKTOP_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD = 0.58;
 const DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.36;
 const MOBILE_SECTION_CHAIN_REVERSE_SETTLE_DURATION = 0.28;
 const MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD = 0.22;
@@ -833,7 +837,9 @@ function animateNoVideoLogoIntro(pageId, transitionOwnerToken, onComplete) {
         section.scrollTop = 0;
     }
 
-    const startScale = getPrimaryVideoScale(isMobile ? getMobileUniformCinematicScale() : HOME_EQUILIBRIUM_SCALE);
+    const startScale = isMobile
+        ? getPrimaryVideoScale(getMobileUniformCinematicScale())
+        : DESKTOP_HANDOFF_EQUILIBRIUM_SCALE;
     const zoomScale = Math.max(getNoVideoLogoZoomScale(startScale), startScale);
 
     gsap.killTweensOf(videoEl);
@@ -1220,7 +1226,7 @@ function routeSectionTransitionThroughHome(pageId) {
     warmPageResources(pageId);
 
     if (isMobile && fromPageId === 'contact' && pageId === 'services') {
-        const homeStableTransform = { scale: isMobile ? getHomeLogoDisplayScale() : 0.62, x: 0, y: '0vh' };
+        const homeStableTransform = { scale: getContactHandoffScale(), x: 0, y: '0vh' };
         executeFinalReverse({
             revealHomeUi: false,
             chainedTargetPageId: pageId,
@@ -1855,7 +1861,7 @@ function getRuntimeHomeEquilibriumSrc() {
 
 function getRuntimeHomeEquilibriumTransform() {
     return {
-        scale: isMobile ? getHomeLogoDisplayScale() : HOME_EQUILIBRIUM_SCALE,
+        scale: isMobile ? getHomeLogoDisplayScale() : DESKTOP_HOME_INTRO_REFERENCE_SCALE,
         x: 0,
         y: '0vh'
     };
@@ -2405,8 +2411,8 @@ function playVideo(src, onComplete, seamless = false, shouldLoop = false, playba
                     instantReveal: handoffOptions.instantReveal,
                     mobileCrossfade: handoffOptions.mobileCrossfade
                 });
-                animateBufferedTransform();
             }
+            animateBufferedTransform();
             releaseVideo();
         };
 
@@ -3780,7 +3786,7 @@ function backToHome() {
 
     if (!isMobile) {
         if (HOME_EQUILIBRIUM_STATES.has(state) && !isTeamSectionVisible()) return;
-        returnToStableHomeDirectly();
+        executeFinalReverse();
         return;
     }
 
@@ -3855,17 +3861,20 @@ function executeFinalReverse(options = {}) {
     const mobileHomeReturnTransform = (isMobile && revealHomeUi && isAboutReverse)
         ? { scale: defaultHomeSettleScale, x: 0, y: "0vh" }
         : null;
+    const desktopHomeReturnReferenceTransform = (!isMobile && revealHomeUi && !isAboutReverse)
+        ? { scale: DESKTOP_HOME_RETURN_REFERENCE_SCALE, x: 0, y: "0vh" }
+        : null;
     const resolvedReverseEndTransform = reverseEndTransform
         || (isContactReverse
-            ? (mobileHomeReturnTransform || { scale: getContactHandoffScale(), x: 0, y: 0 })
-            : (isAboutReverse ? (mobileHomeReturnTransform || currentReverseTransform) : equilibriumTransform));
+            ? (mobileHomeReturnTransform || desktopHomeReturnReferenceTransform || { scale: getContactHandoffScale(), x: 0, y: 0 })
+            : (isAboutReverse ? (mobileHomeReturnTransform || currentReverseTransform) : (desktopHomeReturnReferenceTransform || equilibriumTransform)));
     const homeSettleScale = resolvedReverseEndTransform?.scale ?? equilibriumTransform?.scale ?? defaultHomeSettleScale;
     const homeSettleX = resolvedReverseEndTransform?.x ?? equilibriumTransform?.x ?? 0;
     const homeSettleY = resolvedReverseEndTransform?.y ?? equilibriumTransform?.y ?? "0vh";
     const reverseCompletionLead = (!revealHomeUi && !isMobile && isServicesReverse)
         ? DESKTOP_SERVICES_CHAIN_REVERSE_COMPLETION_LEAD
         : (!revealHomeUi && !isMobile && isContactReverse)
-            ? CONTACT_EXTRO_EQUILIBRIUM_LEAD
+            ? DESKTOP_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD
             : DESKTOP_SECTION_CHAIN_REVERSE_COMPLETION_LEAD;
     const reversePlaybackRate = isContactReverse
         ? getContactExtroPlaybackRate()
@@ -3994,24 +4003,28 @@ function executeFinalReverse(options = {}) {
         }
     };
 
+    const reverseEndTransformOptions = (!isAboutReverse && (!revealHomeUi || isContactReverse)) ? {
+        scale: homeSettleScale,
+        x: homeSettleX,
+        y: homeSettleY,
+        duration: DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION,
+        ease: "sine.inOut",
+        alignToEnd: true,
+        lead: reverseCompletionLead
+    } : null;
+
     const reverseHandoffOptions = !reverseSrc
         ? { noVideoDelay: isPortfolioNoVideoReverse ? Math.round(PORTFOLIO_LOGO_ZOOM_OUT_DURATION * 1000) : (activeSection ? (revealHomeUi ? 560 : 190) : 70) }
         : (!isMobile && !isServicesReverse ? {
             buffered: true,
-            endTransform: (!isAboutReverse && (!revealHomeUi || isContactReverse)) ? {
-                scale: homeSettleScale,
-                x: homeSettleX,
-                y: homeSettleY,
-                duration: DESKTOP_SECTION_CHAIN_REVERSE_SETTLE_DURATION,
-                ease: "sine.inOut",
-                alignToEnd: true,
-                lead: reverseCompletionLead
-            } : null
+            endTransform: reverseEndTransformOptions
         } : (isServicesReverse ? {
             initialOpacity: 0,
             revealOpacity: 1,
             beforeReveal: revealServicesReverse
-        } : {}));
+        } : {
+            endTransform: reverseEndTransformOptions
+        }));
 
     playVideo(reverseSrc, () => {
         const finishHomeSettle = () => {
