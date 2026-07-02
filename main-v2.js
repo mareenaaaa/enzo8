@@ -15,6 +15,9 @@ const mobileNavClose = document.getElementById('mobile-nav-close');
 const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
 const homeAudioToggle = document.getElementById('home-audio-toggle');
+const siteLoader = document.getElementById('site-loader');
+const siteLoaderFill = document.getElementById('site-loader-fill');
+const siteLoaderProgress = siteLoader?.querySelector('[role="progressbar"]');
 const AUDIO_ICON_UNMUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-2.svg';
 const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-x.svg';
 const AMBIENCE_VOLUME = 0.34;
@@ -1191,9 +1194,13 @@ const sectionMediaWarmupMap = {
 let muxPlayerLoadPromise = null;
 let backgroundWarmupScheduled = false;
 const transitionWarmRegistry = new Set();
+const transitionWarmPromises = new Map();
 const transitionPreloadElements = [];
 const MOBILE_WARM_SPACING = 360;
 const DESKTOP_WARM_SPACING = 140;
+const STARTUP_NAV_WARM_PAGES = ['about', 'services', 'portfolios', 'blogs', 'contact'];
+const STARTUP_WARM_TIMEOUT_MS = isMobile ? 1900 : 1500;
+const STARTUP_LOADER_MIN_MS = isMobile ? 760 : 560;
 
 function getServicesCinematicSource(kind = 'intro') {
     if (isMobile && kind === 'intro') {
@@ -1268,7 +1275,10 @@ function ensureMuxPlayerLoaded() {
 }
 
 function preloadVideoSource(src) {
-    if (!src || transitionWarmRegistry.has(src)) return;
+    if (!src) return Promise.resolve(null);
+    if (transitionWarmRegistry.has(src)) {
+        return transitionWarmPromises.get(src) || Promise.resolve(null);
+    }
 
     transitionWarmRegistry.add(src);
 
@@ -1277,8 +1287,30 @@ function preloadVideoSource(src) {
     preloadVideo.muted = true;
     preloadVideo.playsInline = true;
     preloadVideo.src = src;
-    preloadVideo.load();
     transitionPreloadElements.push(preloadVideo);
+
+    const readinessPromise = new Promise((resolve) => {
+        let settled = false;
+        let timer = null;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            preloadVideo.removeEventListener('loadedmetadata', finish);
+            preloadVideo.removeEventListener('canplay', finish);
+            preloadVideo.removeEventListener('error', finish);
+            if (timer) clearTimeout(timer);
+            resolve(preloadVideo);
+        };
+
+        preloadVideo.addEventListener('loadedmetadata', finish, { once: true });
+        preloadVideo.addEventListener('canplay', finish, { once: true });
+        preloadVideo.addEventListener('error', finish, { once: true });
+        timer = setTimeout(finish, STARTUP_WARM_TIMEOUT_MS);
+    });
+
+    transitionWarmPromises.set(src, readinessPromise);
+    preloadVideo.load();
+    return readinessPromise;
 }
 
 function warmTransitionForPage(pageId, reverse = false) {
@@ -1357,6 +1389,115 @@ function warmPageResources(pageId) {
     if (pageId === 'portfolios') {
         schedulePortfolioWarmup();
     }
+}
+
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function withTimeout(promise, timeoutMs) {
+    return Promise.race([
+        Promise.resolve(promise),
+        wait(timeoutMs)
+    ]);
+}
+
+function setStartupLoaderProgress(progress) {
+    const normalizedProgress = Math.max(0.04, Math.min(1, progress));
+    if (siteLoaderFill) {
+        siteLoaderFill.style.setProperty('--loader-progress', normalizedProgress.toFixed(3));
+    }
+    if (siteLoaderProgress) {
+        siteLoaderProgress.setAttribute('aria-valuenow', String(Math.round(normalizedProgress * 100)));
+    }
+}
+
+function hideStartupLoader() {
+    document.body.classList.remove('app-loading');
+    document.body.classList.add('loader-hidden');
+    if (!siteLoader) return;
+
+    setTimeout(() => {
+        siteLoader.setAttribute('aria-hidden', 'true');
+    }, 520);
+}
+
+function collectStartupWarmSources() {
+    const sources = [getVideoSrc('intro')];
+
+    STARTUP_NAV_WARM_PAGES.forEach((pageId) => {
+        if (pageId === 'services') {
+            sources.push(
+                getServicesCinematicSource('intro'),
+                getServicesCinematicSource('loop'),
+                getVideoSrc(pageId, true)
+            );
+            return;
+        }
+
+        sources.push(getVideoSrc(pageId));
+        sources.push(getVideoSrc(pageId, true));
+    });
+
+    return Array.from(new Set(sources.filter(Boolean)));
+}
+
+function primeNavigationAnimationState() {
+    if (typeof gsap === 'undefined') return;
+
+    const navItems = Array.from(document.querySelectorAll('#center-nav .nav-item, .mobile-nav-item'));
+    if (!navItems.length) return;
+
+    gsap.set(navItems, { force3D: true });
+    requestAnimationFrame(() => {
+        gsap.set(navItems, { clearProps: 'transform' });
+    });
+}
+
+function warmStartupNavigationAnimations() {
+    setStartupLoaderProgress(0.18);
+    primeNavigationAnimationState();
+
+    const sourcePromises = collectStartupWarmSources().map((src, index, list) => {
+        const promise = preloadVideoSource(src);
+        promise.then(() => {
+            setStartupLoaderProgress(0.24 + ((index + 1) / list.length) * 0.42);
+        }).catch(() => {});
+        return promise;
+    });
+
+    STARTUP_NAV_WARM_PAGES.forEach((pageId, index) => {
+        warmTransitionForPage(pageId);
+        warmTransitionForPage(pageId, true);
+        warmTransitionAudio(pageId);
+        setTimeout(() => warmPageResources(pageId), index * 110);
+    });
+
+    return Promise.allSettled(sourcePromises.map((promise) => withTimeout(promise, STARTUP_WARM_TIMEOUT_MS)));
+}
+
+async function runStartupLoadingSequence() {
+    const startedAt = performance.now();
+    setStartupLoaderProgress(0.08);
+
+    await wait(80);
+    setStartupLoaderProgress(0.16);
+
+    await withTimeout(warmStartupNavigationAnimations(), STARTUP_WARM_TIMEOUT_MS + 160);
+    setStartupLoaderProgress(0.76);
+
+    if (document.fonts?.ready) {
+        await withTimeout(document.fonts.ready, 520);
+    }
+    setStartupLoaderProgress(0.9);
+
+    const elapsed = performance.now() - startedAt;
+    if (elapsed < STARTUP_LOADER_MIN_MS) {
+        await wait(STARTUP_LOADER_MIN_MS - elapsed);
+    }
+
+    setStartupLoaderProgress(1);
+    await wait(140);
 }
 
 function normalizePrimaryVideoState(options = {}) {
@@ -3068,15 +3209,14 @@ if (trigger) {
 
 // Start sequence when browser is ready
 window.addEventListener('load', () => {
-    // Slight delay to ensure CDN scripts (GSAP) and layout are fully parsed
-    setTimeout(() => {
+    runStartupLoadingSequence().catch(() => {}).then(() => {
         if (isMobile) {
             startMobileIntro();
-            return;
+        } else {
+            playIntro();
         }
-
-        playIntro();
-    }, 0);
+        hideStartupLoader();
+    });
 });
 
 function initNavSystems() {
