@@ -1201,6 +1201,8 @@ const DESKTOP_WARM_SPACING = 140;
 const STARTUP_NAV_WARM_PAGES = ['about', 'services', 'portfolios', 'blogs', 'contact'];
 const STARTUP_WARM_TIMEOUT_MS = isMobile ? 1900 : 1500;
 const STARTUP_LOADER_MIN_MS = isMobile ? 760 : 560;
+const STARTUP_BOOT_FALLBACK_MS = isMobile ? 2200 : 1800;
+let startupSequenceStarted = false;
 
 function getServicesCinematicSource(kind = 'intro') {
     if (isMobile && kind === 'intro') {
@@ -1498,6 +1500,20 @@ async function runStartupLoadingSequence() {
 
     setStartupLoaderProgress(1);
     await wait(140);
+}
+
+function startInitialExperience() {
+    if (startupSequenceStarted) return;
+    startupSequenceStarted = true;
+
+    runStartupLoadingSequence().catch(() => {}).then(() => {
+        if (isMobile) {
+            startMobileIntro();
+        } else {
+            playIntro();
+        }
+        hideStartupLoader();
+    });
 }
 
 function normalizePrimaryVideoState(options = {}) {
@@ -3207,17 +3223,17 @@ if (trigger) {
     trigger.addEventListener('click', onMobileLandingTap);
 }
 
-// Start sequence when browser is ready
-window.addEventListener('load', () => {
-    runStartupLoadingSequence().catch(() => {}).then(() => {
-        if (isMobile) {
-            startMobileIntro();
-        } else {
-            playIntro();
-        }
-        hideStartupLoader();
-    });
-});
+// Start sequence as soon as the app is usable instead of waiting for every
+// production asset to finish loading. Full `load` is still listened to, but a
+// fallback timer ensures the loader cannot deadlock on slow third-party/CDN media.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startInitialExperience, { once: true });
+} else {
+    startInitialExperience();
+}
+
+window.addEventListener('load', startInitialExperience, { once: true });
+setTimeout(startInitialExperience, STARTUP_BOOT_FALLBACK_MS);
 
 function initNavSystems() {
     const navLinks = document.querySelectorAll('.nav-item, .nav-link');
