@@ -14,6 +14,9 @@ const mobileHamburger = document.getElementById('mobile-hamburger');
 const mobileNavClose = document.getElementById('mobile-nav-close');
 const mobileBrandHome = document.getElementById('mobile-brand-home');
 const mobileIntroVideo = document.getElementById('mobile-intro-video');
+const homeAudioToggle = document.getElementById('home-audio-toggle');
+const AMBIENCE_VOLUME = 0.34;
+const TRANSITION_AUDIO_VOLUME = 0.82;
 const transitionAudioSources = {
     about: './audio/about-us-click-transition.ogg',
     services: './audio/services-click-transition.ogg',
@@ -24,7 +27,135 @@ const transitionAudioSources = {
 };
 const transitionAudioPlayers = new Map();
 let activeTransitionAudioPage = null;
+let activePortfolioSelectedMedia = null;
 const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 1800;
+const ambienceAudio = new Audio('./audio/ambience.ogg');
+ambienceAudio.loop = true;
+ambienceAudio.preload = 'auto';
+ambienceAudio.volume = AMBIENCE_VOLUME;
+let masterAudioMuted = false;
+try {
+    masterAudioMuted = window.localStorage?.getItem('enzo8AudioMuted') === 'true';
+} catch (_) {}
+
+function fadeMediaVolume(media, targetVolume, duration = 0.32, onComplete = null) {
+    if (!media) return;
+    const finish = () => {
+        media.volume = targetVolume;
+        if (typeof onComplete === 'function') onComplete();
+    };
+
+    if (typeof gsap === 'undefined') {
+        finish();
+        return;
+    }
+
+    gsap.killTweensOf(media);
+    gsap.to(media, {
+        volume: targetVolume,
+        duration,
+        ease: 'sine.inOut',
+        overwrite: true,
+        onComplete: finish
+    });
+}
+
+function updateHomeAudioToggleState() {
+    if (!homeAudioToggle) return;
+
+    homeAudioToggle.setAttribute('aria-pressed', masterAudioMuted ? 'true' : 'false');
+    homeAudioToggle.setAttribute('aria-label', masterAudioMuted ? 'Unmute audio' : 'Mute audio');
+
+    const icon = homeAudioToggle.querySelector('i');
+    if (icon) {
+        icon.className = masterAudioMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+    }
+}
+
+function applyMasterAudioState({ fadeAmbience = false } = {}) {
+    document.body.classList.toggle('audio-muted', masterAudioMuted);
+    updateHomeAudioToggleState();
+
+    transitionAudioPlayers.forEach((audio) => {
+        audio.muted = masterAudioMuted;
+        audio.volume = TRANSITION_AUDIO_VOLUME;
+    });
+
+    if (activePortfolioSelectedMedia) {
+        activePortfolioSelectedMedia.muted = masterAudioMuted;
+        activePortfolioSelectedMedia.volume = masterAudioMuted ? 0 : 1;
+    }
+
+    try {
+        window.localStorage?.setItem('enzo8AudioMuted', masterAudioMuted ? 'true' : 'false');
+    } catch (_) {}
+
+    if (masterAudioMuted) {
+        if (fadeAmbience) {
+            fadeMediaVolume(ambienceAudio, 0, 0.28, () => {
+                ambienceAudio.muted = true;
+            });
+        } else {
+            ambienceAudio.muted = true;
+            ambienceAudio.volume = 0;
+        }
+        return;
+    }
+
+    ambienceAudio.muted = false;
+    if (fadeAmbience) {
+        fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.44);
+    } else {
+        ambienceAudio.volume = AMBIENCE_VOLUME;
+    }
+}
+
+function ensureAmbiencePlayback() {
+    applyMasterAudioState();
+    try { ambienceAudio.load(); } catch (_) {}
+
+    const playPromise = ambienceAudio.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+    }
+}
+
+function setHomeAudioControlVisible(isVisible, { immediate = false } = {}) {
+    document.body.classList.toggle('home-audio-control-visible', Boolean(isVisible));
+    if (!homeAudioToggle) return;
+
+    if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(homeAudioToggle);
+        gsap.set(homeAudioToggle, { clearProps: 'opacity,transform,pointerEvents' });
+    }
+
+    if (!immediate) return;
+
+    const previousTransition = homeAudioToggle.style.transition;
+    homeAudioToggle.style.transition = 'none';
+    homeAudioToggle.offsetHeight;
+    requestAnimationFrame(() => {
+        homeAudioToggle.style.transition = previousTransition;
+    });
+}
+
+applyMasterAudioState();
+
+if (homeAudioToggle) {
+    homeAudioToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        masterAudioMuted = !masterAudioMuted;
+        applyMasterAudioState({ fadeAmbience: true });
+        if (!masterAudioMuted) {
+            ensureAmbiencePlayback();
+        }
+    });
+}
+
+document.addEventListener('pointerdown', ensureAmbiencePlayback, { once: true, passive: true });
+document.addEventListener('keydown', ensureAmbiencePlayback, { once: true });
 
 function getTransitionAudio(pageId) {
     const src = transitionAudioSources[pageId];
@@ -33,7 +164,8 @@ function getTransitionAudio(pageId) {
     if (!transitionAudioPlayers.has(pageId)) {
         const audio = new Audio(src);
         audio.preload = 'auto';
-        audio.volume = 0.82;
+        audio.volume = TRANSITION_AUDIO_VOLUME;
+        audio.muted = masterAudioMuted;
         transitionAudioPlayers.set(pageId, audio);
     }
 
@@ -93,18 +225,25 @@ function stopTransitionAudio(exceptPageId = null) {
 }
 
 function playTransitionAudio(pageId) {
+    if (masterAudioMuted) {
+        stopTransitionAudio();
+        return;
+    }
+
     const audio = getTransitionAudio(pageId);
     if (!audio) {
         stopTransitionAudio();
         return;
     }
 
+    ensureAmbiencePlayback();
     stopTransitionAudio(pageId);
     activeTransitionAudioPage = pageId;
     try {
         audio.pause();
         audio.currentTime = 0;
-        audio.volume = 0.82;
+        audio.volume = TRANSITION_AUDIO_VOLUME;
+        audio.muted = false;
         const playPromise = audio.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(() => {});
@@ -2666,6 +2805,8 @@ function enterMobileHomeState(options = {}) {
             objectPosition: 'center center',
             filter: 'brightness(0.78) contrast(1.08) saturate(1.02)'
         });
+        setHomeAudioControlVisible(showNavigation);
+        ensureAmbiencePlayback();
         if (showNavigation) {
             hideMobileHamburger();
             fadeMobileNavIn({ home: true, delay: 0.08 });
@@ -2688,6 +2829,8 @@ function enterMobileHomeState(options = {}) {
     document.body.classList.add('mobile-home-nav');
     document.body.classList.toggle('show-mobile-nav', showNavigation);
     if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', showNavigation ? 'false' : 'true');
+    setHomeAudioControlVisible(showNavigation);
+    ensureAmbiencePlayback();
     if (showNavigation) {
         fadeMobileNavIn({ home: true, delay: 0.08 });
     } else if (mobileNavOverlay) {
@@ -2703,6 +2846,7 @@ function enterMobileHomeState(options = {}) {
 
 function leaveMobileHomeState() {
     if (isMobile) lockMobileComposition();
+    setHomeAudioControlVisible(false);
     document.body.classList.remove('show-mobile-nav', 'mobile-home-nav', 'intro-active');
     if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', 'true');
     prepareMobileNavFade({ home: false });
@@ -2769,6 +2913,7 @@ function playIntro() {
     isAnimating = true;
     clearTransientVideoState();
     setHeroNavReady(false);
+    setHomeAudioControlVisible(false, { immediate: true });
     hideMobileHamburger();
     document.body.classList.remove('show-mobile-nav', 'mobile-home-nav', 'intro-active');
     if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', 'true');
@@ -2801,6 +2946,8 @@ function playIntro() {
             });
 
             gsap.to(document.getElementById('status-label'), { opacity: 1, duration: 0.67 });
+            setHomeAudioControlVisible(true);
+            ensureAmbiencePlayback();
             scheduleBackgroundWarmup();
             primeDesktopHomeDirectContactHandoff();
             if (isMobile) {
@@ -2887,6 +3034,7 @@ function startVideoTransition(pageId) {
     warmPageResources(pageId);
 
     setHeroNavReady(!isMobile);
+    setHomeAudioControlVisible(false);
     if (isMobile) {
         lockMobileComposition();
     }
@@ -3707,6 +3855,7 @@ function returnToStableHomeDirectly() {
     suspendAllLocomotiveSections();
     clearTeamHash();
     stopTransitionAudio();
+    setHomeAudioControlVisible(false);
 
     if (isBlogArticleOverlayOpen) {
         window.closeBlogArticle(false);
@@ -3751,6 +3900,8 @@ function returnToStableHomeDirectly() {
             onStart: () => setHeroNavReady(true)
         });
         gsap.to(document.getElementById('status-label'), { opacity: 1, duration: 0.44, ease: 'sine.out' });
+        setHomeAudioControlVisible(true);
+        ensureAmbiencePlayback();
         setCustomCursorVisibility(true, 0.2);
         scheduleBackgroundWarmup();
         primeDesktopHomeDirectContactHandoff();
@@ -3826,6 +3977,7 @@ function executeFinalReverse(options = {}) {
     } = options;
     if (isAnimating) return;
     isAnimating = true;
+    setHomeAudioControlVisible(false);
     clearTransitionBoundaryState(state);
     setContactVideoForegroundMode(false);
     suspendAllLocomotiveSections();
@@ -4035,8 +4187,12 @@ function executeFinalReverse(options = {}) {
                     showNavigation: true,
                     settleScale: homeSettleScale
                 });
+            } else if (revealHomeUi) {
+                setHomeAudioControlVisible(true);
+                ensureAmbiencePlayback();
             }
             if (!revealHomeUi) {
+                setHomeAudioControlVisible(false);
                 setHeroNavReady(false);
                 gsap.set('#center-nav', { opacity: 0, pointerEvents: 'none' });
                 gsap.set(document.getElementById('status-label'), { opacity: 0 });
@@ -4767,7 +4923,6 @@ const portfolioGridCaseMeta = [
 let isPortfolioParallaxBound = false;
 let isPortfolioPlaybackBound = false;
 let portfolioPlaybackRaf = null;
-let activePortfolioSelectedMedia = null;
 const PORTFOLIO_AHEAD_PLAY_COUNT = 5;
 const PORTFOLIO_PRELOAD_BATCH_COUNT = 24;
 // portfolioWarmupStarted is declared at the top of the file to avoid temporal dead zone
@@ -4906,10 +5061,14 @@ function playSelectedPortfolioMedia(opener, modal) {
     selectedPlayer.setAttribute('preload', 'auto');
     selectedPlayer.setAttribute('autoplay', 'any');
     selectedPlayer.setAttribute('controls', '');
-    selectedPlayer.removeAttribute('muted');
-    selectedPlayer.muted = false;
+    if (masterAudioMuted) {
+        selectedPlayer.setAttribute('muted', '');
+    } else {
+        selectedPlayer.removeAttribute('muted');
+    }
+    selectedPlayer.muted = masterAudioMuted;
     selectedPlayer.loop = false;
-    selectedPlayer.volume = 1;
+    selectedPlayer.volume = masterAudioMuted ? 0 : 1;
     mediaHost.appendChild(selectedPlayer);
     activePortfolioSelectedMedia = selectedPlayer;
 
@@ -5403,6 +5562,7 @@ const originalStartVideoTransition = startVideoTransition;
 startVideoTransition = function(pageId) {
     warmPageResources(pageId);
     warmTransitionAudio(pageId);
+    setHomeAudioControlVisible(false);
     if (!transitionAudioSources[pageId]) stopTransitionAudio();
 
     if (isAnimating) {
