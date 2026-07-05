@@ -4808,6 +4808,18 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     #services-section {
         isolation: isolate;
+        /* Manual tuning knobs for the mobile services stack. */
+        --services-item-left: clamp(86px, 23vw, 124px);
+        --services-item-width: min(64vw, 250px);
+        --services-item-font-size: clamp(0.7rem, 2.9vw, 0.9rem);
+        --services-item-line-width: 22px;
+        --services-concept-top: 25.5%;
+        --services-cinema-top: 34.3%;
+        --services-editing-top: 43.2%;
+        --services-sound-top: 52.9%;
+        --services-vfx-top: 62.2%;
+        --services-3d-top: 70.6%;
+        --services-colour-top: 80.6%;
         background: #000 !important;
         overflow: hidden !important;
     }
@@ -4838,14 +4850,14 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     #services-section .service-item,
     #services-section .service-item.left-col,
     #services-section .service-item.right-col {
-        left: clamp(86px, 23vw, 124px) !important;
+        left: var(--services-item-left) !important;
         right: 16px !important;
-        width: min(64vw, 250px) !important;
+        width: var(--services-item-width) !important;
         max-width: none !important;
         padding: 0 !important;
         text-align: left !important;
         white-space: normal !important;
-        font-size: clamp(0.7rem, 2.9vw, 0.9rem) !important;
+        font-size: var(--services-item-font-size) !important;
         line-height: 1.12 !important;
         font-weight: 300 !important;
         letter-spacing: 0.02em !important;
@@ -4857,20 +4869,20 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     #services-section .service-item .line {
         display: block !important;
-        width: 22px !important;
+        width: var(--services-item-line-width) !important;
         height: 1px !important;
         margin-top: 6px !important;
         opacity: 0.55 !important;
         background: linear-gradient(90deg, rgba(57, 213, 239, 0.82), transparent) !important;
     }
 
-    #services-section .item-concept { top: 25.5% !important; }
-    #services-section .item-cinema  { top: 34.3% !important; }
-    #services-section .item-editing { top: 43.2% !important; }
-    #services-section .item-sound   { top: 52.9% !important; }
-    #services-section .item-vfx     { top: 62.2% !important; }
-    #services-section .item-3d      { top: 70.6% !important; }
-    #services-section .item-colour  { top: 80.6% !important; }
+    #services-section .item-concept { top: var(--services-concept-top) !important; }
+    #services-section .item-cinema  { top: var(--services-cinema-top) !important; }
+    #services-section .item-editing { top: var(--services-editing-top) !important; }
+    #services-section .item-sound   { top: var(--services-sound-top) !important; }
+    #services-section .item-vfx     { top: var(--services-vfx-top) !important; }
+    #services-section .item-3d      { top: var(--services-3d-top) !important; }
+    #services-section .item-colour  { top: var(--services-colour-top) !important; }
 
     #portfolios-section {
         overflow-y: auto !important;
@@ -6709,4 +6721,41 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     #services-section .service-item .line {
         width: 28px !important;
     }
+}
+
+/* Exact 401x773 viewport tuning: separate from the iPhone/mobile stack. */
+@media (width: 401px) and (height: 773px) {
+    #services-section {
+        --services-item-left: 90px;
+        --services-item-width: 258px;
+        --services-item-font-size: 0.84rem;
+        --services-item-line-width: 20px;
+        --services-concept-top: 21.8%;
+        --services-cinema-top: 32.3%;
+        --services-editing-top: 42%;
+        --services-sound-top: 53.7%;
+        --services-vfx-top: 64.1%;
+        --services-3d-top: 73.8%;
+        --services-colour-top: 84.8%;
+    }
+
+    #services-section .service-item,
+    #services-section .service-item.left-col,
+    #services-section .service-item.right-col {
+        left: var(--services-item-left) !important;
+        width: var(--services-item-width) !important;
+        font-size: var(--services-item-font-size) !important;
+    }
+
+    #services-section .service-item .line {
+        width: var(--services-item-line-width) !important;
+    }
+
+    #services-section .item-concept { top: var(--services-concept-top) !important; }
+    #services-section .item-cinema  { top: var(--services-cinema-top) !important; }
+    #services-section .item-editing { top: var(--services-editing-top) !important; }
+    #services-section .item-sound   { top: var(--services-sound-top) !important; }
+    #services-section .item-vfx     { top: var(--services-vfx-top) !important; }
+    #services-section .item-3d      { top: var(--services-3d-top) !important; }
+    #services-section .item-colour  { top: var(--services-colour-top) !important; }
 }
