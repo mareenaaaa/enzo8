@@ -6723,39 +6723,175 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 }
 
-/* Exact 401x773 viewport tuning: separate from the iPhone/mobile stack. */
-@media (width: 401px) and (height: 773px) {
+/* Final services mobile fit: use viewport-height tiers instead of one exact iPhone size.
+   This keeps the services names stable across short phones, mid-height phones, and taller phones. */
+@media (max-width: 768px) and (max-height: 700px) {
     #services-section {
-        --services-item-left: 90px;
-        --services-item-width: 258px;
-        --services-item-font-size: 0.84rem;
-        --services-item-line-width: 20px;
-        --services-concept-top: 21.8%;
-        --services-cinema-top: 32.3%;
-        --services-editing-top: 42%;
-        --services-sound-top: 53.7%;
-        --services-vfx-top: 64.1%;
-        --services-3d-top: 73.8%;
-        --services-colour-top: 84.8%;
+        --services-item-left: clamp(70px, 19vw, 88px);
+        --services-item-width: min(66vw, 226px);
+        --services-item-font-size: clamp(0.6rem, 2.55vw, 0.78rem);
+        --services-item-line-width: 18px;
+        --services-concept-top: 23.2%;
+        --services-cinema-top: 32.1%;
+        --services-editing-top: 41.0%;
+        --services-sound-top: 50.2%;
+        --services-vfx-top: 59.7%;
+        --services-3d-top: 69.2%;
+        --services-colour-top: 78.7%;
     }
+}
 
+@media (max-width: 768px) and (min-height: 701px) and (max-height: 809px) {
+    #services-section {
+        --services-item-left: clamp(76px, 21vw, 104px);
+        --services-item-width: min(64vw, 242px);
+        --services-item-font-size: clamp(0.66rem, 2.8vw, 0.84rem);
+        --services-item-line-width: 20px;
+        --services-concept-top: 25.4%;
+        --services-cinema-top: 34.2%;
+        --services-editing-top: 43.1%;
+        --services-sound-top: 52.8%;
+        --services-vfx-top: 62.0%;
+        --services-3d-top: 70.5%;
+        --services-colour-top: 80.4%;
+    }
+}
+
+@media (max-width: 768px) and (min-height: 810px) {
+    #services-section {
+        --services-item-left: clamp(84px, 22vw, 118px);
+        --services-item-width: min(60vw, 250px);
+        --services-item-font-size: clamp(0.7rem, 2.85vw, 0.9rem);
+        --services-item-line-width: 22px;
+        --services-concept-top: 26.5%;
+        --services-cinema-top: 35.4%;
+        --services-editing-top: 44.5%;
+        --services-sound-top: 53.9%;
+        --services-vfx-top: 63.3%;
+        --services-3d-top: 72.4%;
+        --services-colour-top: 81.8%;
+    }
+}
+
+@media (max-width: 768px) {
     #services-section .service-item,
     #services-section .service-item.left-col,
     #services-section .service-item.right-col {
-        left: var(--services-item-left) !important;
-        width: var(--services-item-width) !important;
-        font-size: var(--services-item-font-size) !important;
+        padding-left: 6px !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
     }
+}
 
-    #services-section .service-item .line {
-        width: var(--services-item-line-width) !important;
+/* Exact viewport map for the phone sizes you asked to verify. */
+@media (width: 360px) and (height: 800px) {
+    #services-section {
+        --services-item-left: 72px;
+        --services-item-width: 232px;
+        --services-item-font-size: 0.66rem;
+        --services-item-line-width: 18px;
+        --services-concept-top: 29%;
+        --services-cinema-top: 33.6%;
+        --services-editing-top: 42.6%;
+        --services-sound-top: 52.0%;
+        --services-vfx-top: 61.1%;
+        --services-3d-top: 70.2%;
+        --services-colour-top: 78.4%;
     }
+}
 
-    #services-section .item-concept { top: var(--services-concept-top) !important; }
-    #services-section .item-cinema  { top: var(--services-cinema-top) !important; }
-    #services-section .item-editing { top: var(--services-editing-top) !important; }
-    #services-section .item-sound   { top: var(--services-sound-top) !important; }
-    #services-section .item-vfx     { top: var(--services-vfx-top) !important; }
-    #services-section .item-3d      { top: var(--services-3d-top) !important; }
-    #services-section .item-colour  { top: var(--services-colour-top) !important; }
+@media (width: 375px) and (height: 667px) {
+    #services-section {
+        --services-item-left: 74px;
+        --services-item-width: 224px;
+        --services-item-font-size: 0.6rem;
+        --services-item-line-width: 18px;
+        --services-concept-top: 20%;
+        --services-cinema-top: 31.1%;
+        --services-editing-top: 41.6%;
+        --services-sound-top: 53.8%;
+        --services-vfx-top: 65.0%;
+        --services-3d-top: 75.2%;
+        --services-colour-top: 87.4%;
+    }
+}
+
+@media (width: 390px) and (height: 844px) {
+    #services-section {
+        --services-item-left: 82px;
+        --services-item-width: 244px;
+        --services-item-font-size: 0.74rem;
+        --services-item-line-width: 20px;
+        --services-concept-top: 26.1%;
+        --services-cinema-top: 34.9%;
+        --services-editing-top: 44.0%;
+        --services-sound-top: 53.3%;
+        --services-vfx-top: 62.5%;
+        --services-3d-top: 71.7%;
+        --services-colour-top: 81.0%;
+    }
+}
+
+@media (width: 393px) and (height: 873px) {
+    #services-section {
+        --services-item-left: 86px;
+        --services-item-width: 246px;
+        --services-item-font-size: 0.76rem;
+        --services-item-line-width: 20px;
+        --services-concept-top: 25.3%;
+        --services-cinema-top: 34.7%;
+        --services-editing-top: 43%;
+        --services-sound-top: 53.3%;
+        --services-vfx-top: 61.9%;
+        --services-3d-top: 70.9%;
+        --services-colour-top: 80.8%;
+    }
+}
+
+@media (width: 401px) and (height: 773px) {
+    #services-section {
+        --services-item-left: 106px;
+        --services-item-width: 252px;
+        --services-item-font-size: 0.84rem;
+        --services-item-line-width: 20px;
+        --services-concept-top: 25.3%;
+        --services-cinema-top: 34.3%;
+        --services-editing-top: 42.5%;
+        --services-sound-top: 53.1%;
+        --services-vfx-top: 62.1%;
+        --services-3d-top: 70.8%;
+        --services-colour-top: 80.7%;
+    }
+}
+
+@media (width: 412px) and (height: 915px) {
+    #services-section {
+        --services-item-left: 92px;
+        --services-item-width: 250px;
+        --services-item-font-size: 0.78rem;
+        --services-item-line-width: 22px;
+        --services-concept-top: 26.2%;
+        --services-cinema-top: 35.1%;
+        --services-editing-top: 43.2%;
+        --services-sound-top: 53.1%;
+        --services-vfx-top: 62.2%;
+        --services-3d-top: 70%;
+        --services-colour-top: 80%;
+    }
+}
+
+@media (width: 428px) and (height: 926px) {
+    #services-section {
+        --services-item-left: 96px;
+        --services-item-width: 254px;
+        --services-item-font-size: 0.8rem;
+        --services-item-line-width: 22px;
+        --services-concept-top: 25.4%;
+        --services-cinema-top: 34.6%;
+        --services-editing-top: 43.0%;
+        --services-sound-top: 52.99%;
+        --services-vfx-top: 62.4%;
+        --services-3d-top: 71%;
+        --services-colour-top: 80.9%;
+    }
 }
