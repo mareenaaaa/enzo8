@@ -1671,6 +1671,51 @@ body.hero-nav-ready #home-wordmark:hover {
     #services-section .services-text-overlay > header {
         display: none !important;
     }
+
+    /* Desktop services: keep the copy readable and balanced around the hero visuals. */
+    #services-section .services-text-overlay {
+        overflow: hidden;
+    }
+
+    #services-section .services-tagline {
+        top: 16.2% !important;
+        font-size: clamp(1.12rem, 1.55vw, 1.6rem) !important;
+        letter-spacing: 0.14em !important;
+        color: rgba(255, 255, 255, 0.66) !important;
+    }
+
+    #services-section .service-item,
+    #services-section .service-item.left-col,
+    #services-section .service-item.right-col {
+        max-width: min(26vw, 360px) !important;
+        font-size: clamp(0.9rem, 1.2vw, 1.08rem) !important;
+        line-height: 1.16 !important;
+        letter-spacing: 0.08em !important;
+        white-space: normal !important;
+    }
+
+    #services-section .service-item.left-col {
+        right: auto !important;
+    }
+
+    #services-section .service-item.right-col {
+
+        left: auto !important;
+        text-align: right !important;
+    }
+
+    #services-section .service-item.right-col .line {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+    }
+
+    #services-section .item-concept { top: 26.2% !important; }
+    #services-section .item-cinema  { top: 33.5% !important; }
+    #services-section .item-editing { top: 42.0% !important; }
+    #services-section .item-sound   { top: 51.5% !important; }
+    #services-section .item-vfx     { top: 60% !important; }
+    #services-section .item-3d      { top: 67.0% !important; }
+    #services-section .item-colour  { top: 77.8% !important; }
 }
 
 /* Team Hover Effect */
@@ -4303,24 +4348,36 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     #services-section .services-text-overlay {
         z-index: 14 !important;
+        opacity: 0 !important;
+        transition: opacity 0.42s ease !important;
+        transition-delay: 0s !important;
+    }
+
+    #services-section.services-text-live .services-text-overlay {
+        opacity: 1 !important;
+    }
+
+    #services-section.active .services-text-overlay {
+        opacity: 1 !important;
+        transition-delay: 2.05s !important;
     }
 
     #services-section .service-item,
     #services-section .service-item.left-col,
     #services-section .service-item.right-col {
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
+        left: clamp(76px, 22vw, 110px) !important;
+        right: 14px !important;
+        width: min(72vw, 270px) !important;
         max-width: none !important;
-        padding: 0 20px !important;
-        text-align: center !important;
+        padding: 0 !important;
+        text-align: left !important;
         white-space: normal !important;
-        font-size: clamp(0.48rem, 2.25vw, 0.62rem) !important;
-        line-height: 1.15 !important;
+        font-size: clamp(0.58rem, 2.85vw, 0.78rem) !important;
+        line-height: 1.12 !important;
         font-weight: 300 !important;
-        letter-spacing: 0 !important;
-        color: rgba(225, 232, 247, 0.66) !important;
-        text-shadow: 0 0 10px rgba(30, 210, 235, 0.16) !important;
+        letter-spacing: 0.01em !important;
+        color: rgba(225, 232, 247, 0.78) !important;
+        text-shadow: 0 0 10px rgba(30, 210, 235, 0.18) !important;
         transform: translateY(-50%) !important;
     }
 
@@ -4328,13 +4385,13 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         display: none !important;
     }
 
-    #services-section .item-concept { top: 28.4% !important; }
-    #services-section .item-cinema  { top: 37.3% !important; }
-    #services-section .item-editing { top: 46.0% !important; }
-    #services-section .item-sound   { top: 56.4% !important; }
-    #services-section .item-vfx     { top: 65.3% !important; }
-    #services-section .item-3d      { top: 75.0% !important; }
-    #services-section .item-colour  { top: 84.6% !important; }
+    #services-section .item-concept { top: 23.2% !important; }
+    #services-section .item-cinema  { top: 32.0% !important; }
+    #services-section .item-editing { top: 41.2% !important; }
+    #services-section .item-sound   { top: 50.9% !important; }
+    #services-section .item-vfx     { top: 60.8% !important; }
+    #services-section .item-3d      { top: 70.7% !important; }
+    #services-section .item-colour  { top: 80.6% !important; }
 
     #about-section {
         background:
@@ -4764,32 +4821,56 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
 
     #services-section .services-text-overlay {
         z-index: 4 !important;
+        opacity: 0 !important;
+        transition: opacity 0.42s ease !important;
+        transition-delay: 0s !important;
+    }
+
+    #services-section.services-text-live .services-text-overlay {
+        opacity: 1 !important;
+    }
+
+    #services-section.active .services-text-overlay {
+        opacity: 1 !important;
+        transition-delay: 2.05s !important;
     }
 
     #services-section .service-item,
     #services-section .service-item.left-col,
     #services-section .service-item.right-col {
-        left: 24vw !important;
-        right: auto !important;
-        width: 72vw !important;
-        max-width: 238px !important;
+        left: clamp(86px, 23vw, 124px) !important;
+        right: 16px !important;
+        width: min(64vw, 250px) !important;
+        max-width: none !important;
         padding: 0 !important;
         text-align: left !important;
-        font-size: clamp(0.62rem, 2.85vw, 0.78rem) !important;
-        line-height: 1.18 !important;
+        white-space: normal !important;
+        font-size: clamp(0.7rem, 2.9vw, 0.9rem) !important;
+        line-height: 1.12 !important;
         font-weight: 300 !important;
         letter-spacing: 0.02em !important;
-        color: rgba(244, 248, 255, 0.88) !important;
-        text-shadow: 0 0 16px rgba(18, 202, 224, 0.24), 0 1px 14px rgba(0, 0, 0, 0.78) !important;
+        color: rgba(244, 248, 255, 0.94) !important;
+        text-shadow: 0 0 14px rgba(18, 202, 224, 0.18), 0 1px 14px rgba(0, 0, 0, 0.78) !important;
+        transform: translateY(-50%) !important;
+        display: block !important;
     }
 
-    #services-section .item-concept { top: 22.8% !important; }
-    #services-section .item-cinema  { top: 31.6% !important; }
-    #services-section .item-editing { top: 40.9% !important; }
-    #services-section .item-sound   { top: 52.2% !important; }
-    #services-section .item-vfx     { top: 61.9% !important; }
-    #services-section .item-3d      { top: 72.3% !important; }
-    #services-section .item-colour  { top: 83.0% !important; }
+    #services-section .service-item .line {
+        display: block !important;
+        width: 22px !important;
+        height: 1px !important;
+        margin-top: 6px !important;
+        opacity: 0.55 !important;
+        background: linear-gradient(90deg, rgba(57, 213, 239, 0.82), transparent) !important;
+    }
+
+    #services-section .item-concept { top: 25.5% !important; }
+    #services-section .item-cinema  { top: 34.3% !important; }
+    #services-section .item-editing { top: 43.2% !important; }
+    #services-section .item-sound   { top: 52.9% !important; }
+    #services-section .item-vfx     { top: 62.2% !important; }
+    #services-section .item-3d      { top: 70.6% !important; }
+    #services-section .item-colour  { top: 80.6% !important; }
 
     #portfolios-section {
         overflow-y: auto !important;
@@ -6595,4 +6676,37 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
     }
 }
 
+/* Tablet services polish: keep the cinematic overlay readable without the cramped phone proportions. */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #services-section .services-text-overlay {
+        z-index: 14 !important;
+    }
 
+    #services-section .services-tagline {
+        top: 12.4% !important;
+        font-size: clamp(1.08rem, 1.9vw, 1.4rem) !important;
+        letter-spacing: 0.16em !important;
+        color: rgba(255, 255, 255, 0.62) !important;
+    }
+
+    #services-section .service-item,
+    #services-section .service-item.left-col,
+    #services-section .service-item.right-col {
+        max-width: min(30vw, 280px) !important;
+        font-size: clamp(0.8rem, 1.45vw, 1rem) !important;
+        line-height: 1.14 !important;
+        letter-spacing: 0.06em !important;
+    }
+
+    #services-section .service-item.left-col {
+        left: 20.5% !important;
+    }
+
+    #services-section .service-item.right-col {
+        right: 20.5% !important;
+    }
+
+    #services-section .service-item .line {
+        width: 28px !important;
+    }
+}

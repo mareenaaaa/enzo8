@@ -431,7 +431,7 @@ const INTRO_ZOOM_START_SCALE = DESKTOP_HOME_INTRO_REFERENCE_SCALE;
 const INTRO_ZOOM_END_SCALE = DESKTOP_HOME_INTRO_REFERENCE_SCALE;
 const INTRO_ZOOM_OUT_DURATION = 5.25;
 const INTRO_HOME_SETTLE_SCALE_DURATION = 0.42;
-const MOBILE_INTRO_HOME_SETTLE_SCALE_DURATION = 0.72;
+const MOBILE_INTRO_HOME_SETTLE_SCALE_DURATION = 0.18;
 const INTRO_HOME_COMPLETION_LEAD = 0.16;
 const VIDEO_HANDOFF_FADE_DURATION = 0.18;
 const VIDEO_HANDOFF_IN_FADE_DURATION = VIDEO_HANDOFF_FADE_DURATION;
@@ -497,7 +497,9 @@ const DESKTOP_HOME_DIRECT_INTRO_DURATIONS = {
 const HOME_EQUILIBRIUM_STATES = new Set(['scatter', 'intro', 'stabilize', 'mobile-landing', 'mobile-nav']);
 const CINEMATIC_SECTION_STATES = new Set(['about', 'services', 'portfolios', 'blogs', 'contact']);
 const USE_DESKTOP_CINEMATIC_ON_MOBILE = true;
-const MOBILE_SERVICES_LABEL_REVEAL_DELAY = 2.2;
+const MOBILE_SERVICES_LABEL_REVEAL_DELAY = 0.34;
+const MOBILE_SERVICES_INTRO_LOOP_CUT_TIME = 2.36;
+const MOBILE_SERVICES_TEXT_REVEAL_TIME = 1.92;
 const HOME_VIDEO_POINTER_PARALLAX_ENABLED = false;
 const PORTFOLIO_CURSOR_PARALLAX_ENABLED = false;
 let videoTransitionToken = 0;
@@ -510,6 +512,7 @@ let queuedSectionTransitionTarget = null;
 let isBlogArticleOverlayOpen = false;
 let mobileIntroFallbackTimeout = null;
 let mobileCompositionLock = null;
+let mobileHomeResizeTransformSnapshot = null;
 
 const MOBILE_COMPOSITION_WIDTH_THRESHOLD = 48;
 
@@ -657,6 +660,21 @@ function releaseMobileCompositionLock() {
     root.style.removeProperty('--mobile-lock-h');
     root.style.removeProperty('--mobile-lock-vw');
     root.style.removeProperty('--mobile-lock-vh');
+}
+
+function preserveMobileHomeTransform() {
+    if (!isMobile || !videoEl || typeof gsap === 'undefined') return;
+    mobileHomeResizeTransformSnapshot = {
+        x: Number(gsap.getProperty(videoEl, 'x')) || 0,
+        y: Number(gsap.getProperty(videoEl, 'y')) || 0,
+        scale: Number(gsap.getProperty(videoEl, 'scale')) || getHomeLogoDisplayScale()
+    };
+
+    gsap.killTweensOf(videoEl);
+    gsap.set(videoEl, {
+        ...mobileHomeResizeTransformSnapshot,
+        transformOrigin: '50% 50%'
+    });
 }
 
 function setHeroNavReady(isReady) {
@@ -1103,7 +1121,9 @@ function animateNoVideoLogoIntro(pageId, transitionOwnerToken, onComplete) {
     const startScale = isMobile
         ? getPrimaryVideoScale(getMobileUniformCinematicScale())
         : DESKTOP_HANDOFF_EQUILIBRIUM_SCALE;
-    const zoomScale = Math.max(getNoVideoLogoZoomScale(startScale), startScale);
+    const zoomScale = pageId === 'portfolios' && isMobile
+        ? Math.max(getPortfolioLogoZoomScale(), startScale)
+        : Math.max(getNoVideoLogoZoomScale(startScale), startScale);
 
     gsap.killTweensOf(videoEl);
     gsap.set(videoEl, {
@@ -1157,7 +1177,7 @@ function animatePortfolioLogoExit({ scale, x = 0, y = '0vh', transitionOwnerToke
     const targetScale = scale ?? getHomeLogoDisplayScale();
     const zoomScale = suppressZoom
         ? targetScale
-        : (isMobile ? targetScale : Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale)));
+        : (isMobile ? Math.max(getPortfolioLogoZoomScale(), targetScale) : Math.max(getNoVideoLogoZoomScale(targetScale), getPrimaryVideoScale(targetScale)));
 
     gsap.killTweensOf(videoEl);
     gsap.set(videoEl, {
@@ -2405,6 +2425,23 @@ function commitRuntimeHomeEquilibriumFrame(onComplete, options = {}) {
     };
 
     const normalizeAndComplete = () => {
+        const resizeLockedHomeTransform = isMobile ? mobileHomeResizeTransformSnapshot : null;
+        if (smoothScale && isMobile && resizeLockedHomeTransform && typeof gsap !== 'undefined' && videoEl) {
+            gsap.killTweensOf(videoEl);
+            videoEl.playbackRate = 1;
+            videoEl.style.objectPosition = 'center center';
+            normalizePrimaryVideoState({
+                opacity: 1,
+                scale: resizeLockedHomeTransform.scale,
+                x: resizeLockedHomeTransform.x,
+                y: resizeLockedHomeTransform.y,
+                objectPosition: 'center center',
+                playbackRate: 1
+            });
+            completeAfterNormalize();
+            return;
+        }
+
         if (smoothScale && isMobile && typeof gsap !== 'undefined' && videoEl) {
             gsap.killTweensOf(videoEl);
             videoEl.playbackRate = 1;
@@ -3063,9 +3100,12 @@ function freezeInlineVideo(video, offset = 0.06) {
 
 function enterMobileHomeState(options = {}) {
     if (!isMobile) return;
+    const preservedResizeTransform = mobileHomeResizeTransformSnapshot;
+    mobileHomeResizeTransformSnapshot = null;
     if (USE_DESKTOP_CINEMATIC_ON_MOBILE) {
         lockMobileComposition();
         const { showNavigation = true, settleScale = getHomeLogoDisplayScale() } = options;
+        const homeScale = preservedResizeTransform?.scale ?? settleScale;
         state = showNavigation ? 'mobile-nav' : 'stabilize';
         setHeroNavReady(showNavigation);
         prepareMobileNavFade({ home: true });
@@ -3076,9 +3116,9 @@ function enterMobileHomeState(options = {}) {
         gsap.set(videoEl, {
             opacity: 1,
             visibility: 'visible',
-            scale: settleScale,
-            x: 0,
-            y: '0vh',
+            scale: homeScale,
+            x: preservedResizeTransform?.x ?? 0,
+            y: preservedResizeTransform?.y ?? '0vh',
             objectPosition: 'center center',
             filter: 'brightness(0.78) contrast(1.08) saturate(1.02)'
         });
@@ -3116,7 +3156,12 @@ function enterMobileHomeState(options = {}) {
 
     freezeInlineVideo(mobileIntroVideo);
     hideMobileHamburger();
-    gsap.set(videoEl, { opacity: 0 });
+    gsap.set(videoEl, {
+        opacity: 0,
+        scale: preservedResizeTransform?.scale ?? getHomeLogoDisplayScale(),
+        x: preservedResizeTransform?.x ?? 0,
+        y: preservedResizeTransform?.y ?? '0vh'
+    });
     gsap.to(document.getElementById('status-label'), { opacity: 0, duration: 0.25 });
     scheduleBackgroundWarmup();
 }
@@ -3370,6 +3415,9 @@ function startVideoTransition(pageId) {
     const shouldScaleNoVideoFromVisibleHome = !isMobile && useEquilibriumNoVideoReveal && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const mobileUniformScale = getMobileUniformCinematicScale();
     const mobileTargetScale = getMobileCinematicScaleForPage(pageId);
+    const mobileAboutHandoffScale = (pageId === 'about' && isMobile && isSeamlessIntroHandoff)
+        ? getContactHandoffScale()
+        : mobileTargetScale;
     const introEquilibriumScale = isEquilibriumIntroHandoff
         ? (isMobile
             ? (isSeamlessIntroHandoff ? visibleSeamlessEquilibriumScale : mobileTargetScale)
@@ -3378,6 +3426,7 @@ function startVideoTransition(pageId) {
     const introStartScale = pageId === 'contact' && isEquilibriumIntroHandoff
         ? ((isMobile && isSeamlessIntroHandoff) ? introEquilibriumScale : getContactHandoffScale())
         : introEquilibriumScale;
+    const shouldInstantRevealMobileContact = isMobile && pageId === 'contact' && isHomeEquilibriumSource;
     const visibleHomeSourceScale = (shouldScaleIntroFromVisibleHome || shouldScaleServicesFromVisibleHome || shouldScaleNoVideoFromVisibleHome)
         ? getVisibleHomeSourceScale()
         : introEquilibriumScale;
@@ -3508,25 +3557,25 @@ function startVideoTransition(pageId) {
                         : (directHomeIntroStartTime || ((!isMobile && isSeamlessIntroHandoff && pageId === 'about')
                             ? DESKTOP_ABOUT_CHAIN_INTRO_START_TIME
                             : 0))),
-                instantReveal: shouldScaleIntroFromVisibleHome,
+                instantReveal: shouldScaleIntroFromVisibleHome || shouldInstantRevealMobileContact,
                 startTransform: {
                     scale: shouldScaleIntroFromVisibleHome ? homeSectionIntroStartScale : introStartScale,
                     x: handoffOffset.x,
                     y: handoffOffset.y
                 },
                 endTransform: {
-                    scale: isMobile ? mobileTargetScale : 1,
+                    scale: isMobile ? mobileAboutHandoffScale : 1,
                     x: 0,
                     y: targetY,
                     duration: isMobile && isSeamlessIntroHandoff && pageId === 'about'
-                        ? 0.78
+                        ? 0.24
                         : (isMobile && isSeamlessIntroHandoff && pageId === 'contact'
                             ? 0.74
                             : (shouldScaleIntroFromVisibleHome
                                 ? getDesktopHomeDirectIntroDuration(pageId)
                                 : DESKTOP_SECTION_CHAIN_INTRO_HANDOFF_DURATION)),
                     delay: isMobile && isSeamlessIntroHandoff && pageId === 'about'
-                        ? 0.18
+                        ? 0.04
                         : (isMobile && isSeamlessIntroHandoff && pageId === 'contact' ? 0.08 : 0),
                     ease: "sine.inOut"
                 }
@@ -3596,6 +3645,20 @@ function startVideoTransition(pageId) {
                 const frameSynchronizedServicesHandoff = true;
                 let servicesFrameCommitted = false;
                 let servicesGradientFadeStarted = false;
+                let servicesIntroFallbackTimer = null;
+                let servicesTextRevealTimer = null;
+                const clearServicesIntroFallbackTimer = () => {
+                    if (servicesIntroFallbackTimer) {
+                        clearTimeout(servicesIntroFallbackTimer);
+                        servicesIntroFallbackTimer = null;
+                    }
+                };
+                const clearServicesTextRevealTimer = () => {
+                    if (servicesTextRevealTimer) {
+                        clearInterval(servicesTextRevealTimer);
+                        servicesTextRevealTimer = null;
+                    }
+                };
                 const fadeServicesGradientIn = () => {
                     if (servicesGradientFadeStarted) return;
                     servicesGradientFadeStarted = true;
@@ -3623,6 +3686,7 @@ function startVideoTransition(pageId) {
                         return;
                     }
                     servicesFrameCommitted = true;
+                    section.classList.remove('services-text-live');
                     section.classList.add('active');
                     setElementInteractivity(section, true);
                     if (isMobile) {
@@ -3682,17 +3746,20 @@ function startVideoTransition(pageId) {
                                 }
                             }
                         });
+                        clearServicesTextRevealTimer();
+                        servicesTextRevealTimer = setInterval(() => {
+                            if (transitionOwnerToken !== videoTransitionToken) {
+                                clearServicesTextRevealTimer();
+                                return;
+                            }
+                            if ((Number(servicesVideo.currentTime) || 0) >= MOBILE_SERVICES_TEXT_REVEAL_TIME) {
+                                showServicesText();
+                            }
+                        }, 80);
                     } else {
                         gsap.set(videoEl, { opacity: 0, clearProps: 'filter' });
                     }
                     if (isMobile) {
-                        gsap.to('.services-text-overlay', {
-                            opacity: 1,
-                            duration: 0.72,
-                            delay: MOBILE_SERVICES_LABEL_REVEAL_DELAY,
-                            ease: "sine.out",
-                            overwrite: true
-                        });
                         gsap.delayedCall(0.25, () => finishForwardSectionTransition(transitionOwnerToken));
                     }
                     setTimeout(() => {
@@ -3783,21 +3850,36 @@ function startVideoTransition(pageId) {
                 } else {
                     gsap.set(servicesVideo, { clearProps: 'filter' });
                 }
-                
+                let servicesTextRevealed = false;
+                const showServicesText = () => {
+                    if (servicesTextRevealed || transitionOwnerToken !== videoTransitionToken) {
+                        return;
+                    }
+                    clearServicesTextRevealTimer();
+                    servicesTextRevealed = true;
+                    section.classList.add('services-text-live');
+                    gsap.to('.services-text-overlay', {
+                        opacity: 1,
+                        duration: 0.46,
+                        delay: 0.02,
+                        ease: "sine.out",
+                        overwrite: true
+                    });
+                };
+
                 const startServicesAmbientLoop = () => {
                     if (transitionOwnerToken !== videoTransitionToken) {
                         return;
                     }
+                    clearServicesIntroFallbackTimer();
+                    clearServicesTextRevealTimer();
                     servicesVideo.removeEventListener('ended', startServicesAmbientLoop);
                     servicesVideo.removeEventListener('timeupdate', checkTime);
                     servicesVideo._startAmbientLoop = null;
                     servicesVideo._checkTime = null;
+                    showServicesText();
 
                     const loopSrc = getServicesCinematicSource('loop');
-	                    const showServicesText = () => {
-	                        gsap.to('.services-text-overlay', { opacity: 1, duration: 0.46, delay: 0.02, ease: "sine.out" });
-                    };
-
                     if (servicesLoop) {
                         if (!videoUsesSource(servicesLoop, loopSrc)) {
                             servicesLoop.src = loopSrc;
@@ -3810,9 +3892,9 @@ function startVideoTransition(pageId) {
                         const commitLoopFrame = () => {
                             if (transitionOwnerToken !== videoTransitionToken) return;
 	                            gsap.to(servicesLoop, { opacity: 1, duration: isMobile ? SECTION_MEDIA_FADE_IN_DURATION : 0.24, ease: "sine.out", overwrite: true });
-	                            gsap.to(servicesVideo, {
-	                                opacity: 0,
-	                                duration: isMobile ? SECTION_MEDIA_FADE_OUT_DURATION : 0.26,
+                            gsap.to(servicesVideo, {
+                                opacity: 0,
+                                duration: isMobile ? SECTION_MEDIA_FADE_OUT_DURATION : 0.26,
                                 ease: "sine.inOut",
                                 overwrite: true,
                                 onComplete: () => {
@@ -3821,7 +3903,6 @@ function startVideoTransition(pageId) {
                                     gsap.set(servicesVideo, { visibility: 'hidden' });
                                 }
                             });
-                            showServicesText();
                             finishForwardSectionTransition(transitionOwnerToken);
                         };
 
@@ -3857,9 +3938,14 @@ function startVideoTransition(pageId) {
                     if (transitionOwnerToken !== videoTransitionToken) {
                         servicesVideo.removeEventListener('timeupdate', checkTime);
                         servicesVideo.removeEventListener('ended', startServicesAmbientLoop);
+                        clearServicesIntroFallbackTimer();
+                        clearServicesTextRevealTimer();
                         return;
                     }
-                    if (servicesVideo.duration && servicesVideo.currentTime >= servicesVideo.duration - 0.12) {
+                    if (
+                        (isMobile && servicesVideo.currentTime >= MOBILE_SERVICES_INTRO_LOOP_CUT_TIME) ||
+                        (!isMobile && servicesVideo.duration && servicesVideo.currentTime >= servicesVideo.duration - 0.12)
+                    ) {
                         startServicesAmbientLoop();
                     }
                 };
@@ -3874,9 +3960,38 @@ function startVideoTransition(pageId) {
                 servicesVideo._startAmbientLoop = startServicesAmbientLoop;
                 servicesVideo.addEventListener('timeupdate', checkTime);
                 servicesVideo.addEventListener('ended', startServicesAmbientLoop);
-            } else {
-                finishForwardSectionTransition(transitionOwnerToken);
-            }
+
+                const scheduleServicesIntroFallback = () => {
+                    if (transitionOwnerToken !== videoTransitionToken) {
+                        return;
+                    }
+                    clearServicesIntroFallbackTimer();
+                    const introDurationMs = Number.isFinite(servicesVideo.duration) && servicesVideo.duration > 0
+                        ? (servicesVideo.duration / Math.max(servicesVideo.playbackRate || 1, 1)) * 1000
+                        : null;
+                    const fallbackDelay = introDurationMs
+                        ? Math.max(
+                            isMobile ? 3000 : 1800,
+                            Math.min(introDurationMs - 120, isMobile ? 7000 : 5000)
+                        )
+                        : (isMobile ? 4600 : 2400);
+                    servicesIntroFallbackTimer = setTimeout(() => {
+                        if (transitionOwnerToken === videoTransitionToken) {
+                            showServicesText();
+                            startServicesAmbientLoop();
+                        }
+                    }, fallbackDelay);
+                };
+
+                scheduleServicesIntroFallback();
+                if (servicesVideo.readyState >= 1) {
+                    scheduleServicesIntroFallback();
+                } else {
+                    servicesVideo.addEventListener('loadedmetadata', scheduleServicesIntroFallback, { once: true });
+                }
+                } else {
+                    finishForwardSectionTransition(transitionOwnerToken);
+                }
         } else {
             finishForwardSectionTransition(transitionOwnerToken);
         }
@@ -3906,6 +4021,7 @@ function startVideoTransition(pageId) {
         : (pageId === 'contact'
             ? (isMobile ? CONTACT_INTRO_COMPLETION_LEAD_MOBILE : CONTACT_INTRO_COMPLETION_LEAD)
             : (useSeamlessForwardPlayback ? 0.015 : 0.08));
+    const shouldLateSettleMobileAboutIntro = pageId === 'about' && isMobile && isSeamlessIntroHandoff;
     const startForwardVideoPlayback = () => playVideo(forwardVideoSrc, () => {
         const section = document.getElementById(pageId + '-section');
         if(section) {
@@ -3925,6 +4041,20 @@ function startVideoTransition(pageId) {
             if (pageId === 'about') {
                 hydrateLazyBackgrounds(section);
                 setElementInteractivity(document.querySelector('.about-content'), true);
+                if (shouldLateSettleMobileAboutIntro) {
+                    gsap.set(videoEl, {
+                        scale: getContactHandoffScale(),
+                        x: 0,
+                        y: '0vh'
+                    });
+                    gsap.to(videoEl, {
+                        scale: getMobileCinematicScaleForPage('about'),
+                        duration: 0.46,
+                        delay: 0.08,
+                        ease: 'sine.out',
+                        overwrite: 'auto'
+                    });
+                }
                 gsap.to('.about-content', {
                     opacity: 1,
                     scale: 1,
@@ -4380,6 +4510,7 @@ function executeFinalReverse(options = {}) {
         // Clear Services UI quickly; the cinematic continuity should be owned
         // by the decoded reverse video frame, not by a long opacity crossfade.
         gsap.to('.services-text-overlay', { opacity: 0, duration: 0.18, ease: "sine.out", overwrite: true });
+        activeSection?.classList.remove('services-text-live');
         gsap.to('.services-gradient-overlay', {
             opacity: 0,
             scale: 1.2,
@@ -5896,7 +6027,9 @@ startVideoTransition = function(pageId) {
     if (isMobile) {
         lockMobileComposition();
         const navIsOpen = document.body.classList.contains('show-mobile-nav');
-        document.body.classList.remove('mobile-home-nav', 'intro-active');
+        // Keep the stabilized home styling alive until the next intro frame is committed.
+        // Dropping it immediately can make the logo/video visibly flicker on mobile handoffs.
+        document.body.classList.remove('intro-active');
         if (navIsOpen) document.body.classList.remove('show-mobile-nav');
         if (mobileNavOverlay) mobileNavOverlay.setAttribute('aria-hidden', 'true');
         hideMobileHamburger();
@@ -5935,6 +6068,7 @@ window.addEventListener('resize', () => {
 
     if (isMobile) {
         lockMobileComposition({ force: !wasMobile });
+        preserveMobileHomeTransform();
         return;
     }
 
