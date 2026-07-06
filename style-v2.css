@@ -6929,3 +6929,28 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         --services-colour-top: 87.3%;
     }
 }
+
+/* Narrow Android phone family: keep the services text locked to the video framing
+   on 360x780 / 360x800-style viewports without changing the larger phone layouts. */
+@media (max-width: 380px) and (min-height: 770px) and (max-height: 809px) {
+    #services-section {
+        --service-mobile-scale: 0.92 !important;
+        --services-item-left: clamp(68px, 19vw, 82px);
+        --services-item-width: min(68vw, 228px);
+        --services-item-font-size: clamp(0.62rem, 2.6vw, 0.76rem);
+        --services-item-line-width: 18px;
+        --services-concept-top: 24.8%;
+        --services-cinema-top: 33.6%;
+        --services-editing-top: 42.7%;
+        --services-sound-top: 52.0%;
+        --services-vfx-top: 61.4%;
+        --services-3d-top: 70.6%;
+        --services-colour-top: 79.8%;
+    }
+
+    #srv-mob-intro,
+    #srv-mob-loop,
+    #srv-mob-reverse {
+        transform: translate(calc(var(--mobile-lock-vw) * 24), calc(var(--mobile-lock-vh) * -2.5)) scale(var(--service-mobile-scale)) !important;
+    }
+}
