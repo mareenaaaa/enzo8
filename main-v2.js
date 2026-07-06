@@ -23,7 +23,7 @@ const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volum
 const AMBIENCE_VOLUME = 0.34;
 const AMBIENCE_DUCKED_VOLUME = 0.22;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
-const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 130;
+const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 45;
 const transitionAudioConfig = {
     about: { src: './audio/about-us-click-transition.ogg', volume: 0.82 },
     services: { src: './audio/services-click-transition.ogg', volume: 0.82 },
@@ -39,11 +39,14 @@ let lastTransitionAudioPage = null;
 let lastTransitionAudioTriggerAt = 0;
 let ambienceRestoreTimer = null;
 let pendingTransitionAudioStart = null;
-const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 1800;
+const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 650;
 const ambienceAudio = new Audio('./audio/ambience.ogg');
+const meetTeamHoverAudio = new Audio('./audio/meet-the-team-mouse-hover.ogg');
 ambienceAudio.loop = true;
 ambienceAudio.preload = 'auto';
 ambienceAudio.volume = AMBIENCE_VOLUME;
+meetTeamHoverAudio.preload = 'auto';
+meetTeamHoverAudio.volume = 0.74;
 window.__siteAudioDebug = {
     getAmbienceState: () => ({
         currentTime: ambienceAudio.currentTime,
@@ -156,6 +159,7 @@ function applyMasterAudioState({ fadeAmbience = false } = {}) {
         audio.muted = masterAudioMuted;
         audio.volume = getTransitionAudioVolume(pageId);
     });
+    meetTeamHoverAudio.muted = masterAudioMuted;
 
     if (activePortfolioSelectedMedia) {
         activePortfolioSelectedMedia.muted = masterAudioMuted;
@@ -253,6 +257,31 @@ function warmTransitionAudio(pageId) {
     const audio = getTransitionAudio(pageId);
     if (!audio) return;
     try { audio.load(); } catch (_) {}
+}
+
+let lastMeetTeamHoverAt = 0;
+function playMeetTeamHoverAudio() {
+    if (masterAudioMuted) return;
+
+    const now = performance.now();
+    if (now - lastMeetTeamHoverAt < 120) return;
+    lastMeetTeamHoverAt = now;
+
+    try {
+        meetTeamHoverAudio.currentTime = 0;
+        const playPromise = meetTeamHoverAudio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
+        }
+    } catch (_) {}
+}
+
+function initMeetTeamHoverAudio() {
+    const triggers = document.querySelectorAll('.team-composition .member');
+    triggers.forEach((triggerEl) => {
+        triggerEl.addEventListener('mouseenter', playMeetTeamHoverAudio);
+        triggerEl.addEventListener('touchstart', playMeetTeamHoverAudio, { passive: true });
+    });
 }
 
 function waitForTransitionAudioToFinish(pageId, transitionOwnerToken, callback, fallbackMs = PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS) {
@@ -1643,9 +1672,9 @@ function shouldRouteSectionTransitionThroughHome(pageId) {
     if (!CINEMATIC_SECTION_STATES.has(pageId)) return false;
     if (!CINEMATIC_SECTION_STATES.has(state)) return false;
     if (state === pageId) return false;
-    // Blogs has no reverse media of its own, but cinematic sections must still
-    // complete their outro before Blogs performs its content reveal.
-    if (state === 'blogs') return false;
+    // Blogs has no reverse media of its own, but it still needs to settle back
+    // through the shared home/logo handoff so no-video intros like Portfolio can
+    // reuse the same chained transition path as the cinematic sections.
     if (HOME_EQUILIBRIUM_STATES.has(state)) return false;
     return true;
 }
@@ -2004,6 +2033,7 @@ function initCursorHover() {
     });
 }
 initCursorHover();
+initMeetTeamHoverAudio();
 
 
 function isVertical() {
@@ -4351,12 +4381,9 @@ function backToHome() {
         return;
     }
     if (isMobile && state === 'mobile-nav') {
-        const currentHomeScale = Number(gsap.getProperty(videoEl, 'scale'));
         enterMobileHomeState({
             showNavigation: true,
-            settleScale: Number.isFinite(currentHomeScale) && currentHomeScale > 0
-                ? currentHomeScale
-                : getHomeLogoDisplayScale()
+            settleScale: getHomeLogoDisplayScale()
         });
         return;
     }
@@ -4628,7 +4655,7 @@ function executeFinalReverse(options = {}) {
                 settleSectionsForHome();
                 enterMobileHomeState({
                     showNavigation: true,
-                    settleScale: homeSettleScale
+                    settleScale: getHomeLogoDisplayScale()
                 });
             } else if (revealHomeUi) {
                 setHomeAudioControlVisible(true);
