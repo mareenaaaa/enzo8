@@ -6914,3 +6914,18 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         --services-colour-top: 80.9%;
     }
 }
+@media (width: 400px) and (height: 645px) {
+    #services-section {
+        --services-item-left: 96px;
+        --services-item-width: 254px;
+        --services-item-font-size: 0.8rem;
+        --services-item-line-width: 22px;
+        --services-concept-top: 20.4%;
+        --services-cinema-top: 31.6%;
+        --services-editing-top: 42.0%;
+        --services-sound-top: 53.99%;
+        --services-vfx-top: 65.4%;
+        --services-3d-top: 75%;
+        --services-colour-top: 87.3%;
+    }
+}

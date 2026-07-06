@@ -4910,6 +4910,7 @@ window.openBlogArticle = function(articleId = 'ai-overview') {
     const targets = getBlogArticleAnimationTargets();
     isBlogArticleOverlayOpen = true;
     document.body.classList.add('blog-article-open');
+    playTransitionAudio('blogs');
     setElementInteractivity(overlay, true);
     gsap.killTweensOf(overlay);
     gsap.killTweensOf(targets);
