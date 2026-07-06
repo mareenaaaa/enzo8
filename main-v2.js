@@ -5277,6 +5277,26 @@ const portfolioCaseStudies = {
             `The atmosphere remains quiet and ethereal, allowing the product to feel elevated and timeless. The final film presents Jasmere as a fragrance of understated luxury: sensory, intimate, and elegant, demonstrating Enso 8's ability to craft high-end beauty visuals through subtlety and precision.`
         ]
     },
+    "tata-soulfull-millety-crunch": {
+        brand: "Tata Soulfull x Cult.fit",
+        title: 'Tata Soulfull x Cult.fit: "The Millety Crunch"',
+        role: "3D product visualization, CGI integration, photoreal pack-shot execution",
+        paragraphs: [
+            `For the dynamic collaboration between Tata Soulfull and Cult.fit, our studio was tasked with delivering high-end 3D product visualization and CGI integration for the "Millety Crunch" campaign. The primary objective was to create photorealistic 3D assets that seamlessly blended with the fast-paced live-action footage, ensuring the product remained the undeniable hero of the commercial.`,
+            `Our team focused on the precise 3D modeling, texturing, and lighting of the Tata Soulfull 0% Added Sugar High Protein Millet Muesli packaging. We meticulously crafted the digital twin of the bold red pouch to react perfectly to the varying environments, matching the natural daylight of the morning kitchen scene and the moody, neon-accented lighting of the Cult.fit gym.`,
+            `By utilizing advanced 3D camera tracking and seamless CGI compositing, we integrated the digital product shots and dynamic 3D typography directly into the kinetic edit. The final hero pack shot was entirely crafted in 3D, allowing for ultimate control over reflections, shadows, and product presentation. Our specialized 3D workflow successfully elevated the visual impact of the campaign, delivering a flawless digital execution that perfectly complemented the high-energy live-action narrative.`
+        ]
+    },
+    "french-avenue-fleuriche-campaign": {
+        brand: "French Avenue",
+        title: "French Avenue Fleuriche Campaign",
+        role: "3D animation, fluid dynamics, CGI compositing, product visualization",
+        paragraphs: [
+            `For the launch of French Avenue's luxurious new fragrance line, our studio was entrusted with the complete, end-to-end production of this highly stylized CGI campaign. Handling every single aspect of the project - from initial conceptualization and art direction to complex 3D modeling, fluid simulation, and final compositing - we brought the product's whimsical, gourmand aesthetic to vivid life.`,
+            `The campaign centers around a collection of photorealistic, macaron-inspired perfume bottles. To visually communicate the rich, sensory notes of each fragrance, we meticulously crafted dynamic, macro-level 3D animations of the core ingredients. Viewers are immersed in a world of floating lavender sprigs, vibrant raspberries, crisp lemons, and flawlessly simulated dripping honey. A technical highlight of the project was the advanced fluid dynamics used to create the luscious, velvety cream that drips down the elegantly textured bottles, perfectly blurring the lines between high-end perfumery and decadent patisserie.`,
+            `Every digital asset - including the delicate floating petals, the intricate gold "French Avenue" hardware, and the soft, pastel environments - was expertly modeled, lit, and rendered by our in-house team. By controlling the entire 3D and post-production pipeline, we delivered a mesmerizing, photorealistic visual journey that captures the luxurious and irresistible essence of the brand.`
+        ]
+    },
     "jbl-tour-one-m3": {
         brand: "JBL",
         title: "JBL Tour One M3: First Doesn't Follow",
@@ -5392,8 +5412,8 @@ const portfolioGridCaseMeta = [
     { caseId: "clikon-ironbox", title: "Clikon Ironbox" },
     { caseId: "prestige-hexamagic", title: "Prestige Cookware: Triply HexaMagic" },
     { caseId: "kappa-culture", title: "Kappa Culture" },
-    { title: "Fleuriche: French Avenue 4K" },
-    { title: "TATA Soulful" }
+    { caseId: "french-avenue-fleuriche-campaign", title: "French Avenue Fleuriche Campaign" },
+    { caseId: "tata-soulfull-millety-crunch", title: 'Tata Soulfull x Cult.fit: "The Millety Crunch"' }
 ];
 
 let isPortfolioParallaxBound = false;
@@ -6147,3 +6167,7 @@ if (mobileNavClose) {
         });
     });
 }
+
+
+
+
