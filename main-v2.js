@@ -38,6 +38,7 @@ let activePortfolioSelectedMedia = null;
 let lastTransitionAudioPage = null;
 let lastTransitionAudioTriggerAt = 0;
 let ambienceRestoreTimer = null;
+let ambienceResumeRetryTimer = null;
 let pendingTransitionAudioStart = null;
 const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 650;
 const ambienceAudio = new Audio('./audio/ambience.ogg');
@@ -104,11 +105,20 @@ function clearAmbienceRestoreTimer() {
     ambienceRestoreTimer = null;
 }
 
+function clearAmbienceResumeRetryTimer() {
+    if (!ambienceResumeRetryTimer) return;
+    clearTimeout(ambienceResumeRetryTimer);
+    ambienceResumeRetryTimer = null;
+}
+
 function restoreAmbienceAfterTransition() {
     clearAmbienceRestoreTimer();
-    if (!masterAudioMuted && !ambienceAudio.paused) {
-        fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.3);
+    if (masterAudioMuted) return;
+    if (ambienceAudio.paused) {
+        ensureAmbiencePlayback();
+        return;
     }
+    fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.3);
 }
 
 function clearTransitionAudioLifecycle(audio) {
@@ -117,10 +127,19 @@ function clearTransitionAudioLifecycle(audio) {
     audio.removeEventListener('ended', lifecycle.finish);
     audio.removeEventListener('pause', lifecycle.finish);
     if (lifecycle.timer) clearTimeout(lifecycle.timer);
+    if (lifecycle.fadeTimer) clearTimeout(lifecycle.fadeTimer);
     audio._transitionLifecycle = null;
 }
 
 function finalizeTransitionAudioPlayback(pageId, audio) {
+    if (activeTransitionAudioPage === pageId) {
+        activeTransitionAudioPage = null;
+    }
+    clearTransitionAudioLifecycle(audio);
+    restoreAmbienceAfterTransition();
+}
+
+function handleTransitionAudioPlaybackFailure(pageId, audio) {
     if (activeTransitionAudioPage === pageId) {
         activeTransitionAudioPage = null;
     }
@@ -136,11 +155,21 @@ function scheduleTransitionAudioLifecycle(pageId, audio) {
     const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
         ? Math.max(600, (audio.duration - (audio.currentTime || 0)) * 1000 + 120)
         : 2200;
+    const fadeLeadMs = pageId === 'contactHome' ? 220 : 0;
 
-    audio._transitionLifecycle = {
+    const lifecycle = {
         finish,
         timer: setTimeout(finish, durationMs)
     };
+
+    if (fadeLeadMs > 0 && durationMs > fadeLeadMs + 80) {
+        lifecycle.fadeTimer = setTimeout(() => {
+            if (audio !== transitionAudioPlayers.get(pageId) || audio.paused || masterAudioMuted) return;
+            fadeMediaVolume(audio, 0, 0.16);
+        }, durationMs - fadeLeadMs);
+    }
+
+    audio._transitionLifecycle = lifecycle;
     audio.addEventListener('ended', finish, { once: true });
     audio.addEventListener('pause', finish, { once: true });
 }
@@ -171,6 +200,7 @@ function applyMasterAudioState({ fadeAmbience = false } = {}) {
     } catch (_) {}
 
     if (masterAudioMuted) {
+        clearAmbienceResumeRetryTimer();
         if (fadeAmbience) {
             fadeMediaVolume(ambienceAudio, 0, 0.28, () => {
                 ambienceAudio.muted = true;
@@ -197,7 +227,14 @@ function ensureAmbiencePlayback() {
 
     const playPromise = ambienceAudio.play();
     if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {});
+        playPromise.catch(() => {
+            clearAmbienceResumeRetryTimer();
+            if (masterAudioMuted || document.visibilityState === 'hidden') return;
+            ambienceResumeRetryTimer = setTimeout(() => {
+                ambienceResumeRetryTimer = null;
+                ensureAmbiencePlayback();
+            }, 500);
+        });
     }
 }
 
@@ -221,6 +258,7 @@ function setHomeAudioControlVisible(isVisible, { immediate = false } = {}) {
 }
 
 applyMasterAudioState();
+warmAudioAssets();
 
 if (homeAudioToggle) {
     homeAudioToggle.addEventListener('click', (event) => {
@@ -235,8 +273,17 @@ if (homeAudioToggle) {
     });
 }
 
-document.addEventListener('pointerdown', ensureAmbiencePlayback, { once: true, passive: true });
-document.addEventListener('keydown', ensureAmbiencePlayback, { once: true });
+document.addEventListener('pointerdown', ensureAmbiencePlayback, { passive: true });
+document.addEventListener('keydown', ensureAmbiencePlayback);
+window.addEventListener('focus', ensureAmbiencePlayback);
+window.addEventListener('pageshow', ensureAmbiencePlayback);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        ensureAmbiencePlayback();
+    } else {
+        clearAmbienceResumeRetryTimer();
+    }
+});
 
 function getTransitionAudio(pageId) {
     const src = transitionAudioConfig[pageId]?.src;
@@ -257,6 +304,14 @@ function warmTransitionAudio(pageId) {
     const audio = getTransitionAudio(pageId);
     if (!audio) return;
     try { audio.load(); } catch (_) {}
+}
+
+function warmAudioAssets() {
+    try { ambienceAudio.load(); } catch (_) {}
+    try { meetTeamHoverAudio.load(); } catch (_) {}
+    ['about', 'services', 'portfolios', 'blogs', 'contact', 'contactHome'].forEach((pageId) => {
+        warmTransitionAudio(pageId);
+    });
 }
 
 let lastMeetTeamHoverAt = 0;
@@ -379,7 +434,9 @@ function playTransitionAudio(pageId) {
             audio.muted = false;
             const playPromise = audio.play();
             if (playPromise && typeof playPromise.catch === 'function') {
-                playPromise.catch(() => {});
+                playPromise.catch(() => {
+                    handleTransitionAudioPlaybackFailure(pageId, audio);
+                });
             }
         } catch (_) {}
         scheduleTransitionAudioLifecycle(pageId, audio);
@@ -1836,10 +1893,14 @@ function routeSectionTransitionThroughHome(pageId) {
         equilibriumTransform: nextIntroEquilibriumTransform,
         reverseEndTransform,
         onHomeSettled: () => {
-            pendingSeamlessIntroTransform = nextIntroStartTransform;
-            shouldSeamlesslyStartNextIntro = true;
-            isRoutingThroughHome = false;
-            startVideoTransition(pageId);
+            const startNextIntro = () => {
+                pendingSeamlessIntroTransform = nextIntroStartTransform;
+                shouldSeamlesslyStartNextIntro = true;
+                isRoutingThroughHome = false;
+                startVideoTransition(pageId);
+            };
+
+            waitForTransitionAudioToFinish('contactHome', videoTransitionToken, startNextIntro);
         }
     });
 }
@@ -4433,11 +4494,6 @@ function returnToStableHomeDirectly() {
 
 function backToHome() {
     if (isAnimating) return;
-    if (state === 'contact') {
-        playTransitionAudio('contactHome');
-    } else {
-        stopTransitionAudio();
-    }
     if (isMobile && state === 'mobile-landing') {
         enterMobileHomeState();
         return;
@@ -4550,6 +4606,7 @@ function executeFinalReverse(options = {}) {
         ? getContactExtroPlaybackRate()
         : REVERSE_PLAYBACK_RATE;
     const isServicesToContactMobileChain = !revealHomeUi && isMobile && isServicesReverse && chainedTargetPageId === 'contact';
+    const shouldPlayHomeReturnAudio = Boolean(revealHomeUi || chainedTargetPageId);
     // Mobile chained extro cutoff. Larger values cut away earlier before the extro reaches its final logo frame.
     const mobileReverseCompletionLead = (!revealHomeUi && isMobile && isContactReverse && chainedTargetPageId === 'about')
         ? MOBILE_CONTACT_ABOUT_REVERSE_COMPLETION_LEAD
@@ -4558,6 +4615,10 @@ function executeFinalReverse(options = {}) {
             : ((!revealHomeUi && isMobile && chainedTargetPageId === 'contact')
                 ? (isServicesReverse ? MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD : MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD)
                 : MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD);
+
+    if (shouldPlayHomeReturnAudio) {
+        playTransitionAudio('contactHome');
+    }
 
     if (activeSection) {
         if (!isServicesReverse) {
@@ -4987,6 +5048,7 @@ window.closeBlogArticle = function(resumeUnderlying = true) {
     const overlay = document.getElementById('blog-article-overlay');
     const targets = getBlogArticleAnimationTargets();
     if (!overlay) return;
+    stopTransitionAudio('blogs');
     isBlogArticleOverlayOpen = false;
     document.body.classList.remove('blog-article-open');
     setElementInteractivity(overlay, false);
