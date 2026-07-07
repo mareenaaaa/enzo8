@@ -172,5 +172,8 @@ test('services responsive screenshots', async () => {
   test.setTimeout(360000);
   await runViewport('iphone-13', { width: 390, height: 844 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
   await runViewport('pixel-7', { width: 412, height: 915 }, { isMobile: true, deviceScaleFactor: 2.625, settleMs: 2400 });
+  await runViewport('android-360x800', { width: 360, height: 800 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
+  await runViewport('android-360x780', { width: 360, height: 780 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
   await runViewport('ipad-mini', { width: 820, height: 1180 }, { isMobile: false, deviceScaleFactor: 2, settleMs: 2600 });
 });
+
