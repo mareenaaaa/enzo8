@@ -127,6 +127,7 @@ function clearTransitionAudioLifecycle(audio) {
     audio.removeEventListener('ended', lifecycle.finish);
     audio.removeEventListener('pause', lifecycle.finish);
     if (lifecycle.timer) clearTimeout(lifecycle.timer);
+    if (lifecycle.fadeTimer) clearTimeout(lifecycle.fadeTimer);
     audio._transitionLifecycle = null;
 }
 
@@ -154,11 +155,21 @@ function scheduleTransitionAudioLifecycle(pageId, audio) {
     const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
         ? Math.max(600, (audio.duration - (audio.currentTime || 0)) * 1000 + 120)
         : 2200;
+    const fadeLeadMs = pageId === 'contactHome' ? 220 : 0;
 
-    audio._transitionLifecycle = {
+    const lifecycle = {
         finish,
         timer: setTimeout(finish, durationMs)
     };
+
+    if (fadeLeadMs > 0 && durationMs > fadeLeadMs + 80) {
+        lifecycle.fadeTimer = setTimeout(() => {
+            if (audio !== transitionAudioPlayers.get(pageId) || audio.paused || masterAudioMuted) return;
+            fadeMediaVolume(audio, 0, 0.16);
+        }, durationMs - fadeLeadMs);
+    }
+
+    audio._transitionLifecycle = lifecycle;
     audio.addEventListener('ended', finish, { once: true });
     audio.addEventListener('pause', finish, { once: true });
 }
