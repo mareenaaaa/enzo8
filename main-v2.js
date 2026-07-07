@@ -567,6 +567,78 @@ function getMobileServicesMediaScale() {
     const cssScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-services-media-scale'));
     return Number.isFinite(cssScale) && cssScale > 0 ? cssScale : MOBILE_SERVICES_MEDIA_SCALE;
 }
+const MOBILE_SERVICES_VIDEO_ANCHORS = {
+    concept: 0.303,
+    cinema: 0.377,
+    editing: 0.444,
+    sound: 0.522,
+    vfx: 0.595,
+    threeD: 0.665,
+    colour: 0.745
+};
+
+function updateMobileServicesVideoAlignment() {
+    if (!isMobile) return;
+
+    const section = document.getElementById('services-section');
+    if (!section) return;
+
+    const introVideo = document.getElementById('services-bg-video');
+    const loopVideo = document.getElementById('services-loop-video');
+    const loopStyle = loopVideo ? getComputedStyle(loopVideo) : null;
+    const video = loopVideo && loopStyle && loopStyle.visibility !== 'hidden' && Number(loopStyle.opacity) > 0.05
+        ? loopVideo
+        : introVideo;
+    if (!video) return;
+
+    const rect = video.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    if (!rect.height || !viewportHeight || !viewportWidth) return;
+
+    const minTop = Math.max(150, viewportHeight * 0.2);
+    const maxBottom = Math.min(viewportHeight - 58, viewportHeight * 0.86);
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const videoY = (ratio) => rect.top + rect.height * ratio;
+
+    const centers = {
+        concept: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.concept),
+        cinema: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.cinema),
+        editing: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.editing),
+        sound: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.sound),
+        vfx: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.vfx),
+        threeD: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.threeD),
+        colour: videoY(MOBILE_SERVICES_VIDEO_ANCHORS.colour)
+    };
+
+    const currentSpan = centers.colour - centers.concept;
+    const maxSpan = Math.max(220, maxBottom - minTop);
+    if (currentSpan > maxSpan) {
+        const scale = maxSpan / currentSpan;
+        const midpoint = (minTop + maxBottom) / 2;
+        const currentMidpoint = (centers.concept + centers.colour) / 2;
+        Object.keys(centers).forEach((key) => {
+            centers[key] = midpoint + (centers[key] - currentMidpoint) * scale;
+        });
+    }
+
+    Object.keys(centers).forEach((key) => {
+        centers[key] = clamp(centers[key], minTop, maxBottom);
+    });
+
+    const x = clamp(rect.left + rect.width * 0.267, 68, Math.min(106, viewportWidth * 0.28));
+    const width = clamp(viewportWidth - x - 36, 220, 258);
+
+    section.style.setProperty('--services-item-left', `${Math.round(x)}px`);
+    section.style.setProperty('--services-item-width', `${Math.round(width)}px`);
+    section.style.setProperty('--services-concept-top', `${Math.round(centers.concept)}px`);
+    section.style.setProperty('--services-cinema-top', `${Math.round(centers.cinema)}px`);
+    section.style.setProperty('--services-editing-top', `${Math.round(centers.editing)}px`);
+    section.style.setProperty('--services-sound-top', `${Math.round(centers.sound)}px`);
+    section.style.setProperty('--services-vfx-top', `${Math.round(centers.vfx)}px`);
+    section.style.setProperty('--services-3d-top', `${Math.round(centers.threeD)}px`);
+    section.style.setProperty('--services-colour-top', `${Math.round(centers.colour)}px`);
+}
 
 function getRevealHomeVideoScale(reverseSrc = '') {
     if (isMobile) return getHomeLogoDisplayScale();
@@ -675,6 +747,7 @@ function lockMobileComposition({ force = false } = {}) {
     }
 
     writeMobileCompositionLock(mobileCompositionLock);
+    requestAnimationFrame(updateMobileServicesVideoAlignment);
     return shouldRefreshLock;
 }
 
@@ -1116,6 +1189,9 @@ function revealNoVideoSectionContent(pageId, section, { transitionOwnerToken = n
         if (locomotiveRegistry[section.id]) {
             activateLocomotiveSection(section.id, { reset: true });
         }
+        if (isMobile && transitionOwnerToken !== null) {
+            requestAnimationFrame(() => finishForwardSectionTransition(transitionOwnerToken));
+        }
         return;
     }
 
@@ -1467,6 +1543,14 @@ function warmPageResources(pageId) {
     if (pageId === 'blogs') {
         const blogsSection = document.getElementById('blogs-section');
         hydrateLazyImages(blogsSection);
+        warmTransitionForPage('about');
+        if (isMobile) {
+            primeBufferedHandoffVideo(getVideoSrc('about'), {
+                scale: getMobileCinematicScaleForPage('about'),
+                x: 0,
+                y: '0vh'
+            }, 0, { allowMobile: true });
+        }
     }
 
     if (pageId === 'portfolios') {
@@ -1676,6 +1760,7 @@ function shouldRouteSectionTransitionThroughHome(pageId) {
     // through the shared home/logo handoff so no-video intros like Portfolio can
     // reuse the same chained transition path as the cinematic sections.
     if (HOME_EQUILIBRIUM_STATES.has(state)) return false;
+    if (isMobile && state === 'blogs' && pageId === 'about') return false;
     return true;
 }
 
@@ -1935,46 +2020,21 @@ function applyAmbientPointerResponse(clientX, clientY) {
             overwrite: "auto"
         });
     }
-
-	    if (!isAnimating && state === 'contact') {
-	        videoEl.style.objectPosition = getContactVideoObjectPosition();
-	
-	        const clampedX = Math.max(-1, Math.min(1, normalizedX));
-	        const clampedY = Math.max(-1, Math.min(1, normalizedY));
-	        const proximity = Math.max(0, 1 - Math.hypot(normalizedX, normalizedY) / 1.42);
-	        gsap.to(videoEl, {
-	            x: clampedX * 5,
-	            y: clampedY * 3,
-	            scale: 1 + proximity * 0.006,
-	            filter: `brightness(${1.055 + proximity * 0.018}) contrast(1.035) saturate(${1.02 + proximity * 0.018})`,
-	            duration: 1.2,
-	            ease: "sine.out",
-	            overwrite: "auto"
-	        });
-	
-	        gsap.to('.contact-plum-glow', {
-            "--contact-glow-x": `${12 + clampedX * 1.6}%`,
-            "--contact-glow-y": `${84 + clampedY * 1.1}%`,
-            "--contact-cyan-x": `${78 + clampedX * 1.4}%`,
-            "--contact-cyan-y": `${52 + clampedY * 0.9}%`,
-            opacity: 0.42 + proximity * 0.07,
-            scale: 1.035 + proximity * 0.006,
-            duration: 0.95,
-            ease: "sine.out",
-            overwrite: "auto"
+    if (!isAnimating && state === 'contact') {
+        videoEl.style.objectPosition = getContactVideoObjectPosition();
+        gsap.set(videoEl, {
+            x: 0,
+            y: 0,
+            overwrite: 'auto'
         });
-        gsap.to('.contact-deep-fade', {
-            opacity: 0.86 + proximity * 0.06,
-            duration: 0.95,
-            ease: "sine.out",
-            overwrite: "auto"
+        gsap.set('.contact-plum-glow', {
+            '--contact-glow-x': '12%',
+            '--contact-glow-y': '84%',
+            '--contact-cyan-x': '78%',
+            '--contact-cyan-y': '52%',
+            overwrite: 'auto'
         });
-        gsap.to('.contact-cta', {
-            textShadow: `0 0 ${5 + proximity * 7}px rgba(73, 217, 238, ${0.08 + proximity * 0.12})`,
-            duration: 1.25,
-            ease: "sine.out",
-            overwrite: "auto"
-        });
+        return;
     }
 
 }
@@ -3438,14 +3498,15 @@ function startVideoTransition(pageId) {
     const isHomeEquilibriumSource = HOME_EQUILIBRIUM_STATES.has(previousState);
     const isEquilibriumIntroHandoff = isSeamlessIntroHandoff || isHomeEquilibriumSource;
     const hasForwardVideo = hasCinematicForwardVideo(pageId);
-    const useBufferedIntroHandoff = isEquilibriumIntroHandoff && pageId !== 'services' && hasForwardVideo;
+    const isBlogsToAboutMobileDirect = isMobile && previousState === 'blogs' && pageId === 'about';
+    const useBufferedIntroHandoff = (isEquilibriumIntroHandoff || isBlogsToAboutMobileDirect) && pageId !== 'services' && hasForwardVideo;
     const useEquilibriumNoVideoReveal = isEquilibriumIntroHandoff && pageId !== 'services' && !hasForwardVideo;
     const shouldScaleIntroFromVisibleHome = !isMobile && useBufferedIntroHandoff && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const shouldScaleServicesFromVisibleHome = pageId === 'services' && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const shouldScaleNoVideoFromVisibleHome = !isMobile && useEquilibriumNoVideoReveal && isHomeEquilibriumSource && !isSeamlessIntroHandoff;
     const mobileUniformScale = getMobileUniformCinematicScale();
     const mobileTargetScale = getMobileCinematicScaleForPage(pageId);
-    const mobileAboutHandoffScale = (pageId === 'about' && isMobile && isSeamlessIntroHandoff)
+    const mobileAboutHandoffScale = (pageId === 'about' && isMobile && isSeamlessIntroHandoff && previousState === 'contact')
         ? getContactHandoffScale()
         : mobileTargetScale;
     const introEquilibriumScale = isEquilibriumIntroHandoff
@@ -3887,6 +3948,7 @@ function startVideoTransition(pageId) {
                     }
                     clearServicesTextRevealTimer();
                     servicesTextRevealed = true;
+                    updateMobileServicesVideoAlignment();
                     section.classList.add('services-text-live');
                     gsap.to('.services-text-overlay', {
                         opacity: 1,
@@ -6061,6 +6123,14 @@ startVideoTransition = function(pageId) {
     setHomeAudioControlVisible(false);
     if (!transitionAudioConfig[pageId]) stopTransitionAudio();
 
+    const canInterruptMobileBlogsToAbout = isMobile
+        && pageId === 'about'
+        && document.getElementById('blogs-section')?.classList.contains('active');
+    if (isAnimating && canInterruptMobileBlogsToAbout) {
+        isAnimating = false;
+        queuedSectionTransitionTarget = null;
+    }
+
     if (isAnimating) {
         queueSectionTransition(pageId);
         if (isMobile) {
@@ -6093,6 +6163,10 @@ startVideoTransition = function(pageId) {
     }
 
     originalStartVideoTransition(pageId);
+
+    if (isMobile && pageId === 'services') {
+        requestAnimationFrame(updateMobileServicesVideoAlignment);
+    }
 
     if (pageId === 'portfolios') {
         ensureMuxPlayerLoaded().then(() => {
@@ -6167,6 +6241,22 @@ if (mobileNavClose) {
         });
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

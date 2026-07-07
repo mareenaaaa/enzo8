@@ -109,11 +109,31 @@ async function capture(page) {
     const overlayStyle = overlay ? getComputedStyle(overlay) : null;
     const servicesVideo = document.getElementById('services-bg-video');
     const servicesLoop = document.getElementById('services-loop-video');
+    const section = document.getElementById('services-section');
+    const videoRect = servicesVideo?.getBoundingClientRect();
+    const sectionStyle = section ? getComputedStyle(section) : null;
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       bodyClass: document.body.className,
       servicesTextOpacity: overlayStyle?.opacity ?? null,
       servicesTextZ: overlayStyle?.zIndex ?? null,
+      servicesVideoRect: videoRect ? {
+        left: Math.round(videoRect.left),
+        top: Math.round(videoRect.top),
+        width: Math.round(videoRect.width),
+        height: Math.round(videoRect.height)
+      } : null,
+      servicesVars: sectionStyle ? {
+        left: sectionStyle.getPropertyValue('--services-item-left').trim(),
+        width: sectionStyle.getPropertyValue('--services-item-width').trim(),
+        concept: sectionStyle.getPropertyValue('--services-concept-top').trim(),
+        cinema: sectionStyle.getPropertyValue('--services-cinema-top').trim(),
+        editing: sectionStyle.getPropertyValue('--services-editing-top').trim(),
+        sound: sectionStyle.getPropertyValue('--services-sound-top').trim(),
+        vfx: sectionStyle.getPropertyValue('--services-vfx-top').trim(),
+        threeD: sectionStyle.getPropertyValue('--services-3d-top').trim(),
+        colour: sectionStyle.getPropertyValue('--services-colour-top').trim()
+      } : null,
       servicesVideo: servicesVideo ? {
         currentTime: Number(servicesVideo.currentTime.toFixed(3)),
         duration: Number.isFinite(servicesVideo.duration) ? Number(servicesVideo.duration.toFixed(3)) : null,
@@ -170,10 +190,14 @@ async function runViewport(label, viewport, options = {}) {
 
 test('services responsive screenshots', async () => {
   test.setTimeout(360000);
-  await runViewport('iphone-13', { width: 390, height: 844 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
-  await runViewport('pixel-7', { width: 412, height: 915 }, { isMobile: true, deviceScaleFactor: 2.625, settleMs: 2400 });
+  await runViewport('android-360x760', { width: 360, height: 760 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
   await runViewport('android-360x800', { width: 360, height: 800 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
-  await runViewport('android-360x780', { width: 360, height: 780 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
+  await runViewport('iphone-13', { width: 390, height: 844 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
+  await runViewport('pixel-7a-393x870', { width: 393, height: 870 }, { isMobile: true, deviceScaleFactor: 2.75, settleMs: 2400 });
+  await runViewport('pixel-7', { width: 412, height: 915 }, { isMobile: true, deviceScaleFactor: 2.625, settleMs: 2400 });
+  await runViewport('large-430x932', { width: 430, height: 932 }, { isMobile: true, deviceScaleFactor: 3, settleMs: 2400 });
   await runViewport('ipad-mini', { width: 820, height: 1180 }, { isMobile: false, deviceScaleFactor: 2, settleMs: 2600 });
 });
+
+
 
