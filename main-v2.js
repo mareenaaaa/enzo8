@@ -38,6 +38,7 @@ let activePortfolioSelectedMedia = null;
 let lastTransitionAudioPage = null;
 let lastTransitionAudioTriggerAt = 0;
 let ambienceRestoreTimer = null;
+let ambienceResumeRetryTimer = null;
 let pendingTransitionAudioStart = null;
 const PORTFOLIO_AUDIO_REVEAL_FALLBACK_MS = 650;
 const ambienceAudio = new Audio('./audio/ambience.ogg');
@@ -104,11 +105,20 @@ function clearAmbienceRestoreTimer() {
     ambienceRestoreTimer = null;
 }
 
+function clearAmbienceResumeRetryTimer() {
+    if (!ambienceResumeRetryTimer) return;
+    clearTimeout(ambienceResumeRetryTimer);
+    ambienceResumeRetryTimer = null;
+}
+
 function restoreAmbienceAfterTransition() {
     clearAmbienceRestoreTimer();
-    if (!masterAudioMuted && !ambienceAudio.paused) {
-        fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.3);
+    if (masterAudioMuted) return;
+    if (ambienceAudio.paused) {
+        ensureAmbiencePlayback();
+        return;
     }
+    fadeMediaVolume(ambienceAudio, AMBIENCE_VOLUME, 0.3);
 }
 
 function clearTransitionAudioLifecycle(audio) {
@@ -121,6 +131,14 @@ function clearTransitionAudioLifecycle(audio) {
 }
 
 function finalizeTransitionAudioPlayback(pageId, audio) {
+    if (activeTransitionAudioPage === pageId) {
+        activeTransitionAudioPage = null;
+    }
+    clearTransitionAudioLifecycle(audio);
+    restoreAmbienceAfterTransition();
+}
+
+function handleTransitionAudioPlaybackFailure(pageId, audio) {
     if (activeTransitionAudioPage === pageId) {
         activeTransitionAudioPage = null;
     }
@@ -171,6 +189,7 @@ function applyMasterAudioState({ fadeAmbience = false } = {}) {
     } catch (_) {}
 
     if (masterAudioMuted) {
+        clearAmbienceResumeRetryTimer();
         if (fadeAmbience) {
             fadeMediaVolume(ambienceAudio, 0, 0.28, () => {
                 ambienceAudio.muted = true;
@@ -197,7 +216,14 @@ function ensureAmbiencePlayback() {
 
     const playPromise = ambienceAudio.play();
     if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {});
+        playPromise.catch(() => {
+            clearAmbienceResumeRetryTimer();
+            if (masterAudioMuted || document.visibilityState === 'hidden') return;
+            ambienceResumeRetryTimer = setTimeout(() => {
+                ambienceResumeRetryTimer = null;
+                ensureAmbiencePlayback();
+            }, 500);
+        });
     }
 }
 
@@ -235,8 +261,17 @@ if (homeAudioToggle) {
     });
 }
 
-document.addEventListener('pointerdown', ensureAmbiencePlayback, { once: true, passive: true });
-document.addEventListener('keydown', ensureAmbiencePlayback, { once: true });
+document.addEventListener('pointerdown', ensureAmbiencePlayback, { passive: true });
+document.addEventListener('keydown', ensureAmbiencePlayback);
+window.addEventListener('focus', ensureAmbiencePlayback);
+window.addEventListener('pageshow', ensureAmbiencePlayback);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        ensureAmbiencePlayback();
+    } else {
+        clearAmbienceResumeRetryTimer();
+    }
+});
 
 function getTransitionAudio(pageId) {
     const src = transitionAudioConfig[pageId]?.src;
@@ -379,7 +414,9 @@ function playTransitionAudio(pageId) {
             audio.muted = false;
             const playPromise = audio.play();
             if (playPromise && typeof playPromise.catch === 'function') {
-                playPromise.catch(() => {});
+                playPromise.catch(() => {
+                    handleTransitionAudioPlaybackFailure(pageId, audio);
+                });
             }
         } catch (_) {}
         scheduleTransitionAudioLifecycle(pageId, audio);
@@ -4925,6 +4962,7 @@ window.closeBlogArticle = function(resumeUnderlying = true) {
     const overlay = document.getElementById('blog-article-overlay');
     const targets = getBlogArticleAnimationTargets();
     if (!overlay) return;
+    stopTransitionAudio('blogs');
     isBlogArticleOverlayOpen = false;
     document.body.classList.remove('blog-article-open');
     setElementInteractivity(overlay, false);
