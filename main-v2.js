@@ -247,6 +247,7 @@ function setHomeAudioControlVisible(isVisible, { immediate = false } = {}) {
 }
 
 applyMasterAudioState();
+warmAudioAssets();
 
 if (homeAudioToggle) {
     homeAudioToggle.addEventListener('click', (event) => {
@@ -292,6 +293,14 @@ function warmTransitionAudio(pageId) {
     const audio = getTransitionAudio(pageId);
     if (!audio) return;
     try { audio.load(); } catch (_) {}
+}
+
+function warmAudioAssets() {
+    try { ambienceAudio.load(); } catch (_) {}
+    try { meetTeamHoverAudio.load(); } catch (_) {}
+    ['about', 'services', 'portfolios', 'blogs', 'contact', 'contactHome'].forEach((pageId) => {
+        warmTransitionAudio(pageId);
+    });
 }
 
 let lastMeetTeamHoverAt = 0;
@@ -1788,10 +1797,14 @@ function routeSectionTransitionThroughHome(pageId) {
         equilibriumTransform: nextIntroEquilibriumTransform,
         reverseEndTransform,
         onHomeSettled: () => {
-            pendingSeamlessIntroTransform = nextIntroStartTransform;
-            shouldSeamlesslyStartNextIntro = true;
-            isRoutingThroughHome = false;
-            startVideoTransition(pageId);
+            const startNextIntro = () => {
+                pendingSeamlessIntroTransform = nextIntroStartTransform;
+                shouldSeamlesslyStartNextIntro = true;
+                isRoutingThroughHome = false;
+                startVideoTransition(pageId);
+            };
+
+            waitForTransitionAudioToFinish('contactHome', videoTransitionToken, startNextIntro);
         }
     });
 }
@@ -4408,11 +4421,6 @@ function returnToStableHomeDirectly() {
 
 function backToHome() {
     if (isAnimating) return;
-    if (state === 'contact') {
-        playTransitionAudio('contactHome');
-    } else {
-        stopTransitionAudio();
-    }
     if (isMobile && state === 'mobile-landing') {
         enterMobileHomeState();
         return;
@@ -4525,6 +4533,7 @@ function executeFinalReverse(options = {}) {
         ? getContactExtroPlaybackRate()
         : REVERSE_PLAYBACK_RATE;
     const isServicesToContactMobileChain = !revealHomeUi && isMobile && isServicesReverse && chainedTargetPageId === 'contact';
+    const shouldPlayHomeReturnAudio = Boolean(revealHomeUi || chainedTargetPageId);
     // Mobile chained extro cutoff. Larger values cut away earlier before the extro reaches its final logo frame.
     const mobileReverseCompletionLead = (!revealHomeUi && isMobile && isContactReverse && chainedTargetPageId === 'about')
         ? MOBILE_CONTACT_ABOUT_REVERSE_COMPLETION_LEAD
@@ -4533,6 +4542,10 @@ function executeFinalReverse(options = {}) {
             : ((!revealHomeUi && isMobile && chainedTargetPageId === 'contact')
                 ? (isServicesReverse ? MOBILE_SERVICES_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD : MOBILE_CONTACT_CHAIN_REVERSE_COMPLETION_LEAD)
                 : MOBILE_SECTION_CHAIN_REVERSE_COMPLETION_LEAD);
+
+    if (shouldPlayHomeReturnAudio) {
+        playTransitionAudio('contactHome');
+    }
 
     if (activeSection) {
         if (!isServicesReverse) {
