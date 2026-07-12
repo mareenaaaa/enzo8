@@ -20,8 +20,8 @@ const siteLoaderFill = document.getElementById('site-loader-fill');
 const siteLoaderProgress = siteLoader?.querySelector('[role="progressbar"]');
 const AUDIO_ICON_UNMUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-2.svg';
 const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-x.svg';
-const AMBIENCE_VOLUME = 0.34;
-const AMBIENCE_DUCKED_VOLUME = 0.22;
+const AMBIENCE_VOLUME = 0.30;
+const AMBIENCE_DUCKED_VOLUME = 0.19;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
 const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 45;
 const transitionAudioConfig = {
@@ -625,13 +625,13 @@ function getMobileServicesMediaScale() {
     return Number.isFinite(cssScale) && cssScale > 0 ? cssScale : MOBILE_SERVICES_MEDIA_SCALE;
 }
 const MOBILE_SERVICES_VIDEO_ANCHORS = {
-    concept: 0.303,
-    cinema: 0.377,
-    editing: 0.444,
-    sound: 0.522,
-    vfx: 0.595,
-    threeD: 0.665,
-    colour: 0.745
+    concept: 0.287,
+    cinema: 0.376,
+    editing: 0.466,
+    sound: 0.555,
+    vfx: 0.644,
+    threeD: 0.734,
+    colour: 0.823
 };
 
 function updateMobileServicesVideoAlignment() {
