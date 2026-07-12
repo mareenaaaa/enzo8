@@ -6953,3 +6953,23 @@ body.contact-video-foreground #contact-section.active .contact-deep-fade {
         transform: translate(calc(var(--mobile-lock-vw) * 24), calc(var(--mobile-lock-vh) * -2.5)) scale(var(--service-mobile-scale)) !important;
     }
 }
+
+/* ── SERVICE ITEM MOBILE FINE-TUNE (pixel nudges to align with video) ── */
+@media (max-width: 768px) {
+    #services-section .item-concept {
+        top: calc(var(--services-concept-top) + 10px) !important;
+    }
+    #services-section .item-cinema {
+        top: calc(var(--services-cinema-top) + 5px) !important;
+    }
+    #services-section .item-vfx {
+        top: calc(var(--services-vfx-top) - 2px) !important;
+    }
+    #services-section .item-3d {
+        top: calc(var(--services-3d-top) - 5px) !important;
+    }
+    #services-section .item-colour {
+        top: calc(var(--services-colour-top) - 5px) !important;
+    }
+}
+

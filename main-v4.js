@@ -686,6 +686,15 @@ function updateMobileServicesVideoAlignment() {
     const x = clamp(rect.left + rect.width * 0.267, 68, Math.min(106, viewportWidth * 0.28));
     const width = clamp(viewportWidth - x - 36, 220, 258);
 
+    /* ── Pixel nudges requested for video-to-text alignment ── */
+    centers.concept += 22;   // moved further down
+    centers.cinema  += 15;   // moved further down
+    centers.editing += 3;    // moved down
+    // sound: no change
+    centers.vfx     -= 4;    // move 4px up
+    centers.threeD  -= 18;   // move 18px up
+    centers.colour  -= 20;   // move 20px up
+
     section.style.setProperty('--services-item-left', `${Math.round(x)}px`);
     section.style.setProperty('--services-item-width', `${Math.round(width)}px`);
     section.style.setProperty('--services-concept-top', `${Math.round(centers.concept)}px`);
