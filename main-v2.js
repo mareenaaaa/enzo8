@@ -766,6 +766,7 @@ function updateAboutTeamVideoFocus() {
 function finishForwardSectionTransition(ownerToken = null) {
     if (ownerToken !== null && ownerToken !== videoTransitionToken) return;
     isAnimating = false;
+    setHomeAudioControlVisible(true);
     runQueuedSectionTransition();
 }
 
@@ -1045,6 +1046,7 @@ function animateBlogSectionIn() {
     gsap.killTweensOf(targets);
     gsap.set(targets, { opacity: 0, y: 32 });
     gsap.to(section, { opacity: 1, duration: 0.55, ease: "power2.out" });
+    setHomeAudioControlVisible(true);
     gsap.to(targets, {
         opacity: 1,
         y: 0,
@@ -1190,6 +1192,7 @@ function showSection(section, { duration = 0.67 } = {}) {
     setElementInteractivity(section, true);
     gsap.set(section, { visibility: 'visible' });
     gsap.to(section, { autoAlpha: 1, duration, ease: "power2.out" });
+    setHomeAudioControlVisible(true);
     if (section.id === 'about-section') {
         updateAboutTeamVideoFocus();
     } else {
