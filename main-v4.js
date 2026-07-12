@@ -20,7 +20,7 @@ const siteLoaderFill = document.getElementById('site-loader-fill');
 const siteLoaderProgress = siteLoader?.querySelector('[role="progressbar"]');
 const AUDIO_ICON_UNMUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-2.svg';
 const AUDIO_ICON_MUTED = 'https://cdn.jsdelivr.net/npm/lucide-static/icons/volume-x.svg';
-const AMBIENCE_VOLUME = 0.30;
+const AMBIENCE_VOLUME = 0.20; //ambiusnce volume
 const AMBIENCE_DUCKED_VOLUME = 0.19;
 const TRANSITION_AUDIO_REPLAY_GUARD_MS = 160;
 const PORTFOLIO_TRANSITION_AUDIO_DELAY_MS = 45;

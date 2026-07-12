@@ -20,6 +20,11 @@
     font-family: 'Montserrat', sans-serif !important;
 }
 
+/* Fix Boxicons overriding global font-family */
+.bx, .bxs, .bxl, .bx-chevron-down, .bxs-heart, .bxs-message-rounded, .bx-show {
+    font-family: 'boxicons' !important;
+}
+
 html, body {
     width: 100%;
     height: 100%;
